@@ -35,4 +35,8 @@ final class EdgeCaseTests: XCTestCase {
     func testB8_4_SkinsValidation() throws {
         try FixtureRunner.run("skins_validation")
     }
+
+    func testB8_6_MatchPlayDecidedEarly() throws {
+        try FixtureRunner.run("two_player_matchplay")
+    }
 }

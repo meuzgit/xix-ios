@@ -1,0 +1,207 @@
+{
+  "fixture": "two_player_matchplay",
+  "description": "B.8.6: two-player Match Play decided 4&3 at hole 15. b wins 16, 17 and 18 afterwards but the result and standings are frozen. Expected block worked by hand.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 18,
+    "par": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "strokeIndex": [],
+    "players": [
+      {
+        "id": "a",
+        "level": 5
+      },
+      {
+        "id": "b",
+        "level": 5
+      }
+    ],
+    "scores": {
+      "a": [
+        3,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "b": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
+        3,
+        3
+      ]
+    },
+    "games": [
+      {
+        "id": "g_match",
+        "format": "match_play",
+        "players": [
+          "a",
+          "b"
+        ]
+      }
+    ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "perPlayer": {
+      "a": {
+        "gross": 68
+      },
+      "b": {
+        "gross": 69
+      }
+    },
+    "games": {
+      "g_match": {
+        "holesWon": {
+          "a": 4,
+          "b": 0
+        },
+        "halved": 11,
+        "decidedAtHole": 15,
+        "matchThroughHole": 15,
+        "holesRemaining": 0,
+        "result": "a 4&3",
+        "outcome": "a",
+        "perHole": [
+          {
+            "hole": 1,
+            "winner": "a"
+          },
+          {
+            "hole": 2,
+            "winner": "a"
+          },
+          {
+            "hole": 3,
+            "winner": "a"
+          },
+          {
+            "hole": 4,
+            "winner": "a"
+          },
+          {
+            "hole": 5,
+            "winner": null
+          },
+          {
+            "hole": 6,
+            "winner": null
+          },
+          {
+            "hole": 7,
+            "winner": null
+          },
+          {
+            "hole": 8,
+            "winner": null
+          },
+          {
+            "hole": 9,
+            "winner": null
+          },
+          {
+            "hole": 10,
+            "winner": null
+          },
+          {
+            "hole": 11,
+            "winner": null
+          },
+          {
+            "hole": 12,
+            "winner": null
+          },
+          {
+            "hole": 13,
+            "winner": null
+          },
+          {
+            "hole": 14,
+            "winner": null
+          },
+          {
+            "hole": 15,
+            "winner": null
+          }
+        ],
+        "display": {
+          "a": "Match won 4&3",
+          "b": "Match lost 4&3"
+        },
+        "standings": [
+          {
+            "player": "a",
+            "rank": 1
+          },
+          {
+            "player": "b",
+            "rank": 2
+          }
+        ]
+      }
+    },
+    "medals": [
+      {
+        "profile": "a",
+        "key": "matchplay_win",
+        "opponent": "b"
+      }
+    ],
+    "rivalPoints": {
+      "a": 10,
+      "b": 0
+    }
+  },
+  "notes": [
+    "a wins 1-4, holes 5-15 halved: 4 up with 3 to play after 15 → 4&3. Holes 16-18 are not part of the match; perHole stops at 15."
+  ]
+}
