@@ -325,3 +325,25 @@ public struct VegasHole: Codable, Equatable, Sendable {
         self.points = points
     }
 }
+
+// MARK: - Nines
+
+public struct NinesDetail: Equatable, Sendable {
+    public var points: [PlayerID: [Int]]
+    public var totals: [PlayerID: Int]
+
+    public init(points: [PlayerID: [Int]], totals: [PlayerID: Int]) {
+        self.points = points
+        self.totals = totals
+    }
+
+    func encode(into c: inout KeyedEncodingContainer<AnyCodingKey>) throws {
+        try c.encode(points, forKey: AnyCodingKey("points"))
+        try c.encode(totals, forKey: AnyCodingKey("totals"))
+    }
+
+    init(from c: KeyedDecodingContainer<AnyCodingKey>) throws {
+        points = try c.decode([PlayerID: [Int]].self, forKey: AnyCodingKey("points"))
+        totals = try c.decode([PlayerID: Int].self, forKey: AnyCodingKey("totals"))
+    }
+}
