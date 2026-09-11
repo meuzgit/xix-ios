@@ -1,0 +1,175 @@
+{
+  "fixture": "two_players",
+  "description": "B.8.13: two players. Skins and Match Play are allowed; Nines and Defender need exactly three; Sixes needs exactly four. Expected block worked by hand.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 18,
+    "par": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "strokeIndex": [],
+    "players": [
+      {
+        "id": "a",
+        "level": 5
+      },
+      {
+        "id": "b",
+        "level": 5
+      }
+    ],
+    "scores": {
+      "a": [
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "b": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    "games": [
+      {
+        "id": "g_skins",
+        "format": "skins",
+        "players": [
+          "a",
+          "b"
+        ]
+      },
+      {
+        "id": "g_match",
+        "format": "match_play",
+        "players": [
+          "a",
+          "b"
+        ]
+      },
+      {
+        "id": "g_nines",
+        "format": "nines",
+        "players": [
+          "a",
+          "b"
+        ]
+      },
+      {
+        "id": "g_sixes",
+        "format": "sixes",
+        "players": [
+          "a",
+          "b"
+        ]
+      },
+      {
+        "id": "g_def",
+        "format": "defender",
+        "players": [
+          "a",
+          "b"
+        ]
+      }
+    ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "games": {
+      "g_skins": {
+        "totals": {
+          "a": 1,
+          "b": 0
+        },
+        "voidCarry": 17,
+        "outcome": "a"
+      },
+      "g_match": {
+        "holesWon": {
+          "a": 1,
+          "b": 0
+        },
+        "halved": 17,
+        "result": "a 1 up",
+        "outcome": "a"
+      },
+      "g_nines": {
+        "outcome": {
+          "unavailable": "Nines needs exactly three players"
+        }
+      },
+      "g_sixes": {
+        "outcome": {
+          "unavailable": "Sixes needs exactly four players"
+        }
+      },
+      "g_def": {
+        "outcome": {
+          "unavailable": "Defender needs exactly three players"
+        }
+      }
+    },
+    "medals": [
+      {
+        "profile": "a",
+        "key": "matchplay_win",
+        "opponent": "b"
+      }
+    ],
+    "rivalPoints": {
+      "a": 20,
+      "b": 0
+    }
+  },
+  "notes": [
+    "a's 3 on hole 1 wins a skin and the only hole of the match; the other 17 halve (carry 17 void; 1 up with 1 to play is never decided early)."
+  ]
+}

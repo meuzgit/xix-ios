@@ -55,4 +55,8 @@ final class EdgeCaseTests: XCTestCase {
     func testB8_11_CalloutExpiryByParticipant() throws {
         try FixtureRunner.run("callout_expiry")
     }
+
+    func testB8_13_TwoPlayers() throws {
+        try FixtureRunner.run("two_players")
+    }
 }
