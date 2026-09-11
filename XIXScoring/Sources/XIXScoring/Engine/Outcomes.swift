@@ -52,6 +52,19 @@ enum OutcomeRecords {
             guard let outcome = result.outcome else { return [] }
             return [OutcomeRecord(gameID: game.id, format: result.format, segment: nil, outcome: outcome,
                                   participants: game.players, sides: d.sides)]
+        case .rabbit(let d):
+            // Two awards: the holder after hole 9, and the holder after the final hole of an
+            // 18-hole round (a 9-hole round has the hole-9 award only, B.8.12).
+            var records: [OutcomeRecord] = []
+            if let at9 = d.holderAt9 {
+                records.append(OutcomeRecord(gameID: game.id, format: .rabbit, segment: "9", outcome: .winner(at9),
+                                             participants: game.players, sides: nil))
+            }
+            if let outcome = result.outcome, d.holders.count > 9 {
+                records.append(OutcomeRecord(gameID: game.id, format: .rabbit, segment: "18", outcome: outcome,
+                                             participants: game.players, sides: nil))
+            }
+            return records
         case .vegas(let d):
             guard let outcome = result.outcome else { return [] }
             return [OutcomeRecord(gameID: game.id, format: result.format, segment: nil, outcome: outcome,

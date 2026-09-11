@@ -89,3 +89,37 @@ final class QuotaTests: XCTestCase {
         XCTAssertEqual(ScoringEngine.score(noPar).games[0].outcome, .unavailable(reason: "Quota needs par on every played hole; missing on 1"))
     }
 }
+
+final class RabbitTests: XCTestCase {
+    func testFixture() throws {
+        try FixtureRunner.run("rabbit_moves")
+    }
+
+    func testNineHoleRoundAwardsAtNineOnly() {
+        // B.8.12
+        var rows: [[HoleScore?]] = Array(repeating: Array(repeating: 4, count: 9), count: 2)
+        rows[1][8] = 3
+        let input = RoundInput(holes: 9, par: Array(repeating: 4, count: 9), strokeIndex: [],
+                               players: [PlayerInput(id: "a", level: 5), PlayerInput(id: "b", level: 5)],
+                               scores: rows, games: [GameInput(id: "r", format: .rabbit, players: ["a", "b"])])
+        let r = ScoringEngine.score(input)
+        XCTAssertEqual(r.games[0].outcome, .winner("b"))
+        XCTAssertEqual(r.medals, [MedalAward(profile: "b", key: .rabbit9, opponent: "a")])
+        XCTAssertEqual(r.rivalPoints, ["a": 0, "b": 10], "one award on nine holes")
+        XCTAssertEqual(r.holeEvents.map(\.text), ["Rabbit to B."])
+    }
+
+    func testNeverClaimedIsVoidAndInProgressHasNoOutcome() {
+        let all4: [[HoleScore?]] = Array(repeating: Array(repeating: 4, count: 9), count: 3)
+        let input = RoundInput(holes: 9, par: Array(repeating: 4, count: 9), strokeIndex: [],
+                               players: ["a", "b", "c"].map { PlayerInput(id: PlayerID($0), level: 5) },
+                               scores: all4, games: [GameInput(id: "r", format: .rabbit, players: ["a", "b", "c"])])
+        let r = ScoringEngine.score(input)
+        XCTAssertEqual(r.games[0].outcome, .void)
+        XCTAssertTrue(r.medals.isEmpty)
+        XCTAssertEqual(r.games[0].display["a"], "Rabbit loose")
+        var partial = input
+        partial.scores[0][8] = nil
+        XCTAssertNil(ScoringEngine.score(partial).games[0].outcome)
+    }
+}

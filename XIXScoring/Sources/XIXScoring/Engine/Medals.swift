@@ -33,6 +33,11 @@ enum MedalBuilder {
                 for record in OutcomeRecords.records(for: result, game: game) {
                     award(&awards, key: .strokeLowGross, to: record.winners, record: record)
                 }
+            case .rabbit:
+                for record in OutcomeRecords.records(for: result, game: game) {
+                    let key: MedalKey = record.segment == "9" ? .rabbit9 : .rabbit18
+                    award(&awards, key: key, to: winnersExcludingTies(record), record: record)
+                }
             default:
                 break
             }

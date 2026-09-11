@@ -1,0 +1,42 @@
+{
+  "fixture": "rabbit_moves",
+  "description": "Rabbit over 18 holes with four players: claimed on 1, held through a tie on 2, moved on 3, 9, 10 and 18. Holder after 9 and after 18 are the two awards. Expected block worked by hand before the format was written.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 18,
+    "par": [4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4],
+    "strokeIndex": [],
+    "players": [ { "id": "a", "level": 5 }, { "id": "b", "level": 5 }, { "id": "c", "level": 5 }, { "id": "d", "level": 5 } ],
+    "scores": {
+      "a": [3,3,4,4,4,4,4,4,4, 4,4,4,4,4,4,4,4,3],
+      "b": [4,3,3,4,4,4,4,4,4, 4,4,4,4,4,4,4,4,4],
+      "c": [4,4,4,4,4,4,4,4,3, 4,4,4,4,4,4,4,4,4],
+      "d": [4,4,4,4,4,4,4,4,4, 3,4,4,4,4,4,4,4,4]
+    },
+    "games": [ { "id": "g_rabbit", "format": "rabbit", "players": ["a","b","c","d"] } ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "games": {
+      "g_rabbit": {
+        "holders": ["a","a","b","b","b","b","b","b","c","d","d","d","d","d","d","d","d","a"],
+        "moves": [ { "hole": 1, "to": "a" }, { "hole": 3, "to": "b" }, { "hole": 9, "to": "c" }, { "hole": 10, "to": "d" }, { "hole": 18, "to": "a" } ],
+        "holderAt9": "c",
+        "holderAtEnd": "a",
+        "outcome": "a",
+        "display": { "a": "Rabbit in hand", "d": "Rabbit with A" }
+      }
+    },
+    "medals": [
+      { "profile": "c", "key": "rabbit_9",  "opponent": null },
+      { "profile": "a", "key": "rabbit_18", "opponent": null }
+    ],
+    "rivalPoints": { "a": 10, "b": 0, "c": 10, "d": 0 },
+    "leaderboard": { "gross": [ { "player": "a", "value": 69, "rank": 1 }, { "player": "b", "value": 70, "rank": 2 }, { "player": "c", "value": 71, "rank": 3 }, { "player": "d", "value": 71, "rank": 3 } ] }
+  },
+  "notes": [
+    "Hole 2: a and b both 3 → tie → the rabbit stays with a. Every other move is a unique low score by a different player.",
+    "Two awards (B.5): holder after 9 (c) and after the final hole (a); individual base 10 each at factor 1."
+  ]
+}

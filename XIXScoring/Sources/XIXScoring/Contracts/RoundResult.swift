@@ -177,6 +177,7 @@ public enum GameDetail: Equatable, Sendable {
     case strokePlay(StrokePlayDetail)
     case sideStroke(SideStrokeDetail)
     case vegas(VegasDetail)
+    case rabbit(RabbitDetail)
     case quota(QuotaDetail)
     case sixes(SixesDetail)
     case nines(NinesDetail)
@@ -191,6 +192,7 @@ public enum GameDetail: Equatable, Sendable {
         case .strokePlay: return "strokePlay"
         case .sideStroke: return "sideStroke"
         case .vegas: return "vegas"
+        case .rabbit: return "rabbit"
         case .quota: return "quota"
         case .sixes: return "sixes"
         case .nines: return "nines"
@@ -215,6 +217,8 @@ public enum GameDetail: Equatable, Sendable {
             self = .sideStroke(try SideStrokeDetail(from: container))
         case "vegas":
             self = .vegas(try VegasDetail(from: container))
+        case "rabbit":
+            self = .rabbit(try RabbitDetail(from: container))
         case "quota":
             self = .quota(try QuotaDetail(from: container))
         case "sixes":
@@ -244,6 +248,8 @@ public enum GameDetail: Equatable, Sendable {
         case .sideStroke(let d):
             try d.encode(into: &container)
         case .vegas(let d):
+            try d.encode(into: &container)
+        case .rabbit(let d):
             try d.encode(into: &container)
         case .quota(let d):
             try d.encode(into: &container)

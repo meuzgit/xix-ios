@@ -411,3 +411,44 @@ public struct QuotaDetail: Equatable, Sendable {
         results = try c.decode([PlayerID: Int].self, forKey: AnyCodingKey("results"))
     }
 }
+
+// MARK: - Rabbit
+
+public struct RabbitDetail: Equatable, Sendable {
+    /// Holder after each resolved hole; nil while unclaimed.
+    public var holders: [PlayerID?]
+    public var moves: [RabbitMove]
+    public var holderAt9: PlayerID?          // set once hole 9 is resolved
+    public var holderAtEnd: PlayerID?        // set once the round is complete
+
+    public init(holders: [PlayerID?], moves: [RabbitMove], holderAt9: PlayerID?, holderAtEnd: PlayerID?) {
+        self.holders = holders
+        self.moves = moves
+        self.holderAt9 = holderAt9
+        self.holderAtEnd = holderAtEnd
+    }
+
+    func encode(into c: inout KeyedEncodingContainer<AnyCodingKey>) throws {
+        try c.encode(holders, forKey: AnyCodingKey("holders"))
+        try c.encode(moves, forKey: AnyCodingKey("moves"))
+        try c.encodeIfPresent(holderAt9, forKey: AnyCodingKey("holderAt9"))
+        try c.encodeIfPresent(holderAtEnd, forKey: AnyCodingKey("holderAtEnd"))
+    }
+
+    init(from c: KeyedDecodingContainer<AnyCodingKey>) throws {
+        holders = try c.decode([PlayerID?].self, forKey: AnyCodingKey("holders"))
+        moves = try c.decode([RabbitMove].self, forKey: AnyCodingKey("moves"))
+        holderAt9 = try c.decodeIfPresent(PlayerID.self, forKey: AnyCodingKey("holderAt9"))
+        holderAtEnd = try c.decodeIfPresent(PlayerID.self, forKey: AnyCodingKey("holderAtEnd"))
+    }
+}
+
+public struct RabbitMove: Codable, Equatable, Sendable {
+    public var hole: Int
+    public var to: PlayerID
+
+    public init(hole: Int, to: PlayerID) {
+        self.hole = hole
+        self.to = to
+    }
+}
