@@ -1,0 +1,39 @@
+{
+  "fixture": "quota",
+  "description": "Quota / Chicago over nine holes. Quota = 36 − handicap strokes; points gross: bogey 1, par 2, birdie 4, eagle 8, else 0. Result = points − quota. Expected block worked by hand before the format was written.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 9,
+    "par": [4,3,5,4,4,3,4,5,4],
+    "strokeIndex": [7,15,1,9,5,17,11,3,13],
+    "players": [ { "id": "a", "level": 10 }, { "id": "b", "level": 5 }, { "id": "c", "level": 1 } ],
+    "scores": {
+      "a": [5,3,6,4,5,3,4,6,3],
+      "b": [4,4,5,5,6,3,7,6,5],
+      "c": [6,4,7,5,5,4,5,7,6]
+    },
+    "games": [ { "id": "g_quota", "format": "quota", "players": ["a","b","c"] } ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "games": {
+      "g_quota": {
+        "quota":   { "a": 36, "b": 24, "c": 14 },
+        "points":  { "a": [1,2,1,2,1,2,2,1,4], "b": [2,1,2,1,0,2,0,1,1], "c": [0,1,0,1,1,1,1,0,0] },
+        "totals":  { "a": 16, "b": 10, "c": 5 },
+        "results": { "a": -20, "b": -14, "c": -9 },
+        "outcome": "c",
+        "display": { "a": "Quota -20", "b": "Quota -14", "c": "Quota -9" },
+        "standings": [ { "player": "c", "rank": 1 }, { "player": "b", "rank": 2 }, { "player": "a", "rank": 3 } ]
+      }
+    },
+    "medals": [],
+    "rivalPoints": { "a": 0, "b": 0, "c": 19 }
+  },
+  "notes": [
+    "Handicap strokes: Level 10 → 0, Level 5 → 12, Level 1 → 22. Quotas 36, 24, 14.",
+    "a: +1,0,+1,0,+1,0,0,+1,−1 → 1,2,1,2,1,2,2,1,4 = 16 → −20. b: 0,+1,0,+1,+2,0,+3,+1,+1 → 10 → −14. c: all bogey or worse → 5 → −9.",
+    "Rival Points: c wins, strongest opponent Level 10 vs own 1 → factor 1.9 → 19."
+  ]
+}

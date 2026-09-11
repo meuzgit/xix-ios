@@ -59,3 +59,33 @@ final class SixesTests: XCTestCase {
         if case .sixes(let pd)? = p.games.first?.detail { XCTAssertFalse(pd.segments[2].match.complete) } else { XCTFail() }
     }
 }
+
+final class QuotaTests: XCTestCase {
+    func testFixture() throws {
+        try FixtureRunner.run("quota")
+    }
+
+    func testPointsTableAndPickUp() {
+        XCTAssertEqual([-3, -2, -1, 0, 1, 2].map(QuotaScorer.points(strokesToPar:)), [8, 8, 4, 2, 1, 0])
+        let input = RoundInput(holes: 2, par: [5, 4], strokeIndex: [],
+                               players: [PlayerInput(id: "a", level: 10), PlayerInput(id: "b", level: 10)],
+                               scores: [[.pickedUp, 4], [5, 4]], games: [GameInput(id: "q", format: .quota, players: ["a", "b"])])
+        let r = ScoringEngine.score(input)
+        guard case .quota(let d)? = r.games.first?.detail else { return XCTFail() }
+        XCTAssertEqual(d.points["a"], [0, 2])
+        XCTAssertEqual(d.results, ["a": -34, "b": -32])
+        XCTAssertEqual(r.games[0].display["a"], "Quota -34")
+    }
+
+    func testNeedsLevelsAndPar() {
+        // B.8.14 and B.8.1
+        let noLevel = RoundInput(holes: 1, par: [4], strokeIndex: [],
+                                 players: [PlayerInput(id: "a", level: 5), PlayerInput(id: "b")],
+                                 scores: [[4], [4]], games: [GameInput(id: "q", format: .quota, players: ["a", "b"])])
+        XCTAssertEqual(ScoringEngine.score(noLevel).games[0].outcome, .unavailable(reason: "Quota needs a Level for every player; missing: b"))
+        let noPar = RoundInput(holes: 1, par: [nil], strokeIndex: [],
+                               players: [PlayerInput(id: "a", level: 5), PlayerInput(id: "b", level: 5)],
+                               scores: [[4], [4]], games: [GameInput(id: "q", format: .quota, players: ["a", "b"])])
+        XCTAssertEqual(ScoringEngine.score(noPar).games[0].outcome, .unavailable(reason: "Quota needs par on every played hole; missing on 1"))
+    }
+}

@@ -381,3 +381,33 @@ public struct SixesSegment: Codable, Equatable, Sendable {
         self.points = points
     }
 }
+
+// MARK: - Quota
+
+public struct QuotaDetail: Equatable, Sendable {
+    public var quota: [PlayerID: Int]
+    public var points: [PlayerID: [Int]]
+    public var totals: [PlayerID: Int]
+    public var results: [PlayerID: Int]      // points − quota
+
+    public init(quota: [PlayerID: Int], points: [PlayerID: [Int]], totals: [PlayerID: Int], results: [PlayerID: Int]) {
+        self.quota = quota
+        self.points = points
+        self.totals = totals
+        self.results = results
+    }
+
+    func encode(into c: inout KeyedEncodingContainer<AnyCodingKey>) throws {
+        try c.encode(quota, forKey: AnyCodingKey("quota"))
+        try c.encode(points, forKey: AnyCodingKey("points"))
+        try c.encode(totals, forKey: AnyCodingKey("totals"))
+        try c.encode(results, forKey: AnyCodingKey("results"))
+    }
+
+    init(from c: KeyedDecodingContainer<AnyCodingKey>) throws {
+        quota = try c.decode([PlayerID: Int].self, forKey: AnyCodingKey("quota"))
+        points = try c.decode([PlayerID: [Int]].self, forKey: AnyCodingKey("points"))
+        totals = try c.decode([PlayerID: Int].self, forKey: AnyCodingKey("totals"))
+        results = try c.decode([PlayerID: Int].self, forKey: AnyCodingKey("results"))
+    }
+}
