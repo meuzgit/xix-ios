@@ -1,0 +1,57 @@
+{
+  "fixture": "best_ball",
+  "description": "Four players, six holes, sides a+b and c+d. Best Ball in match mode and in stroke mode. Expected block worked by hand before the format was written.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 6,
+    "par": [4,4,4,4,4,4],
+    "strokeIndex": [],
+    "players": [
+      { "id": "a", "level": 5 }, { "id": "b", "level": 5 }, { "id": "c", "level": 5 }, { "id": "d", "level": 5 }
+    ],
+    "scores": {
+      "a": [4,5,4,3,5,4],
+      "b": [5,4,4,4,4,4],
+      "c": [4,4,5,4,4,3],
+      "d": [5,5,4,5,4,4]
+    },
+    "games": [
+      { "id": "g_match",  "format": "best_ball", "options": { "mode": "match" },  "players": ["a","b","c","d"], "sides": { "a": 0, "b": 0, "c": 1, "d": 1 } },
+      { "id": "g_stroke", "format": "best_ball", "options": { "mode": "stroke" }, "players": ["a","b","c","d"], "sides": { "a": 0, "b": 0, "c": 1, "d": 1 } }
+    ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "perPlayer": { "a": { "gross": 25 }, "b": { "gross": 25 }, "c": { "gross": 24 }, "d": { "gross": 27 } },
+    "games": {
+      "g_match": {
+        "holesWon": { "a+b": 1, "c+d": 1 }, "halved": 4, "result": "halved", "outcome": "halved",
+        "perHole": [
+          { "hole": 1, "winner": null }, { "hole": 2, "winner": null }, { "hole": 3, "winner": null },
+          { "hole": 4, "winner": "a+b" }, { "hole": 5, "winner": null }, { "hole": 6, "winner": "c+d" }
+        ],
+        "display": { "a": "Best Ball halved", "d": "Best Ball halved" }
+      },
+      "g_stroke": {
+        "sides": [["a","b"],["c","d"]],
+        "perHole": { "a+b": [4,4,4,3,4,4], "c+d": [4,4,4,4,4,3] },
+        "totals": { "a+b": 23, "c+d": 23 },
+        "outcome": { "tied": ["a","b","c","d"] },
+        "display": { "a": "Best Ball 23", "c": "Best Ball 23" },
+        "standings": [ { "player": "a", "side": 0, "rank": 1 }, { "player": "b", "side": 0, "rank": 1 }, { "player": "c", "side": 1, "rank": 1 }, { "player": "d", "side": 1, "rank": 1 } ]
+      }
+    },
+    "medals": [],
+    "rivalPoints": { "a": 6, "b": 6, "c": 6, "d": 6 },
+    "leaderboard": {
+      "gross": [ { "player": "c", "value": 24, "rank": 1 }, { "player": "a", "value": 25, "rank": 2 }, { "player": "b", "value": 25, "rank": 2 }, { "player": "d", "value": 27, "rank": 4 } ]
+    }
+  },
+  "notes": [
+    "Side best ball per hole: a+b 4,4,4,3,4,4 (23); c+d 4,4,4,4,4,3 (23).",
+    "Match: holes 1-3 halved, a+b win 4, hole 5 halved (1 up with 1 to play is not decided), c+d win 6 → all square → halved.",
+    "Stroke: 23 each → explicit tie of both sides. No Best Ball medal keys exist.",
+    "Rival Points: team base 6, all Level 5 so factor 1. Match halved → 3 each; stroke tied → 3 each; 6 per player."
+  ]
+}

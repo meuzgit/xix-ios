@@ -30,6 +30,7 @@ enum FormatRegistry {
         case .nassau: return NassauScorer.self
         case .stableford: return StablefordScorer.self
         case .strokePlay: return StrokePlayScorer.self
+        case .bestBall: return BestBallScorer.self
         default: return nil
         }
     }
@@ -45,6 +46,41 @@ extension GameResult {
 /// Why a game cannot be scored as configured (B.8.13, B.8.14 …).
 struct Unavailable: Error, Equatable {
     let reason: String
+}
+
+/// Groups a game's players into sides. Without a `sides` map every player is a side of one.
+enum SideGrouping {
+    static func sides(for game: GameInput, round: NormalisedRound, exactlyTwo: Bool) -> Result<[MatchSide], Unavailable> {
+        let grouped: [[PlayerID]]
+        if let map = game.sides {
+            let unmapped = game.players.filter { map[$0] == nil }
+            guard unmapped.isEmpty else {
+                return .failure(Unavailable(reason: "players without a side: \(unmapped.map(\.rawValue).joined(separator: ", "))"))
+            }
+            let indices = Set(map.values).sorted()
+            guard indices == Array(0..<indices.count) else {
+                return .failure(Unavailable(reason: "sides must be numbered 0, 1, …"))
+            }
+            grouped = indices.map { side in game.players.filter { map[$0] == side } }.filter { !$0.isEmpty }
+        } else if exactlyTwo {
+            guard game.players.count == 2 else {
+                return .failure(Unavailable(reason: "\(game.format.rawValue) needs two players, or teams via sides"))
+            }
+            grouped = game.players.map { [$0] }
+        } else {
+            grouped = game.players.map { [$0] }
+        }
+        if exactlyTwo, grouped.count != 2 {
+            return .failure(Unavailable(reason: "\(game.format.rawValue) needs exactly two sides (0 and 1)"))
+        }
+        guard grouped.count >= 2 else {
+            return .failure(Unavailable(reason: "\(game.format.rawValue) needs at least two sides"))
+        }
+        return .success(grouped.enumerated().map { index, ids in
+            MatchSide(index: index, label: ids.map(\.rawValue).joined(separator: "+"), ids: ids,
+                      seats: ids.compactMap(round.seat))
+        })
+    }
 }
 
 /// Shared helpers for formats.

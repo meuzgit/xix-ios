@@ -247,3 +247,40 @@ public struct StrokePlayDetail: Equatable, Sendable {
         adjusted = try c.decode([PlayerID: Int].self, forKey: AnyCodingKey("adjusted"))
     }
 }
+
+// MARK: - Side stroke (Best Ball stroke mode, Scramble, Shamble, Alternate Shot, Chapman)
+
+public struct SideStrokeDetail: Equatable, Sendable {
+    public var sides: [[PlayerID]]
+    /// Best scores per hole counted for each side (1 for best ball / side rows, `count` for Shamble).
+    public var count: Int
+    /// Side score per resolved hole, keyed by side label.
+    public var perHole: [String: [Int]]
+    public var totals: [String: Int]
+    /// Totals after multiplier callouts (to-par difference on that hole × factor).
+    public var adjusted: [String: Int]
+
+    public init(sides: [[PlayerID]], count: Int, perHole: [String: [Int]], totals: [String: Int], adjusted: [String: Int]) {
+        self.sides = sides
+        self.count = count
+        self.perHole = perHole
+        self.totals = totals
+        self.adjusted = adjusted
+    }
+
+    func encode(into c: inout KeyedEncodingContainer<AnyCodingKey>) throws {
+        try c.encode(sides, forKey: AnyCodingKey("sides"))
+        try c.encode(count, forKey: AnyCodingKey("count"))
+        try c.encode(perHole, forKey: AnyCodingKey("perHole"))
+        try c.encode(totals, forKey: AnyCodingKey("totals"))
+        try c.encode(adjusted, forKey: AnyCodingKey("adjusted"))
+    }
+
+    init(from c: KeyedDecodingContainer<AnyCodingKey>) throws {
+        sides = try c.decode([[PlayerID]].self, forKey: AnyCodingKey("sides"))
+        count = try c.decode(Int.self, forKey: AnyCodingKey("count"))
+        perHole = try c.decode([String: [Int]].self, forKey: AnyCodingKey("perHole"))
+        totals = try c.decode([String: Int].self, forKey: AnyCodingKey("totals"))
+        adjusted = try c.decode([String: Int].self, forKey: AnyCodingKey("adjusted"))
+    }
+}

@@ -14,27 +14,7 @@ struct MatchSide {
 enum MatchEngine {
     /// Two sides from `sides` (member → 0/1) or, without a map, from exactly two players.
     static func sides(for game: GameInput, round: NormalisedRound) -> Result<[MatchSide], Unavailable> {
-        let grouped: [[PlayerID]]
-        if let map = game.sides {
-            let indices = Set(map.values)
-            guard indices == [0, 1] else {
-                return .failure(Unavailable(reason: "\(game.format.rawValue) needs exactly two sides (0 and 1)"))
-            }
-            let unmapped = game.players.filter { map[$0] == nil }
-            guard unmapped.isEmpty else {
-                return .failure(Unavailable(reason: "players without a side: \(unmapped.map(\.rawValue).joined(separator: ", "))"))
-            }
-            grouped = [0, 1].map { side in game.players.filter { map[$0] == side } }
-        } else {
-            guard game.players.count == 2 else {
-                return .failure(Unavailable(reason: "\(game.format.rawValue) needs two players, or teams via sides"))
-            }
-            grouped = game.players.map { [$0] }
-        }
-        return .success(grouped.enumerated().map { index, ids in
-            MatchSide(index: index, label: ids.map(\.rawValue).joined(separator: "+"), ids: ids,
-                      seats: ids.compactMap(round.seat))
-        })
+        SideGrouping.sides(for: game, round: round, exactlyTwo: true)
     }
 
     /// Plays holes `range` (0-based, half-open) between two sides.
@@ -46,7 +26,10 @@ enum MatchEngine {
         var decidedAt: Int? = nil
         var lastPlayed = range.lowerBound   // count of holes played, as an absolute 1-based hole number
 
+        let allSeats = sides.flatMap(\.seats)
         for hole in range {
+            // Every active participant must have scored the hole (B.4.2).
+            guard round.isResolved(hole: hole, seats: allSeats) else { break }
             let sideScores: [Int?] = sides.map { side in
                 let scores = side.seats.compactMap { strokes($0, hole) }
                 return scores.isEmpty ? nil : scores.min()

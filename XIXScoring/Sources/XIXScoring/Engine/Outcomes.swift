@@ -48,6 +48,10 @@ enum OutcomeRecords {
             guard let outcome = result.outcome else { return [] }
             return [OutcomeRecord(gameID: game.id, format: result.format, segment: nil, outcome: outcome,
                                   participants: game.players, sides: d.sides)]
+        case .sideStroke(let d):
+            guard let outcome = result.outcome else { return [] }
+            return [OutcomeRecord(gameID: game.id, format: result.format, segment: nil, outcome: outcome,
+                                  participants: game.players, sides: d.sides)]
         default:
             guard let outcome = result.outcome else { return [] }
             return [OutcomeRecord(gameID: game.id, format: result.format, segment: nil, outcome: outcome,
