@@ -37,6 +37,8 @@ select is((select count(*)::int from xix.engine_queue where round_id = (select r
 select pg_temp.as_user((select nobody from fresh));
 select throws_ok($$select xix.claim_row((select round from fresh), (select ray_row from fresh))$$, '23505', null, 'cannot claim a second row in the same round');
 select lives_ok($$select xix.leave_round((select round from fresh))$$, 'the claimant can leave the round');
+-- Having left, they are no longer a member and RLS hides the row from them; read it as postgres.
+select pg_temp.as_postgres();
 select is((select left_at is not null from xix.players where id = (select guest_row from fresh)), true, 'left_at is set on their row');
 select pg_temp.as_user((select dave from fresh));
 select throws_ok($$select xix.claim_row((select round from fresh), (select guest_row from fresh))$$, 'P0002', null, 'a claimed row cannot be claimed again');
