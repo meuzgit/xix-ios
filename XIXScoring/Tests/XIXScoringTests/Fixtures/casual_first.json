@@ -1,0 +1,90 @@
+{
+  "fixture": "casual_first",
+  "description": "All six casual-first formats on one nine-hole round with three players. Expected block worked by hand before the formats were written.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 9,
+    "par": [4,3,5,4,4,3,4,5,4],
+    "strokeIndex": [],
+    "players": [
+      { "id": "a", "level": 5, "extras": { "priorAverage": 42.0 } },
+      { "id": "b", "level": 5, "extras": { "priorAverage": 40.5 } },
+      { "id": "c", "level": 5, "extras": { "priorAverage": 45.0 } }
+    ],
+    "scores": {
+      "a": [4,3,5,5,4,3,4,6,4],
+      "b": [4,3,5,4,4,4,5,5,4],
+      "c": [5,4,6,5,5,4,5,7,6]
+    },
+    "games": [
+      { "id": "g_blow",  "format": "fewest_blow_ups",   "players": ["a","b","c"] },
+      { "id": "g_avg",   "format": "beat_your_average", "players": ["a","b","c"] },
+      { "id": "g_bogey", "format": "bogey_golf",        "players": ["a","b","c"] },
+      { "id": "g_pars",  "format": "most_pars",         "players": ["a","b","c"] },
+      { "id": "g_five",  "format": "first_to_five",     "players": ["a","b","c"] },
+      { "id": "g_worst", "format": "worst_hole",        "players": ["a","b","c"] }
+    ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "perPlayer": { "a": { "gross": 38 }, "b": { "gross": 38 }, "c": { "gross": 47 } },
+    "games": {
+      "g_blow": {
+        "points": { "a": [1,1,1,1,1,1,1,1,1], "b": [1,1,1,1,1,1,1,1,1], "c": [1,1,1,1,1,1,1,0,0] },
+        "blowUps": { "a": 0, "b": 0, "c": 2 },
+        "totals": { "a": 9, "b": 9, "c": 7 },
+        "outcome": { "tied": ["a","b"] },
+        "display": { "a": "Blow-Ups 0", "c": "Blow-Ups 2" }
+      },
+      "g_avg": {
+        "priorAverage": { "a": 42.0, "b": 40.5, "c": 45.0 },
+        "gross": { "a": 38, "b": 38, "c": 47 },
+        "improvement": { "a": 4.0, "b": 2.5, "c": -2.0 },
+        "outcome": "a",
+        "display": { "a": "Beat Avg +4.0", "b": "Beat Avg +2.5", "c": "Beat Avg -2.0" }
+      },
+      "g_bogey": {
+        "points": { "a": [3,3,3,2,3,3,3,2,3], "b": [3,3,3,3,3,2,2,3,3], "c": [2,2,2,2,2,2,2,1,1] },
+        "totals": { "a": 25, "b": 25, "c": 16 },
+        "outcome": { "tied": ["a","b"] },
+        "display": { "a": "Bogey Golf 25" }
+      },
+      "g_pars": {
+        "pars": { "a": [1,1,1,0,1,1,1,0,1], "b": [1,1,1,1,1,0,0,1,1], "c": [0,0,0,0,0,0,0,0,0] },
+        "totals": { "a": 7, "b": 7, "c": 0 },
+        "outcome": { "tied": ["a","b"] },
+        "display": { "a": "Pars 7", "c": "Pars 0" }
+      },
+      "g_five": {
+        "counts": { "a": 7, "b": 7, "c": 0 },
+        "reachedAt": { "a": 6, "b": 5 },
+        "outcome": "b",
+        "display": { "a": "First to Five at 6", "b": "First to Five at 5", "c": "First to Five 0 of 5" }
+      },
+      "g_worst": {
+        "perPlayer": { "a": { "hole": 4, "overPar": 1 }, "b": { "hole": 6, "overPar": 1 }, "c": { "hole": 8, "overPar": 2 } },
+        "worstOverPar": 2,
+        "outcome": "c",
+        "display": { "c": "Worst Hole +2 (8)", "a": "Worst Hole +1 (4)" }
+      }
+    },
+    "medals": [
+      { "profile": "a", "key": "no_blowups",   "opponent": null },
+      { "profile": "b", "key": "no_blowups",   "opponent": null },
+      { "profile": "a", "key": "beat_average", "opponent": null },
+      { "profile": "b", "key": "five_pars",    "opponent": null }
+    ],
+    "rivalPoints": { "a": 10, "b": 10, "c": 4 },
+    "leaderboard": { "gross": [ { "player": "a", "value": 38, "rank": 1 }, { "player": "b", "value": 38, "rank": 1 }, { "player": "c", "value": 47, "rank": 3 } ] }
+  },
+  "notes": [
+    "Blow-ups: c has +2 on holes 8 and 9; a and b never exceed par+1 → tied on 9, both zero blow-ups → both get no_blowups.",
+    "Beat Your Average: 42.0−38 = 4.0, 40.5−38 = 2.5, 45.0−47 = −2.0 → a wins, beat_average.",
+    "Bogey Golf is Stableford against par+1: a and b 25 each (tied), c 16. No medal key; stableford_top does not apply to Bogey Golf.",
+    "Most Pars: a pars 1,2,3,5,6,7,9; b pars 1,2,3,4,5,8,9 → tied on 7.",
+    "First to Five: b reaches five at-or-under-par holes on hole 5, a on hole 6 → b wins, five_pars.",
+    "Worst Hole: c's +2 on hole 8 (first reached) is the round's worst → c.",
+    "Rival Points (casual base 4, factor 1): a = 2 + 4 + 2 + 2 = 10; b = 2 + 2 + 2 + 4 = 10; c = 4 (Worst Hole)."
+  ]
+}

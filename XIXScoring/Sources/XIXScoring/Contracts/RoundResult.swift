@@ -177,6 +177,11 @@ public enum GameDetail: Equatable, Sendable {
     case strokePlay(StrokePlayDetail)
     case sideStroke(SideStrokeDetail)
     case vegas(VegasDetail)
+    case worstHole(WorstHoleDetail)
+    case firstToFive(FirstToFiveDetail)
+    case mostPars(MostParsDetail)
+    case beatAverage(BeatAverageDetail)
+    case blowUps(BlowUpsDetail)
     case defender(DefenderDetail)
     case rabbit(RabbitDetail)
     case quota(QuotaDetail)
@@ -193,6 +198,11 @@ public enum GameDetail: Equatable, Sendable {
         case .strokePlay: return "strokePlay"
         case .sideStroke: return "sideStroke"
         case .vegas: return "vegas"
+        case .worstHole: return "worstHole"
+        case .firstToFive: return "firstToFive"
+        case .mostPars: return "mostPars"
+        case .beatAverage: return "beatAverage"
+        case .blowUps: return "blowUps"
         case .defender: return "defender"
         case .rabbit: return "rabbit"
         case .quota: return "quota"
@@ -219,6 +229,16 @@ public enum GameDetail: Equatable, Sendable {
             self = .sideStroke(try SideStrokeDetail(from: container))
         case "vegas":
             self = .vegas(try VegasDetail(from: container))
+        case "worstHole":
+            self = .worstHole(try WorstHoleDetail(from: container))
+        case "firstToFive":
+            self = .firstToFive(try FirstToFiveDetail(from: container))
+        case "mostPars":
+            self = .mostPars(try MostParsDetail(from: container))
+        case "beatAverage":
+            self = .beatAverage(try BeatAverageDetail(from: container))
+        case "blowUps":
+            self = .blowUps(try BlowUpsDetail(from: container))
         case "defender":
             self = .defender(try DefenderDetail(from: container))
         case "rabbit":
@@ -252,6 +272,16 @@ public enum GameDetail: Equatable, Sendable {
         case .sideStroke(let d):
             try d.encode(into: &container)
         case .vegas(let d):
+            try d.encode(into: &container)
+        case .worstHole(let d):
+            try d.encode(into: &container)
+        case .firstToFive(let d):
+            try d.encode(into: &container)
+        case .mostPars(let d):
+            try d.encode(into: &container)
+        case .beatAverage(let d):
+            try d.encode(into: &container)
+        case .blowUps(let d):
             try d.encode(into: &container)
         case .defender(let d):
             try d.encode(into: &container)

@@ -41,7 +41,12 @@ enum FormatRegistry {
         case .quota: return QuotaScorer.self
         case .rabbit: return RabbitScorer.self
         case .defender: return DefenderScorer.self
-        default: return nil
+        case .fewestBlowUps: return FewestBlowUpsScorer.self
+        case .beatYourAverage: return BeatYourAverageScorer.self
+        case .bogeyGolf: return BogeyGolfScorer.self
+        case .mostPars: return MostParsScorer.self
+        case .firstToFive: return FirstToFiveScorer.self
+        case .worstHole: return WorstHoleScorer.self
         }
     }
 }

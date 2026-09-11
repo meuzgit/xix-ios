@@ -25,9 +25,21 @@ enum MedalBuilder {
                     if n >= 2 { awards.append(MedalAward(profile: standing.player, key: .skinsTwo)) }
                     if n >= 4 { awards.append(MedalAward(profile: standing.player, key: .skinsFour)) }
                 }
-            case .stableford:
+            case .stableford where result.format == .stableford:
                 for record in OutcomeRecords.records(for: result, game: game) {
                     award(&awards, key: .stablefordTop, to: record.winners, record: record)
+                }
+            case .blowUps(let d):
+                for record in OutcomeRecords.records(for: result, game: game) {
+                    award(&awards, key: .noBlowups, to: record.winners.filter { d.blowUps[$0] == 0 }, record: record)
+                }
+            case .beatAverage(let d):
+                for record in OutcomeRecords.records(for: result, game: game) {
+                    award(&awards, key: .beatAverage, to: record.winners.filter { (d.improvement[$0] ?? 0) > 0 }, record: record)
+                }
+            case .firstToFive(let d):
+                for record in OutcomeRecords.records(for: result, game: game) {
+                    award(&awards, key: .fivePars, to: record.winners.filter { d.reachedAt[$0] != nil }, record: record)
                 }
             case .strokePlay(let d) where !d.net:
                 for record in OutcomeRecords.records(for: result, game: game) {
