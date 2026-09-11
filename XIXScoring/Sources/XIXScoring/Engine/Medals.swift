@@ -29,6 +29,12 @@ enum MedalBuilder {
                 for record in OutcomeRecords.records(for: result, game: game) {
                     award(&awards, key: .stablefordTop, to: record.winners, record: record)
                 }
+            case .strokePlay(let d) where !d.net:
+                for record in OutcomeRecords.records(for: result, game: game) {
+                    award(&awards, key: .strokeLowGross, to: record.winners, record: record)
+                }
+            case .strokePlay:
+                break
             case .none:
                 break
             }

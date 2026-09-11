@@ -215,3 +215,35 @@ public struct StablefordDetail: Equatable, Sendable {
         table = try c.decode(String.self, forKey: AnyCodingKey("table"))
     }
 }
+
+// MARK: - Stroke Play
+
+public struct StrokePlayDetail: Equatable, Sendable {
+    public var net: Bool
+    /// Strokes counted per resolved hole (effective gross, or net), per player.
+    public var strokes: [PlayerID: [Int]]
+    public var totals: [PlayerID: Int]
+    /// Totals after multiplier callouts: a multiplied hole's to-par difference counts `factor` times.
+    public var adjusted: [PlayerID: Int]
+
+    public init(net: Bool, strokes: [PlayerID: [Int]], totals: [PlayerID: Int], adjusted: [PlayerID: Int]) {
+        self.net = net
+        self.strokes = strokes
+        self.totals = totals
+        self.adjusted = adjusted
+    }
+
+    func encode(into c: inout KeyedEncodingContainer<AnyCodingKey>) throws {
+        try c.encode(net, forKey: AnyCodingKey("net"))
+        try c.encode(strokes, forKey: AnyCodingKey("strokes"))
+        try c.encode(totals, forKey: AnyCodingKey("totals"))
+        try c.encode(adjusted, forKey: AnyCodingKey("adjusted"))
+    }
+
+    init(from c: KeyedDecodingContainer<AnyCodingKey>) throws {
+        net = try c.decode(Bool.self, forKey: AnyCodingKey("net"))
+        strokes = try c.decode([PlayerID: [Int]].self, forKey: AnyCodingKey("strokes"))
+        totals = try c.decode([PlayerID: Int].self, forKey: AnyCodingKey("totals"))
+        adjusted = try c.decode([PlayerID: Int].self, forKey: AnyCodingKey("adjusted"))
+    }
+}

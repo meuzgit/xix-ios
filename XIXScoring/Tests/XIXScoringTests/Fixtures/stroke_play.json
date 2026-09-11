@@ -1,0 +1,70 @@
+{
+  "fixture": "stroke_play",
+  "description": "Three players, nine holes. Gross Stroke Play with a doubled hole 5 (multiplier callout), and net Stroke Play with strokes allocated by stroke index. Expected block worked by hand before the format was written.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 9,
+    "par":         [4,3,5,4,4,3,4,5,4],
+    "strokeIndex": [7,15,1,9,5,17,11,3,13],
+    "players": [
+      { "id": "a", "level": 5 },
+      { "id": "b", "level": 10 },
+      { "id": "c", "level": 7 }
+    ],
+    "scores": {
+      "a": [5,3,6,4,5,3,4,6,3],
+      "b": [4,4,5,5,6,3,7,6,5],
+      "c": [5,3,5,4,4,3,5,6,4]
+    },
+    "games": [
+      { "id": "g_gross", "format": "stroke_play", "options": { "net": false }, "players": ["a","b","c"] },
+      { "id": "g_net",   "format": "stroke_play", "options": { "net": true },  "players": ["a","b","c"] }
+    ],
+    "callouts": [
+      { "id": "x5", "hole": 5, "kind": "multiplier", "caller": "a", "targets": ["b","c"], "params": { "game_id": "g_gross", "factor": 2 }, "status": "signed", "responder": "b" }
+    ]
+  },
+  "expected": {
+    "status": "complete",
+    "perPlayer": {
+      "a": { "gross": 39, "net": 27, "toPar": 3, "handicapStrokes": 12 },
+      "b": { "gross": 45, "net": 45, "toPar": 9, "handicapStrokes": 0 },
+      "c": { "gross": 39, "net": 32, "toPar": 3, "handicapStrokes": 7 }
+    },
+    "games": {
+      "g_gross": {
+        "net": false,
+        "totals":   { "a": 39, "b": 45, "c": 39 },
+        "adjusted": { "a": 40, "b": 47, "c": 39 },
+        "outcome": "c",
+        "standings": [ { "player": "c", "rank": 1 }, { "player": "a", "rank": 2 }, { "player": "b", "rank": 3 } ],
+        "display": { "a": "Stroke 39", "b": "Stroke 45", "c": "Stroke 39" }
+      },
+      "g_net": {
+        "net": true,
+        "strokes": { "a": [4,2,4,3,3,2,3,4,2] },
+        "totals":   { "a": 27, "b": 45, "c": 32 },
+        "adjusted": { "a": 27, "b": 45, "c": 32 },
+        "outcome": "a",
+        "display": { "a": "Net 27", "b": "Net 45", "c": "Net 32" }
+      }
+    },
+    "callouts": {
+      "x5": { "status": "resolved", "winner": null }
+    },
+    "medals": [
+      { "profile": "c", "key": "stroke_low_gross", "opponent": null }
+    ],
+    "rivalPoints": { "a": 15, "b": 0, "c": 13 },
+    "leaderboard": {
+      "gross": [ { "player": "a", "value": 39, "rank": 1 }, { "player": "c", "value": 39, "rank": 1 }, { "player": "b", "value": 45, "rank": 3 } ],
+      "net":   [ { "player": "a", "value": 27, "rank": 1 }, { "player": "c", "value": 32, "rank": 2 }, { "player": "b", "value": 45, "rank": 3 } ]
+    }
+  },
+  "notes": [
+    "Gross: a and c both 39. Hole 5 (par 4) is doubled for g_gross only: the to-par difference on that hole counts twice, so a (+1) adjusts to 40, b (+2) to 47, c (0) stays 39. The adjusted standings decide: c wins, a second.",
+    "Net strokes: a Level 5 → 12, b Level 10 → 0, c Level 7 → round(7.2) = 7. Stroke-index order of holes: 3, 8, 5, 1, 4, 7, 9, 2, 6. a gets one on every hole plus a second on 3, 8, 5 → net per hole 4,2,4,3,3,2,3,4,2 = 27. c gets one on 3, 8, 5, 1, 4, 7, 9 → 32.",
+    "Rival Points: c wins gross, strongest opponent b (Level 10) vs own 7 → factor 1.3 → 13. a wins net, strongest opponent Level 10 vs own 5 → factor 1.5 → 15. The multiplier callout has no winner and awards nothing.",
+    "stroke_low_gross goes to the gross game's winner; the net game has no medal key."
+  ]
+}
