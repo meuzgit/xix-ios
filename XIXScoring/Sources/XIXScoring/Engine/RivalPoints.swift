@@ -6,9 +6,13 @@
 /// (and explicit ties) give half to each side. Ducked callouts give nothing. Totals are
 /// accumulated as fractions and rounded once per player.
 enum RivalPointsBuilder {
+    /// Worst Hole is a booby prize: it stays a game outcome for the results screen but never
+    /// contributes Rival Points, so `base` is 0 and its records are skipped.
     static func base(for format: Format, teamed: Bool) -> Double {
         switch format {
-        case .fewestBlowUps, .beatYourAverage, .bogeyGolf, .mostPars, .firstToFive, .worstHole:
+        case .worstHole:
+            return 0
+        case .fewestBlowUps, .beatYourAverage, .bogeyGolf, .mostPars, .firstToFive:
             return 4
         case .bestBall, .scramble, .shamble, .alternateShot, .chapman, .vegas, .sixes:
             return 6
@@ -31,7 +35,7 @@ enum RivalPointsBuilder {
     static func build(records: [OutcomeRecord], callouts: [CalloutResult], round: NormalisedRound) -> [PlayerID: Int] {
         var totals: [PlayerID: Double] = Dictionary(uniqueKeysWithValues: round.players.map { ($0.id, 0) })
 
-        for record in records {
+        for record in records where record.format != .worstHole {
             let base = base(for: record.format, teamed: record.isTeamed)
             switch record.outcome {
             case .winner, .winningSide:

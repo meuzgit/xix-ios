@@ -70,4 +70,12 @@ final class CasualFormatTests: XCTestCase {
         let none = ScoringEngine.score(input(players: players, scores: [Array(repeating: 5, count: 6), Array(repeating: 5, count: 6)], format: .fewestBlowUps))
         XCTAssertEqual(none.medals.map(\.profile), ["a", "b"])
     }
+
+    func testWorstHoleNeverContributesRivalPoints() {
+        let players = ["a", "b"].map { PlayerInput(id: PlayerID($0), level: 5) }
+        let r = ScoringEngine.score(input(players: players, scores: [[9, 4, 4, 4, 4, 4], Array(repeating: 4, count: 6)], format: .worstHole))
+        XCTAssertEqual(r.games[0].outcome, .winner("a"))
+        XCTAssertEqual(r.rivalPoints, ["a": 0, "b": 0])
+        XCTAssertEqual(RivalPointsBuilder.base(for: .worstHole, teamed: false), 0)
+    }
 }

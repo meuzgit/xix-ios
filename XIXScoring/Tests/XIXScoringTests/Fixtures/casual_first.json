@@ -75,7 +75,7 @@
       { "profile": "a", "key": "beat_average", "opponent": null },
       { "profile": "b", "key": "five_pars",    "opponent": null }
     ],
-    "rivalPoints": { "a": 10, "b": 10, "c": 4 },
+    "rivalPoints": { "a": 10, "b": 10, "c": 0 },
     "leaderboard": { "gross": [ { "player": "a", "value": 38, "rank": 1 }, { "player": "b", "value": 38, "rank": 1 }, { "player": "c", "value": 47, "rank": 3 } ] }
   },
   "notes": [
@@ -85,6 +85,6 @@
     "Most Pars: a pars 1,2,3,5,6,7,9; b pars 1,2,3,4,5,8,9 → tied on 7.",
     "First to Five: b reaches five at-or-under-par holes on hole 5, a on hole 6 → b wins, five_pars.",
     "Worst Hole: c's +2 on hole 8 (first reached) is the round's worst → c.",
-    "Rival Points (casual base 4, factor 1): a = 2 + 4 + 2 + 2 = 10; b = 2 + 2 + 2 + 4 = 10; c = 4 (Worst Hole)."
+    "Rival Points (casual base 4, factor 1): a = 2 + 4 + 2 + 2 = 10; b = 2 + 2 + 2 + 4 = 10; c = 0 — Worst Hole is a booby prize and never earns points."
   ]
 }
