@@ -3,6 +3,7 @@ name: engine parity
 # The native and WebAssembly builds of XIXScoring must produce identical RoundResult JSON for every
 # fixture (Build Doc 2 B.3). This is what lets the app trust its local engine against the server's.
 on:
+  workflow_dispatch:
   push:
     paths: ["XIXScoring/**", "scripts/**", ".github/workflows/engine-parity.yml"]
   pull_request:
