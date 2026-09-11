@@ -177,6 +177,7 @@ public enum GameDetail: Equatable, Sendable {
     case strokePlay(StrokePlayDetail)
     case sideStroke(SideStrokeDetail)
     case vegas(VegasDetail)
+    case sixes(SixesDetail)
     case nines(NinesDetail)
 
     var kind: String {
@@ -189,6 +190,7 @@ public enum GameDetail: Equatable, Sendable {
         case .strokePlay: return "strokePlay"
         case .sideStroke: return "sideStroke"
         case .vegas: return "vegas"
+        case .sixes: return "sixes"
         case .nines: return "nines"
         }
     }
@@ -211,6 +213,8 @@ public enum GameDetail: Equatable, Sendable {
             self = .sideStroke(try SideStrokeDetail(from: container))
         case "vegas":
             self = .vegas(try VegasDetail(from: container))
+        case "sixes":
+            self = .sixes(try SixesDetail(from: container))
         case "nines":
             self = .nines(try NinesDetail(from: container))
         default:
@@ -236,6 +240,8 @@ public enum GameDetail: Equatable, Sendable {
         case .sideStroke(let d):
             try d.encode(into: &container)
         case .vegas(let d):
+            try d.encode(into: &container)
+        case .sixes(let d):
             try d.encode(into: &container)
         case .nines(let d):
             try d.encode(into: &container)

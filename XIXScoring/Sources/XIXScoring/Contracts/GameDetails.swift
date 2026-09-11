@@ -347,3 +347,37 @@ public struct NinesDetail: Equatable, Sendable {
         totals = try c.decode([PlayerID: Int].self, forKey: AnyCodingKey("totals"))
     }
 }
+
+// MARK: - Sixes
+
+public struct SixesDetail: Equatable, Sendable {
+    public var segments: [SixesSegment]
+    public var totals: [PlayerID: Int]
+
+    public init(segments: [SixesSegment], totals: [PlayerID: Int]) {
+        self.segments = segments
+        self.totals = totals
+    }
+
+    func encode(into c: inout KeyedEncodingContainer<AnyCodingKey>) throws {
+        try c.encode(segments, forKey: AnyCodingKey("segments"))
+        try c.encode(totals, forKey: AnyCodingKey("totals"))
+    }
+
+    init(from c: KeyedDecodingContainer<AnyCodingKey>) throws {
+        segments = try c.decode([SixesSegment].self, forKey: AnyCodingKey("segments"))
+        totals = try c.decode([PlayerID: Int].self, forKey: AnyCodingKey("totals"))
+    }
+}
+
+public struct SixesSegment: Codable, Equatable, Sendable {
+    public var name: String                  // "1-6", "7-12", "13-18"
+    public var match: MatchPlayDetail
+    public var points: [PlayerID: Int]       // win 2, halve 1, per member
+
+    public init(name: String, match: MatchPlayDetail, points: [PlayerID: Int]) {
+        self.name = name
+        self.match = match
+        self.points = points
+    }
+}

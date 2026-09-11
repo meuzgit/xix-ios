@@ -1,0 +1,48 @@
+{
+  "fixture": "sixes_rotation",
+  "description": "Sixes (Round Robin): four players, three six-hole best-ball matches with rotating partners. Segment 1 won 1 up on the last hole, segment 2 decided 3&2, segment 3 halved. Expected block worked by hand before the format was written.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 18,
+    "par": [4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4],
+    "strokeIndex": [],
+    "players": [ { "id": "a", "level": 5 }, { "id": "b", "level": 5 }, { "id": "c", "level": 5 }, { "id": "d", "level": 5 } ],
+    "scores": {
+      "a": [3,4,4,4,4,4, 4,4,4,4,4,4, 4,4,4,4,4,4],
+      "b": [4,4,3,4,4,4, 4,4,4,4,4,4, 4,4,4,4,4,4],
+      "c": [4,3,4,4,4,4, 4,4,4,4,4,4, 4,4,4,4,4,4],
+      "d": [4,4,4,4,4,4, 3,3,3,4,4,4, 4,4,4,4,4,4]
+    },
+    "games": [ { "id": "g_sixes", "format": "sixes", "players": ["a","b","c","d"] } ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "games": {
+      "g_sixes": {
+        "segments": [
+          { "name": "1-6",   "match": { "sides": [["a","b"],["c","d"]], "holesWon": { "a+b": 2, "c+d": 1 }, "halved": 3, "result": "a+b 1 up" },
+            "points": { "a": 2, "b": 2, "c": 0, "d": 0 } },
+          { "name": "7-12",  "match": { "sides": [["a","c"],["b","d"]], "holesWon": { "a+c": 0, "b+d": 3 }, "halved": 1, "decidedAtHole": 10, "result": "b+d 3&2" },
+            "points": { "a": 0, "b": 2, "c": 0, "d": 2 } },
+          { "name": "13-18", "match": { "sides": [["a","d"],["b","c"]], "holesWon": { "a+d": 0, "b+c": 0 }, "halved": 6, "result": "halved" },
+            "points": { "a": 1, "b": 1, "c": 1, "d": 1 } }
+        ],
+        "totals": { "a": 3, "b": 5, "c": 1, "d": 3 },
+        "outcome": "b",
+        "display": { "a": "Sixes 3", "b": "Sixes 5" },
+        "standings": [ { "player": "b", "rank": 1 }, { "player": "a", "rank": 2 }, { "player": "d", "rank": 2 }, { "player": "c", "rank": 4 } ]
+      }
+    },
+    "medals": [],
+    "rivalPoints": { "a": 0, "b": 6, "c": 0, "d": 0 },
+    "leaderboard": { "gross": [ { "player": "d", "value": 69, "rank": 1 }, { "player": "a", "value": 71, "rank": 2 }, { "player": "b", "value": 71, "rank": 2 }, { "player": "c", "value": 71, "rank": 2 } ] }
+  },
+  "notes": [
+    "Rotation by seat order: 1-6 AB v CD, 7-12 AC v BD, 13-18 AD v BC.",
+    "1-6: AB win 1 (a 3), CD win 2 (c 3), AB win 3 (b 3), 4-6 halved → a+b 1 up; 2 points each to a and b.",
+    "7-12: d's 3s on 7, 8, 9 put BD 3 up with 3 to play; hole 10 halved → 3 up with 2 to play → decided 3&2 at 10.",
+    "13-18: all halved → 1 point each.",
+    "Rival Points: Sixes is a team format, base 6; b wins outright at factor 1."
+  ]
+}
