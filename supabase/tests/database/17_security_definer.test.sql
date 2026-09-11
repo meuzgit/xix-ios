@@ -18,7 +18,7 @@ create temp table ids as select
   '99999999-9999-4999-8999-999999999991'::uuid as callout, '88888888-8888-4888-8888-888888888882'::uuid as skins;
 do $$ begin execute format('grant select on all tables in schema %I to authenticated', (select nspname from pg_namespace where oid = pg_my_temp_schema())); end $$;
 
-select plan(25);
+select plan(26);
 
 -- 1. The census. Trigger functions are excluded (they cannot be called directly).
 select is(
@@ -27,7 +27,7 @@ select is(
   array[
     'add_guest', 'apply_engine_result', 'auto_confirm', 'claim_row', 'confirm_round', 'create_callout', 'end_round',
     'engine_run_failed', 'enqueue_engine_run', 'ensure_profile', 'enter_score', 'is_crew_member', 'is_crew_owner',
-    'is_own_player_row', 'is_round_member', 'is_round_owner', 'join_round', 'leave_round', 'my_player_id',
+    'is_own_player_row', 'is_round_member', 'is_round_owner', 'join_round', 'joinable_rows', 'leave_round', 'my_player_id',
     'respond_callout', 'round_input', 'send_sticker', 'set_games', 'shares_round_or_crew', 'update_level_auto'
   ]::text[],
   'every security-definer function is accounted for below');
@@ -66,6 +66,7 @@ select is(xix.is_crew_owner('ffffffff-ffff-4fff-8fff-ffffffffffff'), false, 'is_
 -- 5. Allowed by design: ensure_profile creates only the caller's own row; join_round returns a round
 --    for a code without adding membership (an ended round is refused).
 select throws_ok($$select xix.join_round('FRSRVW')$$, 'P0002', null, 'join_round: ended round is not joinable; membership is never granted here');
+select throws_ok($$select * from xix.joinable_rows('FRSRVW')$$, 'P0002', null, 'joinable_rows: same rule, and only unclaimed rows of an open round are ever returned');
 
 select * from finish();
 rollback;

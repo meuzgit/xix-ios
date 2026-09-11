@@ -12,6 +12,8 @@ Vocabulary rule for every file, comment and test name: no money, stake, wager or
 |---|---|
 | `XIXScoring/` | The scoring engine, a pure Swift package. Formats, callouts, medals, Rival Points. Fixtures under `Tests/XIXScoringTests/Fixtures`. |
 | `XIXScoring/Sources/xix-engine-cli` | RoundInput in on stdin, RoundResult out. Built natively for parity and as WebAssembly for the server. |
+| `XIXModels/` | Row types mirroring the `xix` tables, generated from the local database (`scripts/gen-models.sh`) and hand-wrapped. |
+| `XIXData/` | Supabase client, Sign in with Apple, repositories, `RoundSession` (one Realtime channel per round, last-write-wins per cell, merge notices), GRDB local store and offline queue. No UI. |
 | `supabase/` | Migrations, seed, pgTAP tests, the `xix-engine` edge function. |
 | `scripts/` | Engine build and parity checks. |
 | `fraserview_2026-09-09.json` | The reference round every design pass uses; source of the seed. |
@@ -37,6 +39,15 @@ supabase test db supabase/tests/database    # pgTAP: one file per RLS row, RPC a
 All development is local. Nothing here links to or pushes to the shared project; migrations are applied there by hand after each reviewed step, never with `db reset`.
 
 The seed is generated: edit `supabase/scripts/gen_seed.py`, not `supabase/seed.sql`.
+
+## Data layer
+
+```bash
+supabase db reset                            # the tests create rounds as the seeded users
+cd XIXData && swift test                     # integration tests against the local stack (D.5 items without UI)
+```
+
+The tests sign the seeded users in through an admin-generated magic link verified by the client: Sign in with Apple cannot run in a test, and the session GoTrue issues is the same kind either way. After a migration, regenerate the row types with `./scripts/gen-models.sh`.
 
 ## Engine toolchain (WebAssembly)
 
