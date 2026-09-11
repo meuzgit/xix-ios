@@ -1,0 +1,151 @@
+{
+  "fixture": "nassau_18_halved",
+  "description": "B.8.7: Nassau where a wins the front 2 up (holes 8 and 9), b wins the back 2 up (17 and 18), and the 18 is halved. Expected block worked by hand.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 18,
+    "par": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "strokeIndex": [],
+    "players": [
+      {
+        "id": "a",
+        "level": 5
+      },
+      {
+        "id": "b",
+        "level": 5
+      }
+    ],
+    "scores": {
+      "a": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
+        3,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "b": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        3,
+        3
+      ]
+    },
+    "games": [
+      {
+        "id": "g_nassau",
+        "format": "nassau",
+        "players": [
+          "a",
+          "b"
+        ]
+      }
+    ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "games": {
+      "g_nassau": {
+        "front": {
+          "holesWon": {
+            "a": 2,
+            "b": 0
+          },
+          "halved": 7,
+          "result": "a 2 up",
+          "matchOutcome": "a"
+        },
+        "back": {
+          "holesWon": {
+            "a": 0,
+            "b": 2
+          },
+          "halved": 7,
+          "result": "b 2 up",
+          "matchOutcome": "b"
+        },
+        "match18": {
+          "holesWon": {
+            "a": 2,
+            "b": 2
+          },
+          "halved": 14,
+          "result": "halved",
+          "matchOutcome": "halved"
+        },
+        "outcome": "halved",
+        "display": {
+          "a": "Nassau 2 up front · 2 down back · 18 halved",
+          "b": "Nassau 2 down front · 2 up back · 18 halved"
+        }
+      }
+    },
+    "medals": [
+      {
+        "profile": "a",
+        "key": "nassau_front",
+        "opponent": "b"
+      },
+      {
+        "profile": "b",
+        "key": "nassau_back",
+        "opponent": "a"
+      }
+    ],
+    "rivalPoints": {
+      "a": 15,
+      "b": 15
+    }
+  },
+  "notes": [
+    "Winning the last two holes of a nine is the only way to finish it 2 up without an early decision.",
+    "Rival Points: 10 for the nine won plus 5 for the halved 18, each side."
+  ]
+}

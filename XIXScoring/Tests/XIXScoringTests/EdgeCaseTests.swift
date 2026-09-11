@@ -39,4 +39,8 @@ final class EdgeCaseTests: XCTestCase {
     func testB8_6_MatchPlayDecidedEarly() throws {
         try FixtureRunner.run("two_player_matchplay")
     }
+
+    func testB8_7_NassauEighteenHalved() throws {
+        try FixtureRunner.run("nassau_18_halved")
+    }
 }
