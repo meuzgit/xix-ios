@@ -1,0 +1,380 @@
+{
+  "fixture": "skins_all_tied",
+  "description": "B.8.3: four players tie every hole in Skins. The carry climbs to 18 and is void at the end; zero skins to all; no winner. Expected block worked by hand.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 18,
+    "par": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "strokeIndex": [],
+    "players": [
+      {
+        "id": "a",
+        "level": 5
+      },
+      {
+        "id": "b",
+        "level": 5
+      },
+      {
+        "id": "c",
+        "level": 5
+      },
+      {
+        "id": "d",
+        "level": 5
+      }
+    ],
+    "scores": {
+      "a": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "b": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "c": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "d": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    "games": [
+      {
+        "id": "g_skins",
+        "format": "skins",
+        "players": [
+          "a",
+          "b",
+          "c",
+          "d"
+        ]
+      }
+    ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "games": {
+      "g_skins": {
+        "perHole": [
+          {
+            "hole": 1,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 1
+          },
+          {
+            "hole": 2,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 2
+          },
+          {
+            "hole": 3,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 3
+          },
+          {
+            "hole": 4,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 4
+          },
+          {
+            "hole": 5,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 5
+          },
+          {
+            "hole": 6,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 6
+          },
+          {
+            "hole": 7,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 7
+          },
+          {
+            "hole": 8,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 8
+          },
+          {
+            "hole": 9,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 9
+          },
+          {
+            "hole": 10,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 10
+          },
+          {
+            "hole": 11,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 11
+          },
+          {
+            "hole": 12,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 12
+          },
+          {
+            "hole": 13,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 13
+          },
+          {
+            "hole": 14,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 14
+          },
+          {
+            "hole": 15,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 15
+          },
+          {
+            "hole": 16,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 16
+          },
+          {
+            "hole": 17,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 17
+          },
+          {
+            "hole": 18,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 18
+          }
+        ],
+        "totals": {
+          "a": 0,
+          "b": 0,
+          "c": 0,
+          "d": 0
+        },
+        "carry": 0,
+        "voidCarry": 18,
+        "outcome": "void",
+        "display": {
+          "a": "Skins 0"
+        }
+      }
+    },
+    "holeEvents": [
+      {
+        "hole": 1,
+        "text": "Halved. 1 carrying to 2."
+      },
+      {
+        "hole": 2,
+        "text": "Halved. 2 carrying to 3."
+      },
+      {
+        "hole": 3,
+        "text": "Halved. 3 carrying to 4."
+      },
+      {
+        "hole": 4,
+        "text": "Halved. 4 carrying to 5."
+      },
+      {
+        "hole": 5,
+        "text": "Halved. 5 carrying to 6."
+      },
+      {
+        "hole": 6,
+        "text": "Halved. 6 carrying to 7."
+      },
+      {
+        "hole": 7,
+        "text": "Halved. 7 carrying to 8."
+      },
+      {
+        "hole": 8,
+        "text": "Halved. 8 carrying to 9."
+      },
+      {
+        "hole": 9,
+        "text": "Halved. 9 carrying to 10."
+      },
+      {
+        "hole": 10,
+        "text": "Halved. 10 carrying to 11."
+      },
+      {
+        "hole": 11,
+        "text": "Halved. 11 carrying to 12."
+      },
+      {
+        "hole": 12,
+        "text": "Halved. 12 carrying to 13."
+      },
+      {
+        "hole": 13,
+        "text": "Halved. 13 carrying to 14."
+      },
+      {
+        "hole": 14,
+        "text": "Halved. 14 carrying to 15."
+      },
+      {
+        "hole": 15,
+        "text": "Halved. 15 carrying to 16."
+      },
+      {
+        "hole": 16,
+        "text": "Halved. 16 carrying to 17."
+      },
+      {
+        "hole": 17,
+        "text": "Halved. 17 carrying to 18."
+      },
+      {
+        "hole": 18,
+        "text": "Halved. 18 void."
+      }
+    ],
+    "medals": [],
+    "rivalPoints": {
+      "a": 0,
+      "b": 0,
+      "c": 0,
+      "d": 0
+    },
+    "leaderboard": {
+      "skins": [
+        {
+          "player": "a",
+          "value": 0,
+          "rank": 1
+        },
+        {
+          "player": "b",
+          "value": 0,
+          "rank": 1
+        },
+        {
+          "player": "c",
+          "value": 0,
+          "rank": 1
+        },
+        {
+          "player": "d",
+          "value": 0,
+          "rank": 1
+        }
+      ]
+    }
+  },
+  "notes": [
+    "Every hole halved: carry 1, 2, … 18; the last hole's ink line reads 'Halved. 18 void.'",
+    "Outcome is void, not a four-way tie: nobody won a skin, so there is nothing to share and no Rival Points."
+  ]
+}

@@ -38,7 +38,7 @@ final class SkinsTests: XCTestCase {
         XCTAssertEqual(d.totals, ["a": 0, "b": 0, "c": 0])
         // Approved ink wording for a void carry on the last hole; keep exact.
         XCTAssertEqual(r.holeEvents.last?.text, "Halved. 3 void.")
-        XCTAssertEqual(r.games[0].outcome, .tied(["a", "b", "c"]))
+        XCTAssertEqual(r.games[0].outcome, .void, "nobody won a skin: no winner, not an all-way tie")
     }
 
     func testValidationBogeyDoesNotTakeTheCarry() {

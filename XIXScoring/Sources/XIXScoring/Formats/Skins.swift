@@ -89,7 +89,8 @@ enum SkinsScorer: FormatScorer {
         if let abandonedBy {
             outcome = .abandoned(by: abandonedBy)
         } else if complete {
-            outcome = FormatSupport.outcome(values, higherIsBetter: true, round: round)
+            // Nobody won a skin (every hole halved, B.8.3): no winner rather than an all-way tie.
+            outcome = values.allSatisfy { $0.1 == 0 } ? .void : FormatSupport.outcome(values, higherIsBetter: true, round: round)
         }
 
         let result = GameResult(

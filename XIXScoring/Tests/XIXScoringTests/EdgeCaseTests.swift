@@ -23,4 +23,8 @@ final class EdgeCaseTests: XCTestCase {
         XCTAssertTrue(r.medals.isEmpty)
         XCTAssertEqual(r.rivalPoints, ["a": 0, "b": 0])
     }
+
+    func testB8_3_AllTiedSkinsCarryIsVoid() throws {
+        try FixtureRunner.run("skins_all_tied")
+    }
 }
