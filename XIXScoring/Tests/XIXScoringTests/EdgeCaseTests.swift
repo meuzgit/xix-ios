@@ -31,4 +31,8 @@ final class EdgeCaseTests: XCTestCase {
     func testB8_1_NineHolesWithoutPar() throws {
         try FixtureRunner.run("nine_hole_no_par")
     }
+
+    func testB8_4_SkinsValidation() throws {
+        try FixtureRunner.run("skins_validation")
+    }
 }

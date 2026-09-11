@@ -1,0 +1,250 @@
+{
+  "fixture": "skins_validation",
+  "description": "B.8.4: a carry of 3 is won by a bogey with validation on → not awarded, the carry continues (4) and is taken by a par on the next hole. A second Skins game without validation on the same scores shows the difference. Expected block worked by hand.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 6,
+    "par": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "strokeIndex": [],
+    "players": [
+      {
+        "id": "a",
+        "level": 5
+      },
+      {
+        "id": "b",
+        "level": 5
+      },
+      {
+        "id": "c",
+        "level": 5
+      }
+    ],
+    "scores": {
+      "a": [
+        4,
+        4,
+        4,
+        5,
+        4,
+        4
+      ],
+      "b": [
+        4,
+        4,
+        4,
+        6,
+        5,
+        4
+      ],
+      "c": [
+        4,
+        4,
+        4,
+        6,
+        5,
+        4
+      ]
+    },
+    "games": [
+      {
+        "id": "g_valid",
+        "format": "skins",
+        "options": {
+          "validation": true
+        },
+        "players": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      {
+        "id": "g_plain",
+        "format": "skins",
+        "options": {
+          "validation": false
+        },
+        "players": [
+          "a",
+          "b",
+          "c"
+        ]
+      }
+    ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "games": {
+      "g_valid": {
+        "perHole": [
+          {
+            "hole": 1,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 1
+          },
+          {
+            "hole": 2,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 2
+          },
+          {
+            "hole": 3,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 3
+          },
+          {
+            "hole": 4,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 4,
+            "unvalidated": "a"
+          },
+          {
+            "hole": 5,
+            "winner": "a",
+            "skins": 5,
+            "carryAfter": 0
+          },
+          {
+            "hole": 6,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 1
+          }
+        ],
+        "totals": {
+          "a": 5,
+          "b": 0,
+          "c": 0
+        },
+        "voidCarry": 1,
+        "outcome": "a"
+      },
+      "g_plain": {
+        "perHole": [
+          {
+            "hole": 1,
+            "carryAfter": 1
+          },
+          {
+            "hole": 2,
+            "carryAfter": 2
+          },
+          {
+            "hole": 3,
+            "carryAfter": 3
+          },
+          {
+            "hole": 4,
+            "winner": "a",
+            "skins": 4,
+            "carryAfter": 0
+          },
+          {
+            "hole": 5,
+            "winner": "a",
+            "skins": 1,
+            "carryAfter": 0
+          },
+          {
+            "hole": 6,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 1
+          }
+        ],
+        "totals": {
+          "a": 5,
+          "b": 0,
+          "c": 0
+        },
+        "voidCarry": 1,
+        "outcome": "a"
+      }
+    },
+    "holeEvents": [
+      {
+        "hole": 1,
+        "text": "Halved. 1 carrying to 2."
+      },
+      {
+        "hole": 1,
+        "text": "Halved. 1 carrying to 2."
+      },
+      {
+        "hole": 2,
+        "text": "Halved. 2 carrying to 3."
+      },
+      {
+        "hole": 2,
+        "text": "Halved. 2 carrying to 3."
+      },
+      {
+        "hole": 3,
+        "text": "Halved. 3 carrying to 4."
+      },
+      {
+        "hole": 3,
+        "text": "Halved. 3 carrying to 4."
+      },
+      {
+        "hole": 4,
+        "text": "A takes the hole but not the carry. 4 carrying to 5."
+      },
+      {
+        "hole": 4,
+        "text": "Skin to A. Carry cleared."
+      },
+      {
+        "hole": 5,
+        "text": "Skin to A. Carry cleared."
+      },
+      {
+        "hole": 5,
+        "text": "Skin to A."
+      },
+      {
+        "hole": 6,
+        "text": "Halved. 1 void."
+      },
+      {
+        "hole": 6,
+        "text": "Halved. 1 void."
+      }
+    ],
+    "medals": [
+      {
+        "profile": "a",
+        "key": "skins_two",
+        "opponent": null
+      },
+      {
+        "profile": "a",
+        "key": "skins_four",
+        "opponent": null
+      }
+    ],
+    "rivalPoints": {
+      "a": 20,
+      "b": 0,
+      "c": 0
+    }
+  },
+  "notes": [
+    "Validation: a's 5 on hole 4 is a bogey, so the carry of 3 is not awarded; the hole's skin joins it (4). a's par on 5 takes all 5.",
+    "Without validation a takes 4 on hole 4 and 1 on hole 5: the same total by a different path. Hole events interleave in game order per hole.",
+    "Both games award a skins_two and skins_four; medals are idempotent per key, so each appears once. Rival Points: two Skins wins."
+  ]
+}
