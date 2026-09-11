@@ -18,3 +18,16 @@ enum ChapmanScorer: FormatScorer {
         SideStrokeScorer.score(game, round: round, context: context, format: .chapman, policy: .anyRow, prefix: "Chapman")
     }
 }
+
+/// Shamble (B.5): members enter individually; the side counts its best `count` (1 or 2) scores per hole.
+enum ShambleScorer: FormatScorer {
+    static func score(_ game: GameInput, round: NormalisedRound, context: ScoringContext) -> ScoredGame {
+        let count = game.options.count ?? 1
+        guard (1...2).contains(count) else {
+            let through = round.throughHole(players: game.players)
+            return ScoredGame(result: .unavailable(game, reason: "Shamble counts 1 or 2 scores, not \(count)", throughHole: through))
+        }
+        return SideStrokeScorer.score(game, round: round, context: context, format: .shamble,
+                                      policy: .allMembers(count: count), prefix: "Shamble")
+    }
+}

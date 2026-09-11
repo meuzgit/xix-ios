@@ -42,6 +42,10 @@ final class SideRowFormatTests: XCTestCase {
         try FixtureRunner.run("scramble_sides")
     }
 
+    func testShambleFixture() throws {
+        try FixtureRunner.run("shamble")
+    }
+
     func testSideRowResolvesWhenOneRowPerSideIsEntered() {
         // Four rows mapped to two sides; only a and c carry scores. The game resolves per hole
         // while the round itself stays in progress (b and d have no rows entered).
@@ -56,5 +60,19 @@ final class SideRowFormatTests: XCTestCase {
         XCTAssertEqual(r.games[0].outcome, .winningSide(0, players: ["a", "b"]))
         if case .sideStroke(let d)? = r.games.first?.detail { XCTAssertEqual(d.totals, ["a+b": 7, "c+d": 8]) } else { XCTFail() }
         XCTAssertTrue(r.rivalPoints.isEmpty, "round not complete")
+    }
+
+    func testShambleRejectsBadCountAndSharesTies() {
+        let base = RoundInput(holes: 1, par: [4], strokeIndex: [],
+                              players: ["a", "b", "c", "d"].map { PlayerInput(id: PlayerID($0), level: 5) },
+                              scores: [[4], [5], [4], [5]],
+                              games: [GameInput(id: "g", format: .shamble, options: Options(count: 3), players: ["a", "b", "c", "d"],
+                                                sides: ["a": 0, "b": 0, "c": 1, "d": 1])])
+        XCTAssertEqual(ScoringEngine.score(base).games[0].outcome, .unavailable(reason: "Shamble counts 1 or 2 scores, not 3"))
+        var tied = base
+        tied.games[0].options.count = 2
+        let r = ScoringEngine.score(tied)
+        XCTAssertEqual(r.games[0].outcome, .tied(["a", "b", "c", "d"]))
+        XCTAssertEqual(r.rivalPoints, ["a": 3, "b": 3, "c": 3, "d": 3])
     }
 }

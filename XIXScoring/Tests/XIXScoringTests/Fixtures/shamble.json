@@ -1,0 +1,43 @@
+{
+  "fixture": "shamble",
+  "description": "Four players in sides a+b and c+d, three holes. Shamble counting the best two member scores, and a second Shamble counting one. Expected block worked by hand before the format was written.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 3,
+    "par": [4,4,4],
+    "strokeIndex": [],
+    "players": [ { "id": "a", "level": 5 }, { "id": "b", "level": 5 }, { "id": "c", "level": 5 }, { "id": "d", "level": 5 } ],
+    "scores": { "a": [4,5,4], "b": [5,4,5], "c": [3,4,4], "d": [6,4,4] },
+    "games": [
+      { "id": "g_two", "format": "shamble", "options": { "count": 2 }, "players": ["a","b","c","d"], "sides": { "a": 0, "b": 0, "c": 1, "d": 1 } },
+      { "id": "g_one", "format": "shamble", "options": { "count": 1 }, "players": ["a","b","c","d"], "sides": { "a": 0, "b": 0, "c": 1, "d": 1 } }
+    ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "games": {
+      "g_two": {
+        "count": 2,
+        "perHole": { "a+b": [9,9,9], "c+d": [9,8,8] },
+        "totals": { "a+b": 27, "c+d": 25 },
+        "outcome": { "side": 1, "players": ["c","d"] },
+        "display": { "a": "Shamble 27", "c": "Shamble 25" },
+        "standings": [ { "player": "c", "side": 1, "rank": 1 }, { "player": "d", "side": 1, "rank": 1 }, { "player": "a", "side": 0, "rank": 2 }, { "player": "b", "side": 0, "rank": 2 } ]
+      },
+      "g_one": {
+        "count": 1,
+        "perHole": { "a+b": [4,4,4], "c+d": [3,4,4] },
+        "totals": { "a+b": 12, "c+d": 11 },
+        "outcome": { "side": 1, "players": ["c","d"] }
+      }
+    },
+    "medals": [],
+    "rivalPoints": { "a": 0, "b": 0, "c": 12, "d": 12 }
+  },
+  "notes": [
+    "count 2: a+b hole 1 = 4+5, hole 2 = 4+5, hole 3 = 4+5 → 27; c+d = 3+6, 4+4, 4+4 → 25.",
+    "count 1 is best ball: a+b 4,4,4 = 12; c+d 3,4,4 = 11.",
+    "Rival Points: team base 6 per game, factor 1; c and d win both → 12 each."
+  ]
+}
