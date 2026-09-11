@@ -123,3 +123,25 @@ final class RabbitTests: XCTestCase {
         XCTAssertNil(ScoringEngine.score(partial).games[0].outcome)
     }
 }
+
+final class DefenderTests: XCTestCase {
+    func testFixture() throws {
+        try FixtureRunner.run("defender")
+    }
+
+    func testNeedsThreePlayersAndMultiplierScalesPoints() {
+        let two = RoundInput(holes: 1, par: [4], strokeIndex: [], players: [PlayerInput(id: "a"), PlayerInput(id: "b")],
+                             scores: [[4], [4]], games: [GameInput(id: "d", format: .defender, players: ["a", "b"])])
+        XCTAssertEqual(ScoringEngine.score(two).games[0].outcome, .unavailable(reason: "Defender needs exactly three players"))
+        let callout = CalloutInput(id: "x", hole: 1, kind: .multiplier, caller: "a", targets: ["b", "c"],
+                                   params: CalloutParams(game: "d", factor: 3), status: .signed, responder: "b")
+        let input = RoundInput(holes: 2, par: [4, 4], strokeIndex: [], players: ["a", "b", "c"].map { PlayerInput(id: PlayerID($0)) },
+                               scores: [[3, nil], [4, 4], [4, 4]], games: [GameInput(id: "d", format: .defender, players: ["a", "b", "c"])],
+                               callouts: [callout])
+        let r = ScoringEngine.score(input)
+        guard case .defender(let d)? = r.games.first?.detail else { return XCTFail() }
+        XCTAssertEqual(d.perHole[0].points["a"], 6)
+        XCTAssertEqual(d.perHole.count, 1)
+        XCTAssertNil(r.games[0].outcome)
+    }
+}

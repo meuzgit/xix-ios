@@ -452,3 +452,39 @@ public struct RabbitMove: Codable, Equatable, Sendable {
         self.to = to
     }
 }
+
+// MARK: - Defender
+
+public struct DefenderDetail: Equatable, Sendable {
+    public var perHole: [DefenderHole]
+    public var totals: [PlayerID: Int]
+
+    public init(perHole: [DefenderHole], totals: [PlayerID: Int]) {
+        self.perHole = perHole
+        self.totals = totals
+    }
+
+    func encode(into c: inout KeyedEncodingContainer<AnyCodingKey>) throws {
+        try c.encode(perHole, forKey: AnyCodingKey("perHole"))
+        try c.encode(totals, forKey: AnyCodingKey("totals"))
+    }
+
+    init(from c: KeyedDecodingContainer<AnyCodingKey>) throws {
+        perHole = try c.decode([DefenderHole].self, forKey: AnyCodingKey("perHole"))
+        totals = try c.decode([PlayerID: Int].self, forKey: AnyCodingKey("totals"))
+    }
+}
+
+public struct DefenderHole: Codable, Equatable, Sendable {
+    public var hole: Int
+    public var defender: PlayerID
+    public var result: String                // "defended", "lost", "halved"
+    public var points: [PlayerID: Int]
+
+    public init(hole: Int, defender: PlayerID, result: String, points: [PlayerID: Int]) {
+        self.hole = hole
+        self.defender = defender
+        self.result = result
+        self.points = points
+    }
+}

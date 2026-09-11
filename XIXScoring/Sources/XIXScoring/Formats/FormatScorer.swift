@@ -40,6 +40,7 @@ enum FormatRegistry {
         case .sixes: return SixesScorer.self
         case .quota: return QuotaScorer.self
         case .rabbit: return RabbitScorer.self
+        case .defender: return DefenderScorer.self
         default: return nil
         }
     }
