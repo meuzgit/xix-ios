@@ -196,8 +196,9 @@
         "params": {
           "goal": "par"
         },
-        "status": "signed",
-        "responder": "dave"
+        "responses": {
+          "dave": "signed"
+        }
       },
       {
         "id": "c12",
@@ -210,8 +211,9 @@
         "params": {
           "goal": "par"
         },
-        "status": "ducked",
-        "responder": "dave"
+        "responses": {
+          "dave": "ducked"
+        }
       }
     ]
   },
@@ -352,8 +354,8 @@
           "result": "ray 5&4"
         },
         "display": {
-          "ray": "Nassau won front 2&1 \u00b7 back halved \u00b7 won 18 5&4",
-          "dave": "Nassau lost front 2&1 \u00b7 back halved \u00b7 lost 18 5&4"
+          "ray": "Nassau won front 2&1 · back halved · won 18 5&4",
+          "dave": "Nassau lost front 2&1 · back halved · lost 18 5&4"
         }
       },
       "g_skins": {
@@ -531,12 +533,25 @@
         "status": "resolved",
         "hit": [],
         "winner": "ray",
-        "note": "Dave 6 on par 5; nobody beat par; caller wins"
+        "note": "Dave 6 on par 5; nobody beat par; caller wins",
+        "perTarget": [
+          {
+            "player": "dave",
+            "response": "signed",
+            "hit": false
+          }
+        ]
       },
       "c12": {
         "status": "ducked",
         "winner": null,
-        "duckedBy": "dave"
+        "duckedBy": "dave",
+        "perTarget": [
+          {
+            "player": "dave",
+            "response": "ducked"
+          }
+        ]
       }
     },
     "holeEvents": [
@@ -711,8 +726,8 @@
     "Skins are gross with carryover and no validation; the final carry is 0 so nothing is void.",
     "Nassau back nine halved 4-4-1: no nassau_back medal.",
     "Medals derive only from activated games and callouts; five_pars/no_blowups etc. are not awarded because those games were not activated.",
-    "Rival Points: Ray = skins 10 + nassau front 10 + nassau 18 10 + back halved 5 + callout 3 = 38 (all Ray's factors are 1.0; no opponent outranks Level 5). Dave = back halved 5 \u00d7 1.1 (Ray is Level 5 vs Dave's 4) = 5.5 \u2192 6. Tess = stableford 10 (Mo Level 3 < Tess 5, factor 1.0). Mo = 0.",
-    "Nassau 18 is decided early: through 14 Ray has 8 holes, Dave 3, three halved \u2014 5 up with 4 to play \u2014 so the match ends 5&4 and standings freeze (B.5, B.8.6). Holes 15\u201318 do not change it.",
-    "Nassau front is decided early too: after 8 Ray has won 2, 4, 5, 7 and Dave 1, 3 with 6 and 8 halved \u2014 2 up with 1 to play \u2014 so the front ends 2&1 at hole 8 and hole 9 does not count."
+    "Rival Points: Ray = skins 10 + nassau front 10 + nassau 18 10 + back halved 5 + callout 3 = 38 (all Ray's factors are 1.0; no opponent outranks Level 5). Dave = back halved 5 × 1.1 (Ray is Level 5 vs Dave's 4) = 5.5 → 6. Tess = stableford 10 (Mo Level 3 < Tess 5, factor 1.0). Mo = 0.",
+    "Nassau 18 is decided early: through 14 Ray has 8 holes, Dave 3, three halved — 5 up with 4 to play — so the match ends 5&4 and standings freeze (B.5, B.8.6). Holes 15–18 do not change it.",
+    "Nassau front is decided early too: after 8 Ray has won 2, 4, 5, 7 and Dave 1, 3 with 6 and 8 halved — 2 up with 1 to play — so the front ends 2&1 at hole 8 and hole 9 does not count."
   ]
 }

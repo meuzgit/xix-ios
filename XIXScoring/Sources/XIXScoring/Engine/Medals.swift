@@ -77,17 +77,11 @@ enum MedalBuilder {
             }
         }
 
-        // Signed every callout received, at least two. A crew callout has one responder, so a
-        // player counts as having signed only when they were the responder (or the sole target).
+        // Signed every callout the player personally received as a target, at least two.
         for player in round.players.map(\.id) {
             let received = callouts.filter { CalloutResolver.receivers($0.0).contains(player) }
             guard received.count >= 2 else { continue }
-            let signedAll = received.allSatisfy { input, result in
-                guard result.status == .signed || result.status == .resolved else { return false }
-                if let responder = input.responder { return responder == player }
-                return CalloutResolver.receivers(input).count == 1
-            }
-            if signedAll {
+            if received.allSatisfy({ $0.0.responses[player] == .signed }) {
                 awards.append(MedalAward(profile: player, key: .calloutDuckedNothing))
             }
         }

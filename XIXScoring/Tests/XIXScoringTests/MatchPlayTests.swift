@@ -106,7 +106,7 @@ final class MatchPlayTests: XCTestCase {
     func testMultiplierHoleCountsAsFactorHolesUp() {
         // a wins the doubled hole 1 (2 up), b wins hole 2, the rest halved → a 1 up.
         let callout = CalloutInput(id: "x", hole: 1, kind: .multiplier, caller: "a", targets: ["b"],
-                                   params: CalloutParams(game: "m", factor: 2), status: .signed, responder: "b")
+                                   params: CalloutParams(game: "m", factor: 2), responses: ["b": .signed])
         var a: [HoleScore?] = Array(repeating: 4, count: 18); a[0] = 3
         var b: [HoleScore?] = Array(repeating: 4, count: 18); b[1] = 3
         let m = match(ScoringEngine.score(input(scores: [a, b], callouts: [callout])))!

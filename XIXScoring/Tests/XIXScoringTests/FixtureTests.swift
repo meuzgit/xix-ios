@@ -14,9 +14,9 @@ final class FixtureTests: XCTestCase {
         XCTAssertEqual(input.games.map(\.format), [.nassau, .skins, .stableford])
         XCTAssertEqual(input.games[1].options.carryover, true)
         XCTAssertEqual(input.games[1].options.validation, false)
-        XCTAssertEqual(input.callouts.map(\.status), [.signed, .ducked])
         XCTAssertEqual(input.callouts[0].params.goal, .par)
-        XCTAssertEqual(input.callouts[1].responder, "dave")
+        XCTAssertEqual(input.callouts[0].responses, ["dave": .signed])
+        XCTAssertEqual(input.callouts[1].responses, ["dave": .ducked])
 
         let encoded = try JSONEncoder().encode(input)
         let again = try JSONDecoder().decode(RoundInput.self, from: encoded)

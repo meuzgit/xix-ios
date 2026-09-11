@@ -13,11 +13,10 @@ struct ScoredGame {
 struct ScoringContext {
     let callouts: [CalloutInput]
 
-    /// Product of signed (or already resolved) multiplier callouts aimed at `game` on `hole` (1-based); 1 when none.
+    /// Product of multiplier callouts aimed at `game` on `hole` (1-based) that every target signed; 1 when none.
     func multiplier(for game: GameID, hole: Int) -> Int {
         callouts
-            .filter { $0.kind == .multiplier && ($0.status == .signed || $0.status == .resolved)
-                      && $0.params.game == game && $0.hole == hole }
+            .filter { CalloutResolver.isEffectiveMultiplier($0) && $0.params.game == game && $0.hole == hole }
             .reduce(1) { $0 * max(1, $1.params.factor ?? 2) }
     }
 }

@@ -87,7 +87,7 @@ enum RivalPointsBuilder {
     private static func sides(of callout: CalloutResult) -> ([PlayerID], [PlayerID]) {
         let winners = callout.winner?.players ?? []
         let callerSide = winners.contains(callout.caller) ? winners : [callout.caller]
-        let other = callout.targets.filter { !callerSide.contains($0) }
+        let other = callout.signedTargets.filter { !callerSide.contains($0) }
         return (callerSide, other)
     }
 }

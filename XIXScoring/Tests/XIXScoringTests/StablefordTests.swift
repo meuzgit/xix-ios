@@ -72,7 +72,7 @@ final class StablefordTests: XCTestCase {
 
     func testMultiplierScalesThatHolesPoints() {
         let callout = CalloutInput(id: "x", hole: 2, kind: .multiplier, caller: "a", targets: ["b"],
-                                   params: CalloutParams(game: "st", factor: 2), status: .signed, responder: "b")
+                                   params: CalloutParams(game: "st", factor: 2), responses: ["b": .signed])
         let r = ScoringEngine.score(input(scores: [[4, 4, 3, 4], [4, 5, 3, 4]], callouts: [callout]))
         XCTAssertEqual(detail(r)?.points["a"], [2, 6, 2, 2])
         XCTAssertEqual(detail(r)?.points["b"], [2, 4, 2, 2])

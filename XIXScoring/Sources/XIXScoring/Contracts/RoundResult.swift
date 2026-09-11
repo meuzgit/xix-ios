@@ -370,30 +370,55 @@ public struct CalloutResult: Codable, Equatable, Sendable {
     public var hole: Int
     public var status: CalloutStatus
     public var caller: PlayerID
-    public var targets: [PlayerID]
-    public var hit: [PlayerID]?              // target callouts: who reached the goal
+    public var targets: [PlayerID]           // every target, caller excluded
+    public var perTarget: [CalloutTargetResult]
+    public var hit: [PlayerID]?              // target callouts: signed targets who reached the goal
     public var winner: CalloutWinner?
-    public var duckedBy: PlayerID?
+    public var ducked: [PlayerID]            // targets who ducked
+    public var duckedBy: PlayerID?           // the ducker when exactly one target ducked
+    public var expired: [PlayerID]           // targets who never responded before a participant scored
     public var loneWolf: Bool?               // partner callout won by a lone caller
     /// Why a signed callout could not be resolved (par unknown, bad hole, missing target).
     public var reason: String?
 
     public init(calloutID: CalloutID, kind: CalloutKind, hole: Int, status: CalloutStatus, caller: PlayerID,
-                targets: [PlayerID], hit: [PlayerID]? = nil, winner: CalloutWinner? = nil,
-                duckedBy: PlayerID? = nil, loneWolf: Bool? = nil, reason: String? = nil) {
+                targets: [PlayerID], perTarget: [CalloutTargetResult] = [], hit: [PlayerID]? = nil,
+                winner: CalloutWinner? = nil, ducked: [PlayerID] = [], expired: [PlayerID] = [],
+                loneWolf: Bool? = nil, reason: String? = nil) {
         self.calloutID = calloutID
         self.kind = kind
         self.hole = hole
         self.status = status
         self.caller = caller
         self.targets = targets
+        self.perTarget = perTarget
         self.hit = hit
         self.winner = winner
-        self.duckedBy = duckedBy
+        self.ducked = ducked
+        self.duckedBy = ducked.count == 1 ? ducked[0] : nil
+        self.expired = expired
         self.loneWolf = loneWolf
         self.reason = reason
     }
+
+    /// Targets who signed and therefore take part in the result.
+    public var signedTargets: [PlayerID] { perTarget.filter { $0.response == .signed }.map(\.player) }
 }
+
+/// One target's part in a callout.
+public struct CalloutTargetResult: Codable, Equatable, Sendable {
+    public var player: PlayerID
+    public var response: TargetResponse
+    public var hit: Bool?                    // target callouts, signed targets only, once resolved
+
+    public init(player: PlayerID, response: TargetResponse, hit: Bool? = nil) {
+        self.player = player
+        self.response = response
+        self.hit = hit
+    }
+}
+
+public enum TargetResponse: String, Codable, Sendable { case pending, signed, ducked, expired }
 
 /// Encodes as a bare id for one winner, an array for several, or `"halved"`.
 public enum CalloutWinner: Equatable, Codable, Sendable {

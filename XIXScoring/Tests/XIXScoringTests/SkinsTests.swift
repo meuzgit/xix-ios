@@ -68,7 +68,7 @@ final class SkinsTests: XCTestCase {
     func testMultiplierCalloutOnHalvedHoleRaisesCarryByFactor() {
         // B.8.9
         let callout = CalloutInput(id: "m", hole: 2, kind: .multiplier, caller: "a", targets: ["b", "c"],
-                                   params: CalloutParams(game: "s", factor: 3), status: .signed, responder: "b")
+                                   params: CalloutParams(game: "s", factor: 3), responses: ["b": .signed, "c": .signed])
         let r = ScoringEngine.score(input(scores: [[4, 4, 3], [4, 4, 4], [5, 4, 4]], callouts: [callout]))
         let d = skins(r)!
         XCTAssertEqual(d.perHole.map(\.carryAfter), [1, 4, 0])
@@ -78,11 +78,11 @@ final class SkinsTests: XCTestCase {
 
     func testMultiplierCalloutOnWonHoleIsWorthFactorSkins() {
         let callout = CalloutInput(id: "m", hole: 1, kind: .multiplier, caller: "a", targets: ["b", "c"],
-                                   params: CalloutParams(game: "s", factor: 2), status: .signed, responder: "b")
+                                   params: CalloutParams(game: "s", factor: 2), responses: ["b": .signed, "c": .signed])
         let r = ScoringEngine.score(input(scores: [[3, 4, 4], [4, 4, 4], [5, 4, 4]], callouts: [callout]))
         XCTAssertEqual(skins(r)!.perHole[0].skins, 2)
         let unsigned = CalloutInput(id: "m", hole: 1, kind: .multiplier, caller: "a", targets: ["b", "c"],
-                                    params: CalloutParams(game: "s", factor: 2), status: .ducked, responder: "b")
+                                    params: CalloutParams(game: "s", factor: 2), responses: ["b": .signed, "c": .ducked])
         XCTAssertEqual(skins(ScoringEngine.score(input(scores: [[3, 4, 4], [4, 4, 4], [5, 4, 4]], callouts: [unsigned])))!.perHole[0].skins, 1)
     }
 

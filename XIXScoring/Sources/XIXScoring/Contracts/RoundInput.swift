@@ -259,23 +259,21 @@ public struct CalloutInput: Codable, Equatable, Sendable {
     public var caller: PlayerID
     public var targets: [PlayerID]
     public var params: CalloutParams
-    public var status: CalloutStatus
-    /// Who signed or ducked. Optional; not part of the B.2 sketch but needed for `duckedBy`.
-    public var responder: PlayerID?
+    /// Per-target responses (B.6). A target with no entry has not responded.
+    public var responses: [PlayerID: CalloutResponse]
 
     public init(id: CalloutID, hole: Int, kind: CalloutKind, caller: PlayerID, targets: [PlayerID],
-                params: CalloutParams = CalloutParams(), status: CalloutStatus, responder: PlayerID? = nil) {
+                params: CalloutParams = CalloutParams(), responses: [PlayerID: CalloutResponse] = [:]) {
         self.id = id
         self.hole = hole
         self.kind = kind
         self.caller = caller
         self.targets = targets
         self.params = params
-        self.status = status
-        self.responder = responder
+        self.responses = responses
     }
 
-    private enum CodingKeys: String, CodingKey { case id, hole, kind, caller, targets, params, status, responder }
+    private enum CodingKeys: String, CodingKey { case id, hole, kind, caller, targets, params, responses }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -285,14 +283,27 @@ public struct CalloutInput: Codable, Equatable, Sendable {
         caller = try c.decode(PlayerID.self, forKey: .caller)
         targets = try c.decodeIfPresent([PlayerID].self, forKey: .targets) ?? []
         params = try c.decodeIfPresent(CalloutParams.self, forKey: .params) ?? CalloutParams()
-        status = try c.decode(CalloutStatus.self, forKey: .status)
-        responder = try c.decodeIfPresent(PlayerID.self, forKey: .responder)
+        responses = try c.decodeIfPresent([PlayerID: CalloutResponse].self, forKey: .responses) ?? [:]
     }
+
+    /// Targets excluding the caller, in order, without duplicates (B.8.10).
+    public var effectiveTargets: [PlayerID] {
+        targets.filter { $0 != caller }.reduce(into: [PlayerID]()) { if !$0.contains($1) { $0.append($1) } }
+    }
+
+    public var signedTargets: [PlayerID] { effectiveTargets.filter { responses[$0] == .signed } }
 }
+
+/// A target's answer to a callout. Every target answers for themselves.
+public enum CalloutResponse: String, Codable, Sendable { case signed, ducked }
 
 public enum CalloutKind: String, Codable, Sendable { case target, duel, partner, multiplier }
 
-public enum CalloutStatus: String, Codable, Sendable { case open, signed, ducked, expired, resolved }
+/// Overall callout state, derived from responses and scores:
+/// `open` (no signature yet, no participant score), `live` (signed targets awaiting scores),
+/// `ducked` (every target ducked), `expired` (nobody signed when a participant scored),
+/// `resolved` (scored among the signed targets).
+public enum CalloutStatus: String, Codable, Sendable { case open, live, ducked, expired, resolved }
 
 /// `target: {"goal": "par"|"birdie"|n}`, `partner: {"partner_id": ...|null}`,
 /// `multiplier: {"game_id": ..., "factor": 2}`. Accepts `partner`/`game` as key aliases.

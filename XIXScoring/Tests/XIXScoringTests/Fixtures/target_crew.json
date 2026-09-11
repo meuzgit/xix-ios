@@ -1,48 +1,53 @@
 {
   "fixture": "target_crew",
-  "description": "B.8.10: target callouts to the whole crew, caller included. The caller's own par never counts as a hit; only targets can hit. Expected block worked by hand.",
+  "description": "B.8.10 (v1.1): crew target callouts with per-target responses. Hole 1: everyone signs, only the caller pars → caller wins. Hole 2: everyone signs, Dave pars → Dave wins. Hole 3: Tess signs, Dave ducks, Mo never responds → resolves between Ray and Tess only; Dave ducked, Mo expired; Dave's and Mo's pars do not count. Expected block worked by hand.",
   "engineVersion": 1,
   "input": {
-    "holes": 2,
+    "holes": 3,
     "par": [
+      4,
       4,
       4
     ],
     "strokeIndex": [],
     "players": [
       {
-        "id": "a",
+        "id": "ray",
         "level": 5
       },
       {
-        "id": "b",
+        "id": "dave",
         "level": 5
       },
       {
-        "id": "c",
+        "id": "mo",
         "level": 5
       },
       {
-        "id": "d",
+        "id": "tess",
         "level": 5
       }
     ],
     "scores": {
-      "a": [
+      "ray": [
         3,
+        4,
         4
       ],
-      "b": [
+      "dave": [
         5,
-        4
+        4,
+        3
       ],
-      "c": [
+      "mo": [
         5,
-        5
+        5,
+        3
       ],
-      "d": [
+      "tess": [
         6,
-        5
+        5,
+        4
       ]
     },
     "games": [],
@@ -51,35 +56,58 @@
         "id": "c1",
         "hole": 1,
         "kind": "target",
-        "caller": "a",
+        "caller": "ray",
         "targets": [
-          "a",
-          "b",
-          "c",
-          "d"
+          "ray",
+          "dave",
+          "mo",
+          "tess"
         ],
         "params": {
           "goal": "par"
         },
-        "status": "signed",
-        "responder": "b"
+        "responses": {
+          "dave": "signed",
+          "mo": "signed",
+          "tess": "signed"
+        }
       },
       {
         "id": "c2",
         "hole": 2,
         "kind": "target",
-        "caller": "a",
+        "caller": "ray",
         "targets": [
-          "a",
-          "b",
-          "c",
-          "d"
+          "dave",
+          "mo",
+          "tess"
         ],
         "params": {
           "goal": "par"
         },
-        "status": "signed",
-        "responder": "b"
+        "responses": {
+          "dave": "signed",
+          "mo": "signed",
+          "tess": "signed"
+        }
+      },
+      {
+        "id": "c3",
+        "hole": 3,
+        "kind": "target",
+        "caller": "ray",
+        "targets": [
+          "dave",
+          "mo",
+          "tess"
+        ],
+        "params": {
+          "goal": "par"
+        },
+        "responses": {
+          "tess": "signed",
+          "dave": "ducked"
+        }
       }
     ]
   },
@@ -89,29 +117,70 @@
       "c1": {
         "status": "resolved",
         "targets": [
-          "b",
-          "c",
-          "d"
+          "dave",
+          "mo",
+          "tess"
         ],
         "hit": [],
-        "winner": "a"
+        "winner": "ray",
+        "perTarget": [
+          {
+            "player": "dave",
+            "response": "signed",
+            "hit": false
+          },
+          {
+            "player": "mo",
+            "response": "signed",
+            "hit": false
+          },
+          {
+            "player": "tess",
+            "response": "signed",
+            "hit": false
+          }
+        ]
       },
       "c2": {
         "status": "resolved",
-        "targets": [
-          "b",
-          "c",
-          "d"
-        ],
         "hit": [
-          "b"
+          "dave"
         ],
-        "winner": "b"
+        "winner": "dave"
+      },
+      "c3": {
+        "status": "resolved",
+        "hit": [
+          "tess"
+        ],
+        "winner": "tess",
+        "ducked": [
+          "dave"
+        ],
+        "duckedBy": "dave",
+        "expired": [
+          "mo"
+        ],
+        "perTarget": [
+          {
+            "player": "dave",
+            "response": "ducked"
+          },
+          {
+            "player": "mo",
+            "response": "expired"
+          },
+          {
+            "player": "tess",
+            "response": "signed",
+            "hit": true
+          }
+        ]
       }
     },
     "medals": [
       {
-        "profile": "a",
+        "profile": "ray",
         "key": "callout_called_it",
         "opponent": null,
         "holes": [
@@ -119,21 +188,22 @@
         ]
       },
       {
-        "profile": "b",
+        "profile": "tess",
         "key": "callout_ducked_nothing",
         "opponent": null
       }
     ],
     "rivalPoints": {
-      "a": 3,
-      "b": 3,
-      "c": 0,
-      "d": 0
+      "ray": 3,
+      "dave": 3,
+      "mo": 0,
+      "tess": 3
     }
   },
   "notes": [
-    "Hole 1: a birdies but is the caller, so hit is empty and the caller wins → callout_called_it (opponent nil with three targets).",
-    "Hole 2: a and b both par; only b is a target → b wins 3 points, no medal key for hitters.",
-    "b was the responder on both crew callouts and signed both → callout_ducked_nothing. c and d were targets too but never the responder, so they earn nothing for b's signatures. (Expected block revised after implementation: the first draft forgot this medal entirely.)"
+    "Hole 1: Ray birdies but is the caller, so hit is empty and the caller wins → callout_called_it (opponent nil with three targets).",
+    "Hole 2: Ray and Dave both par; only Dave is a target → Dave wins 3 points.",
+    "Hole 3: Dave (ducked) and Mo (expired) both birdie but are not in the result. Tess pars and wins against Ray → 3 points.",
+    "callout_ducked_nothing: Tess personally signed all three callouts she received. Dave ducked one and Mo left one unanswered."
   ]
 }

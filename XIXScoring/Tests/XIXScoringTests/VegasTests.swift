@@ -29,7 +29,7 @@ final class VegasTests: XCTestCase {
 
     func testMultiplierScalesHolePointsAndPickedUpNeverFlips() {
         let callout = CalloutInput(id: "x", hole: 1, kind: .multiplier, caller: "a", targets: ["c", "d"],
-                                   params: CalloutParams(game: "v", factor: 2), status: .signed, responder: "c")
+                                   params: CalloutParams(game: "v", factor: 2), responses: ["c": .signed, "d": .signed])
         // a picks up on a par 3 (6 strokes, never a birdie); c birdies → a+b flip.
         let input = RoundInput(holes: 1, par: [3], strokeIndex: [],
                                players: ["a", "b", "c", "d"].map { PlayerInput(id: PlayerID($0)) },

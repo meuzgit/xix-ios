@@ -50,7 +50,7 @@
         "params": {
           "goal": "par"
         },
-        "status": "open"
+        "responses": {}
       },
       {
         "id": "o2",
@@ -63,7 +63,7 @@
         "params": {
           "goal": "par"
         },
-        "status": "open"
+        "responses": {}
       },
       {
         "id": "s3",
@@ -76,8 +76,9 @@
         "params": {
           "goal": "par"
         },
-        "status": "signed",
-        "responder": "b"
+        "responses": {
+          "b": "signed"
+        }
       }
     ]
   },

@@ -134,7 +134,7 @@ final class DefenderTests: XCTestCase {
                              scores: [[4], [4]], games: [GameInput(id: "d", format: .defender, players: ["a", "b"])])
         XCTAssertEqual(ScoringEngine.score(two).games[0].outcome, .unavailable(reason: "Defender needs exactly three players"))
         let callout = CalloutInput(id: "x", hole: 1, kind: .multiplier, caller: "a", targets: ["b", "c"],
-                                   params: CalloutParams(game: "d", factor: 3), status: .signed, responder: "b")
+                                   params: CalloutParams(game: "d", factor: 3), responses: ["b": .signed, "c": .signed])
         let input = RoundInput(holes: 2, par: [4, 4], strokeIndex: [], players: ["a", "b", "c"].map { PlayerInput(id: PlayerID($0)) },
                                scores: [[3, nil], [4, 4], [4, 4]], games: [GameInput(id: "d", format: .defender, players: ["a", "b", "c"])],
                                callouts: [callout])

@@ -70,8 +70,10 @@
           "game_id": "g_skins",
           "factor": 2
         },
-        "status": "signed",
-        "responder": "b"
+        "responses": {
+          "b": "signed",
+          "c": "signed"
+        }
       }
     ]
   },
