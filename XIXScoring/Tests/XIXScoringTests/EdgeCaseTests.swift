@@ -59,4 +59,8 @@ final class EdgeCaseTests: XCTestCase {
     func testB8_13_TwoPlayers() throws {
         try FixtureRunner.run("two_players")
     }
+
+    func testB8_14_MixedLevels() throws {
+        try FixtureRunner.run("mixed_levels")
+    }
 }

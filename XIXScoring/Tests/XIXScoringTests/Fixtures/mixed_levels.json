@@ -1,0 +1,170 @@
+{
+  "fixture": "mixed_levels",
+  "description": "B.8.14: b has no Level. Net games including b are unavailable; gross games with b are fine; a net match between a and c works. Expected block worked by hand.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 3,
+    "par": [
+      4,
+      4,
+      4
+    ],
+    "strokeIndex": [],
+    "players": [
+      {
+        "id": "a",
+        "level": 5
+      },
+      {
+        "id": "b"
+      },
+      {
+        "id": "c",
+        "level": 3
+      }
+    ],
+    "scores": {
+      "a": [
+        4,
+        4,
+        4
+      ],
+      "b": [
+        4,
+        4,
+        4
+      ],
+      "c": [
+        5,
+        5,
+        5
+      ]
+    },
+    "games": [
+      {
+        "id": "g_net_skins",
+        "format": "skins",
+        "options": {
+          "net": true
+        },
+        "players": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      {
+        "id": "g_skins",
+        "format": "skins",
+        "players": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      {
+        "id": "g_net_stab",
+        "format": "stableford",
+        "options": {
+          "net": true
+        },
+        "players": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      {
+        "id": "g_quota",
+        "format": "quota",
+        "players": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      {
+        "id": "g_net_match",
+        "format": "match_play",
+        "options": {
+          "net": true
+        },
+        "players": [
+          "a",
+          "c"
+        ]
+      }
+    ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "perPlayer": {
+      "a": {
+        "handicapStrokes": 12,
+        "net": 0
+      },
+      "b": {
+        "handicapStrokes": null,
+        "net": null
+      },
+      "c": {
+        "handicapStrokes": 17,
+        "net": -2
+      }
+    },
+    "games": {
+      "g_net_skins": {
+        "outcome": {
+          "unavailable": "net skins needs a Level for every player; missing: b"
+        }
+      },
+      "g_skins": {
+        "totals": {
+          "a": 0,
+          "b": 0,
+          "c": 0
+        },
+        "voidCarry": 3,
+        "outcome": "void"
+      },
+      "g_net_stab": {
+        "outcome": {
+          "unavailable": "net stableford needs a Level for every player; missing: b"
+        }
+      },
+      "g_quota": {
+        "outcome": {
+          "unavailable": "Quota needs a Level for every player; missing: b"
+        }
+      },
+      "g_net_match": {
+        "holesWon": {
+          "a": 0,
+          "c": 2
+        },
+        "halved": 0,
+        "decidedAtHole": 2,
+        "result": "c 2&1",
+        "outcome": "c"
+      }
+    },
+    "medals": [
+      {
+        "profile": "c",
+        "key": "matchplay_win",
+        "opponent": "a"
+      }
+    ],
+    "rivalPoints": {
+      "a": 0,
+      "b": 0,
+      "c": 12
+    }
+  },
+  "notes": [
+    "Level 5 → 12 strokes over 3 holes = 4 per hole; Level 3 → round(16.8) = 17 → 6, 6, 5 evenly from hole 1.",
+    "Net match: a nets 0, 0, 0; c nets −1, −1, 0 → c wins 1 and 2, 2 up with 1 to play → 2&1 at hole 2.",
+    "Rival Points: c beats a stronger opponent (Level 5 vs 3) → 10 × 1.2 = 12."
+  ]
+}
