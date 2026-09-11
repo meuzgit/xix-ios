@@ -188,3 +188,30 @@ public struct NassauDetail: Equatable, Sendable {
         match18 = try c.decode(MatchPlayDetail.self, forKey: AnyCodingKey("match18"))
     }
 }
+
+// MARK: - Stableford
+
+public struct StablefordDetail: Equatable, Sendable {
+    /// Points per resolved hole, in hole order, per player. A multiplied hole is already scaled.
+    public var points: [PlayerID: [Int]]
+    public var totals: [PlayerID: Int]
+    public var table: String                 // "standard" or "modified"
+
+    public init(points: [PlayerID: [Int]], totals: [PlayerID: Int], table: String) {
+        self.points = points
+        self.totals = totals
+        self.table = table
+    }
+
+    func encode(into c: inout KeyedEncodingContainer<AnyCodingKey>) throws {
+        try c.encode(points, forKey: AnyCodingKey("points"))
+        try c.encode(totals, forKey: AnyCodingKey("totals"))
+        try c.encode(table, forKey: AnyCodingKey("table"))
+    }
+
+    init(from c: KeyedDecodingContainer<AnyCodingKey>) throws {
+        points = try c.decode([PlayerID: [Int]].self, forKey: AnyCodingKey("points"))
+        totals = try c.decode([PlayerID: Int].self, forKey: AnyCodingKey("totals"))
+        table = try c.decode(String.self, forKey: AnyCodingKey("table"))
+    }
+}

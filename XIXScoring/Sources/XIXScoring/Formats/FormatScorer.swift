@@ -27,6 +27,7 @@ enum FormatRegistry {
         case .skins: return SkinsScorer.self
         case .matchPlay: return MatchPlayScorer.self
         case .nassau: return NassauScorer.self
+        case .stableford: return StablefordScorer.self
         default: return nil
         }
     }
