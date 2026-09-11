@@ -43,4 +43,8 @@ final class EdgeCaseTests: XCTestCase {
     func testB8_7_NassauEighteenHalved() throws {
         try FixtureRunner.run("nassau_18_halved")
     }
+
+    func testB8_9_MultiplierOnHalvedSkinsHole() throws {
+        try FixtureRunner.run("multiplier_halved")
+    }
 }

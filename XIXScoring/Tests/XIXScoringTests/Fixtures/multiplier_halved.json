@@ -1,0 +1,163 @@
+{
+  "fixture": "multiplier_halved",
+  "description": "B.8.9: a signed multiplier callout (factor 2) on a Skins hole that is then halved raises the carry by the factor. Expected block worked by hand.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 4,
+    "par": [
+      4,
+      4,
+      4,
+      4
+    ],
+    "strokeIndex": [],
+    "players": [
+      {
+        "id": "a",
+        "level": 5
+      },
+      {
+        "id": "b",
+        "level": 5
+      },
+      {
+        "id": "c",
+        "level": 5
+      }
+    ],
+    "scores": {
+      "a": [
+        4,
+        4,
+        3,
+        4
+      ],
+      "b": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "c": [
+        4,
+        4,
+        4,
+        4
+      ]
+    },
+    "games": [
+      {
+        "id": "g_skins",
+        "format": "skins",
+        "players": [
+          "a",
+          "b",
+          "c"
+        ]
+      }
+    ],
+    "callouts": [
+      {
+        "id": "m2",
+        "hole": 2,
+        "kind": "multiplier",
+        "caller": "a",
+        "targets": [
+          "b",
+          "c"
+        ],
+        "params": {
+          "game_id": "g_skins",
+          "factor": 2
+        },
+        "status": "signed",
+        "responder": "b"
+      }
+    ]
+  },
+  "expected": {
+    "status": "complete",
+    "games": {
+      "g_skins": {
+        "perHole": [
+          {
+            "hole": 1,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 1
+          },
+          {
+            "hole": 2,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 3
+          },
+          {
+            "hole": 3,
+            "winner": "a",
+            "skins": 4,
+            "carryAfter": 0
+          },
+          {
+            "hole": 4,
+            "winner": null,
+            "skins": 0,
+            "carryAfter": 1
+          }
+        ],
+        "totals": {
+          "a": 4,
+          "b": 0,
+          "c": 0
+        },
+        "voidCarry": 1,
+        "outcome": "a"
+      }
+    },
+    "callouts": {
+      "m2": {
+        "status": "resolved",
+        "winner": null
+      }
+    },
+    "holeEvents": [
+      {
+        "hole": 1,
+        "text": "Halved. 1 carrying to 2."
+      },
+      {
+        "hole": 2,
+        "text": "Halved. 3 carrying to 3."
+      },
+      {
+        "hole": 3,
+        "text": "Skin to A. Carry cleared."
+      },
+      {
+        "hole": 4,
+        "text": "Halved. 1 void."
+      }
+    ],
+    "medals": [
+      {
+        "profile": "a",
+        "key": "skins_two",
+        "opponent": null
+      },
+      {
+        "profile": "a",
+        "key": "skins_four",
+        "opponent": null
+      }
+    ],
+    "rivalPoints": {
+      "a": 10,
+      "b": 0,
+      "c": 0
+    }
+  },
+  "notes": [
+    "Hole 2 is worth 2 skins; halved, so the carry goes 1 → 3. a's 3 on hole 3 takes 1 + 3 = 4.",
+    "The multiplier callout resolves with no winner and no points."
+  ]
+}
