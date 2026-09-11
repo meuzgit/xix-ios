@@ -33,9 +33,7 @@ enum MedalBuilder {
                 for record in OutcomeRecords.records(for: result, game: game) {
                     award(&awards, key: .strokeLowGross, to: record.winners, record: record)
                 }
-            case .strokePlay, .sideStroke, .vegas:
-                break
-            case .none:
+            default:
                 break
             }
         }

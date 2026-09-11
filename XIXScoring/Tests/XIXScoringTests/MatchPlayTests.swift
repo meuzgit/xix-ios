@@ -191,3 +191,21 @@ final class MatchPlayTests: XCTestCase {
         XCTAssertEqual(presses.games[0].outcome, .unavailable(reason: "presses are not supported"))
     }
 }
+
+final class MatchDepartureTests: XCTestCase {
+    /// B.8.2 interaction: a side whose member left the round resolves on its remaining members.
+    func testSideWithDepartedMemberResolvesOnRemainingMembers() {
+        var players = ["a", "b", "c", "d"].map { PlayerInput(id: PlayerID($0), level: 5) }
+        players[1].extras = PlayerExtras(leftAfterHole: 1)
+        let input = RoundInput(holes: 3, par: [4, 4, 4], strokeIndex: [], players: players,
+                               scores: [[4, 3, 4], [4, nil, nil], [4, 4, 4], [4, 4, 3]],
+                               games: [GameInput(id: "g", format: .bestBall, players: ["a", "b", "c", "d"],
+                                                 sides: ["a": 0, "b": 0, "c": 1, "d": 1])])
+        let r = ScoringEngine.score(input)
+        XCTAssertEqual(r.status, .complete, "b's missing holes after leaving are not awaited")
+        guard case .matchPlay(let m)? = r.games.first?.detail else { return XCTFail() }
+        XCTAssertEqual(m.throughHole, 3)
+        XCTAssertEqual(m.perHole.map(\.winner), [nil, "a+b", "c+d"])
+        XCTAssertEqual(m.result, "halved")
+    }
+}
