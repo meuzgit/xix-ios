@@ -45,6 +45,27 @@ enum LeaderboardBuilder {
             board[.skins] = rows(skins.map { ($0.key, $0.value) }, higherIsBetter: true, round: round)
         }
 
+        // Stableford: total points across every available Stableford game.
+        var stableford: [PlayerID: Int] = [:]
+        var anyStableford = false
+        for game in games where game.format == .stableford {
+            if case .stableford(let d) = game.detail {
+                anyStableford = true
+                for (player, n) in d.totals { stableford[player, default: 0] += n }
+            }
+        }
+        if anyStableford {
+            board[.stableford] = rows(stableford.map { ($0.key, $0.value) }, higherIsBetter: true, round: round)
+        }
+
+        // Birdies: gross strokes ≤ par − 1 on holes with par, for players who have entered a hole.
+        if !played.isEmpty, round.par.contains(where: { $0 != nil }) {
+            let birdies = played.map { id, summary in
+                (id, summary.holeToPar.filter { ($0 ?? 0) <= -1 }.count)
+            }
+            board[.birdies] = rows(birdies, higherIsBetter: true, round: round)
+        }
+
         return board
     }
 }

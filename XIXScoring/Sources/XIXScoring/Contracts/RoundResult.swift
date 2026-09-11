@@ -297,10 +297,12 @@ public struct CalloutResult: Codable, Equatable, Sendable {
     public var winner: CalloutWinner?
     public var duckedBy: PlayerID?
     public var loneWolf: Bool?               // partner callout won by a lone caller
+    /// Why a signed callout could not be resolved (par unknown, bad hole, missing target).
+    public var reason: String?
 
     public init(calloutID: CalloutID, kind: CalloutKind, hole: Int, status: CalloutStatus, caller: PlayerID,
                 targets: [PlayerID], hit: [PlayerID]? = nil, winner: CalloutWinner? = nil,
-                duckedBy: PlayerID? = nil, loneWolf: Bool? = nil) {
+                duckedBy: PlayerID? = nil, loneWolf: Bool? = nil, reason: String? = nil) {
         self.calloutID = calloutID
         self.kind = kind
         self.hole = hole
@@ -311,6 +313,7 @@ public struct CalloutResult: Codable, Equatable, Sendable {
         self.winner = winner
         self.duckedBy = duckedBy
         self.loneWolf = loneWolf
+        self.reason = reason
     }
 }
 

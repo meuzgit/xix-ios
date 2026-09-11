@@ -21,9 +21,15 @@ public enum ScoringEngine {
             .sorted { a, b in a.element.hole != b.element.hole ? a.element.hole < b.element.hole : a.offset < b.offset }
             .map(\.element)
 
-        let callouts = input.callouts.map { c in
-            CalloutResult(calloutID: c.id, kind: c.kind, hole: c.hole, status: c.status,
-                          caller: c.caller, targets: c.targets)
+        let callouts = input.callouts.map { CalloutResolver.resolve($0, round: round) }
+
+        var medals: [MedalAward] = []
+        var rivalPoints: [PlayerID: Int] = [:]
+        if status.isComplete {
+            let pairs = Array(zip(input.games, games))
+            medals = MedalBuilder.build(games: pairs, callouts: Array(zip(input.callouts, callouts)), round: round)
+            let records = pairs.flatMap { OutcomeRecords.records(for: $1, game: $0) }
+            rivalPoints = RivalPointsBuilder.build(records: records, callouts: callouts, round: round)
         }
 
         return RoundResult(
@@ -33,8 +39,8 @@ public enum ScoringEngine {
             games: games,
             callouts: callouts,
             holeEvents: holeEvents,
-            medals: [],
-            rivalPoints: [:],
+            medals: medals,
+            rivalPoints: rivalPoints,
             leaderboard: LeaderboardBuilder.build(perPlayer: perPlayer, games: games, round: round))
     }
 
