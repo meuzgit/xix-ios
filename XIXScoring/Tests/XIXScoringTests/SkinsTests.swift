@@ -36,6 +36,7 @@ final class SkinsTests: XCTestCase {
         XCTAssertEqual(d.voidCarry, 3)
         XCTAssertEqual(d.carry, 0)
         XCTAssertEqual(d.totals, ["a": 0, "b": 0, "c": 0])
+        // Approved ink wording for a void carry on the last hole; keep exact.
         XCTAssertEqual(r.holeEvents.last?.text, "Halved. 3 void.")
         XCTAssertEqual(r.games[0].outcome, .tied(["a", "b", "c"]))
     }
@@ -49,6 +50,7 @@ final class SkinsTests: XCTestCase {
         XCTAssertEqual(d.perHole[3].winner, nil)
         XCTAssertEqual(d.perHole[3].unvalidated, "a")
         XCTAssertEqual(d.perHole[3].carryAfter, 4)
+        // Approved ink wording for a failed validation; keep exact.
         XCTAssertEqual(r.holeEvents[3].text, "A takes the hole but not the carry. 4 carrying to 5.")
         XCTAssertEqual(d.perHole[4].winner, "a")
         XCTAssertEqual(d.perHole[4].skins, 5, "par on the next hole takes the whole carry")

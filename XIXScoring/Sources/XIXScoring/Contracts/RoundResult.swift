@@ -171,11 +171,15 @@ public struct Standing: Codable, Equatable, Sendable {
 public enum GameDetail: Equatable, Sendable {
     case none
     case skins(SkinsDetail)
+    case matchPlay(MatchPlayDetail)
+    case nassau(NassauDetail)
 
     var kind: String {
         switch self {
         case .none: return "none"
         case .skins: return "skins"
+        case .matchPlay: return "matchPlay"
+        case .nassau: return "nassau"
         }
     }
 
@@ -185,6 +189,10 @@ public enum GameDetail: Equatable, Sendable {
             self = .none
         case "skins":
             self = .skins(try SkinsDetail(from: container))
+        case "matchPlay":
+            self = .matchPlay(try MatchPlayDetail(from: container))
+        case "nassau":
+            self = .nassau(try NassauDetail(from: container))
         default:
             throw DecodingError.dataCorruptedError(
                 forKey: AnyCodingKey("detail"), in: container, debugDescription: "unknown game detail kind '\(kind)'")
@@ -196,6 +204,10 @@ public enum GameDetail: Equatable, Sendable {
         case .none:
             break
         case .skins(let d):
+            try d.encode(into: &container)
+        case .matchPlay(let d):
+            try d.encode(into: &container)
+        case .nassau(let d):
             try d.encode(into: &container)
         }
     }

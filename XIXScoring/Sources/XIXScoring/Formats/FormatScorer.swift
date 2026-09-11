@@ -25,6 +25,8 @@ enum FormatRegistry {
     static func scorer(for format: Format) -> FormatScorer.Type? {
         switch format {
         case .skins: return SkinsScorer.self
+        case .matchPlay: return MatchPlayScorer.self
+        case .nassau: return NassauScorer.self
         default: return nil
         }
     }

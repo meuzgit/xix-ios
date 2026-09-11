@@ -61,3 +61,130 @@ public struct SkinsHole: Codable, Equatable, Sendable {
         try c.encodeIfPresent(unvalidated, forKey: .unvalidated)
     }
 }
+
+// MARK: - Match Play
+
+/// One two-side match over a range of holes. Used standalone (Match Play) and
+/// three times by Nassau. Sides are labelled by player id for singles, or by
+/// the members' ids joined with "+" for teams.
+public struct MatchPlayDetail: Codable, Equatable, Sendable {
+    public var sides: [[PlayerID]]
+    /// Holes up earned per side label. A multiplied hole counts `factor` (B.6).
+    public var holesWon: [String: Int]
+    public var halved: Int
+    public var firstHole: Int                // 1-based
+    public var lastHole: Int                 // 1-based, inclusive
+    /// Last hole played in this match; equals `decidedAtHole` after an early decision.
+    public var throughHole: Int
+    public var holesRemaining: Int           // 0 once decided or complete
+    public var leader: String?               // side label; nil when all square
+    public var up: Int                       // leader's lead
+    /// Set when the match was decided before its last hole (B.5, B.8.6). Standings freeze there.
+    public var decidedAtHole: Int?
+    public var complete: Bool
+    /// "ray 3 up", "halved", "ray 5&4", "all square".
+    public var result: String
+    public var matchOutcome: Outcome?
+    public var perHole: [MatchHole]
+
+    private enum CodingKeys: String, CodingKey {
+        case sides, holesWon, halved, firstHole, lastHole, throughHole, holesRemaining, leader, up,
+             decidedAtHole, complete, result, matchOutcome, perHole
+    }
+
+    func encode(into c: inout KeyedEncodingContainer<AnyCodingKey>) throws {
+        try c.encode(sides, forKey: AnyCodingKey("sides"))
+        try c.encode(holesWon, forKey: AnyCodingKey("holesWon"))
+        try c.encode(halved, forKey: AnyCodingKey("halved"))
+        try c.encode(firstHole, forKey: AnyCodingKey("firstHole"))
+        try c.encode(lastHole, forKey: AnyCodingKey("lastHole"))
+        try c.encode(throughHole, forKey: AnyCodingKey("matchThroughHole"))
+        try c.encode(holesRemaining, forKey: AnyCodingKey("holesRemaining"))
+        try c.encodeIfPresent(leader, forKey: AnyCodingKey("leader"))
+        try c.encode(up, forKey: AnyCodingKey("up"))
+        try c.encodeIfPresent(decidedAtHole, forKey: AnyCodingKey("decidedAtHole"))
+        try c.encode(complete, forKey: AnyCodingKey("complete"))
+        try c.encode(result, forKey: AnyCodingKey("result"))
+        try c.encodeIfPresent(matchOutcome, forKey: AnyCodingKey("matchOutcome"))
+        try c.encode(perHole, forKey: AnyCodingKey("perHole"))
+    }
+
+    init(from c: KeyedDecodingContainer<AnyCodingKey>) throws {
+        sides = try c.decode([[PlayerID]].self, forKey: AnyCodingKey("sides"))
+        holesWon = try c.decode([String: Int].self, forKey: AnyCodingKey("holesWon"))
+        halved = try c.decode(Int.self, forKey: AnyCodingKey("halved"))
+        firstHole = try c.decode(Int.self, forKey: AnyCodingKey("firstHole"))
+        lastHole = try c.decode(Int.self, forKey: AnyCodingKey("lastHole"))
+        throughHole = try c.decode(Int.self, forKey: AnyCodingKey("matchThroughHole"))
+        holesRemaining = try c.decode(Int.self, forKey: AnyCodingKey("holesRemaining"))
+        leader = try c.decodeIfPresent(String.self, forKey: AnyCodingKey("leader"))
+        up = try c.decode(Int.self, forKey: AnyCodingKey("up"))
+        decidedAtHole = try c.decodeIfPresent(Int.self, forKey: AnyCodingKey("decidedAtHole"))
+        complete = try c.decode(Bool.self, forKey: AnyCodingKey("complete"))
+        result = try c.decode(String.self, forKey: AnyCodingKey("result"))
+        matchOutcome = try c.decodeIfPresent(Outcome.self, forKey: AnyCodingKey("matchOutcome"))
+        perHole = try c.decode([MatchHole].self, forKey: AnyCodingKey("perHole"))
+    }
+
+    public init(sides: [[PlayerID]], holesWon: [String: Int], halved: Int, firstHole: Int, lastHole: Int,
+                throughHole: Int, holesRemaining: Int, leader: String?, up: Int, decidedAtHole: Int?,
+                complete: Bool, result: String, matchOutcome: Outcome?, perHole: [MatchHole]) {
+        self.sides = sides
+        self.holesWon = holesWon
+        self.halved = halved
+        self.firstHole = firstHole
+        self.lastHole = lastHole
+        self.throughHole = throughHole
+        self.holesRemaining = holesRemaining
+        self.leader = leader
+        self.up = up
+        self.decidedAtHole = decidedAtHole
+        self.complete = complete
+        self.result = result
+        self.matchOutcome = matchOutcome
+        self.perHole = perHole
+    }
+}
+
+public struct MatchHole: Codable, Equatable, Sendable {
+    public var hole: Int
+    public var winner: String?               // side label; nil when halved
+    public var worth: Int                    // holes up earned (multiplier factor)
+
+    public init(hole: Int, winner: String?, worth: Int) {
+        self.hole = hole
+        self.winner = winner
+        self.worth = worth
+    }
+}
+
+// MARK: - Nassau
+
+/// Three independent matches: holes 1–9, 10–18 and 1–18 (B.5).
+public struct NassauDetail: Equatable, Sendable {
+    public var front: MatchPlayDetail
+    public var back: MatchPlayDetail
+    public var match18: MatchPlayDetail
+
+    public init(front: MatchPlayDetail, back: MatchPlayDetail, match18: MatchPlayDetail) {
+        self.front = front
+        self.back = back
+        self.match18 = match18
+    }
+
+    public var segments: [(name: String, match: MatchPlayDetail)] {
+        [("front", front), ("back", back), ("18", match18)]
+    }
+
+    func encode(into c: inout KeyedEncodingContainer<AnyCodingKey>) throws {
+        try c.encode(front, forKey: AnyCodingKey("front"))
+        try c.encode(back, forKey: AnyCodingKey("back"))
+        try c.encode(match18, forKey: AnyCodingKey("match18"))
+    }
+
+    init(from c: KeyedDecodingContainer<AnyCodingKey>) throws {
+        front = try c.decode(MatchPlayDetail.self, forKey: AnyCodingKey("front"))
+        back = try c.decode(MatchPlayDetail.self, forKey: AnyCodingKey("back"))
+        match18 = try c.decode(MatchPlayDetail.self, forKey: AnyCodingKey("match18"))
+    }
+}

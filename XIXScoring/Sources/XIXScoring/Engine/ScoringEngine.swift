@@ -35,7 +35,7 @@ public enum ScoringEngine {
             holeEvents: holeEvents,
             medals: [],
             rivalPoints: [:],
-            leaderboard: LeaderboardBuilder.build(games: games, round: round))
+            leaderboard: LeaderboardBuilder.build(perPlayer: perPlayer, games: games, round: round))
     }
 
     static func scoreGame(_ game: GameInput, round: NormalisedRound, context: ScoringContext) -> ScoredGame {

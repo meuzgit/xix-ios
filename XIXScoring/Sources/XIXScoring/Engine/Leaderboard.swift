@@ -1,4 +1,6 @@
-/// Leaderboard rows: sorted by value, ties share a rank and keep seat order.
+/// Leaderboard rows. One ordering for every mode: sort by value (ascending for
+/// gross, net and to-par; descending for everything else), tied values share a
+/// rank number, and ties keep seat order.
 enum LeaderboardBuilder {
     static func rows(_ values: [(PlayerID, Int)], higherIsBetter: Bool, round: NormalisedRound) -> [LeaderboardRow] {
         let ordered = values.sorted { a, b in
@@ -13,8 +15,22 @@ enum LeaderboardBuilder {
         return rows
     }
 
-    static func build(games: [GameResult], round: NormalisedRound) -> [LeaderboardMode: [LeaderboardRow]] {
+    static func build(perPlayer: [PlayerID: PlayerSummary], games: [GameResult], round: NormalisedRound) -> [LeaderboardMode: [LeaderboardRow]] {
         var board: [LeaderboardMode: [LeaderboardRow]] = [:]
+
+        // Score boards: players who have entered at least one hole. Net and to-par only when every
+        // such player has the value.
+        let played = round.players.map(\.id).compactMap { id in perPlayer[id].map { (id, $0) } }
+            .filter { $0.1.holesEntered > 0 }
+        if !played.isEmpty {
+            board[.gross] = rows(played.map { ($0.0, $0.1.gross) }, higherIsBetter: false, round: round)
+            if played.allSatisfy({ $0.1.net != nil }) {
+                board[.net] = rows(played.map { ($0.0, $0.1.net!) }, higherIsBetter: false, round: round)
+            }
+            if played.allSatisfy({ $0.1.toPar != nil }) {
+                board[.toPar] = rows(played.map { ($0.0, $0.1.toPar!) }, higherIsBetter: false, round: round)
+            }
+        }
 
         // Skins: total skins across every available Skins game.
         var skins: [PlayerID: Int] = [:]

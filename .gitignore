@@ -10,3 +10,6 @@ DerivedData/
 
 # macOS
 .DS_Store
+
+# Design files live outside the repo
+*.zip
