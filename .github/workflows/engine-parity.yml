@@ -19,6 +19,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Toolchain system dependencies (Ubuntu 24.04)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q binutils gnupg2 libc6-dev libcurl4-openssl-dev libedit2 libgcc-13-dev \
+            libncurses-dev libpython3-dev libsqlite3-0 libstdc++-13-dev libxml2-dev libz3-dev pkg-config tzdata zlib1g-dev
       - name: Install swiftly and Swift ${{ env.SWIFT_VERSION }}
         run: |
           curl -sSfL "https://download.swift.org/swiftly/linux/swiftly-$(uname -m).tar.gz" | tar xz
