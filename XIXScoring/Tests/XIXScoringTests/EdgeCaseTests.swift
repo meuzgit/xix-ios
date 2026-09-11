@@ -47,4 +47,8 @@ final class EdgeCaseTests: XCTestCase {
     func testB8_9_MultiplierOnHalvedSkinsHole() throws {
         try FixtureRunner.run("multiplier_halved")
     }
+
+    func testB8_10_TargetCalloutToCrew() throws {
+        try FixtureRunner.run("target_crew")
+    }
 }

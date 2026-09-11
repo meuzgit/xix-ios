@@ -1,0 +1,139 @@
+{
+  "fixture": "target_crew",
+  "description": "B.8.10: target callouts to the whole crew, caller included. The caller's own par never counts as a hit; only targets can hit. Expected block worked by hand.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 2,
+    "par": [
+      4,
+      4
+    ],
+    "strokeIndex": [],
+    "players": [
+      {
+        "id": "a",
+        "level": 5
+      },
+      {
+        "id": "b",
+        "level": 5
+      },
+      {
+        "id": "c",
+        "level": 5
+      },
+      {
+        "id": "d",
+        "level": 5
+      }
+    ],
+    "scores": {
+      "a": [
+        3,
+        4
+      ],
+      "b": [
+        5,
+        4
+      ],
+      "c": [
+        5,
+        5
+      ],
+      "d": [
+        6,
+        5
+      ]
+    },
+    "games": [],
+    "callouts": [
+      {
+        "id": "c1",
+        "hole": 1,
+        "kind": "target",
+        "caller": "a",
+        "targets": [
+          "a",
+          "b",
+          "c",
+          "d"
+        ],
+        "params": {
+          "goal": "par"
+        },
+        "status": "signed",
+        "responder": "b"
+      },
+      {
+        "id": "c2",
+        "hole": 2,
+        "kind": "target",
+        "caller": "a",
+        "targets": [
+          "a",
+          "b",
+          "c",
+          "d"
+        ],
+        "params": {
+          "goal": "par"
+        },
+        "status": "signed",
+        "responder": "b"
+      }
+    ]
+  },
+  "expected": {
+    "status": "complete",
+    "callouts": {
+      "c1": {
+        "status": "resolved",
+        "targets": [
+          "b",
+          "c",
+          "d"
+        ],
+        "hit": [],
+        "winner": "a"
+      },
+      "c2": {
+        "status": "resolved",
+        "targets": [
+          "b",
+          "c",
+          "d"
+        ],
+        "hit": [
+          "b"
+        ],
+        "winner": "b"
+      }
+    },
+    "medals": [
+      {
+        "profile": "a",
+        "key": "callout_called_it",
+        "opponent": null,
+        "holes": [
+          1
+        ]
+      },
+      {
+        "profile": "b",
+        "key": "callout_ducked_nothing",
+        "opponent": null
+      }
+    ],
+    "rivalPoints": {
+      "a": 3,
+      "b": 3,
+      "c": 0,
+      "d": 0
+    }
+  },
+  "notes": [
+    "Hole 1: a birdies but is the caller, so hit is empty and the caller wins → callout_called_it (opponent nil with three targets).",
+    "Hole 2: a and b both par; only b is a target → b wins 3 points, no medal key for hitters.",
+    "b was the responder on both crew callouts and signed both → callout_ducked_nothing. c and d were targets too but never the responder, so they earn nothing for b's signatures. (Expected block revised after implementation: the first draft forgot this medal entirely.)"
+  ]
+}
