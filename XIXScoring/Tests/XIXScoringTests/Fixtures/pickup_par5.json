@@ -1,0 +1,56 @@
+{
+  "fixture": "pickup_par5",
+  "description": "B.8.5: a picks up on a par 5. Gross counts 10, Stableford scores 0, the ink mark is x, and the Vegas digit is capped at 9. Expected block worked by hand.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 3,
+    "par": [5,4,3],
+    "strokeIndex": [],
+    "players": [ { "id": "a", "level": 5 }, { "id": "b", "level": 5 }, { "id": "c", "level": 5 }, { "id": "d", "level": 5 } ],
+    "scores": {
+      "a": ["PU",4,3],
+      "b": [5,4,3],
+      "c": [5,5,4],
+      "d": [6,4,3]
+    },
+    "games": [
+      { "id": "g_stroke", "format": "stroke_play", "players": ["a","b","c","d"] },
+      { "id": "g_stab",   "format": "stableford",  "players": ["a","b","c","d"] },
+      { "id": "g_vegas",  "format": "vegas",       "players": ["a","b","c","d"], "sides": { "a": 0, "b": 0, "c": 1, "d": 1 } }
+    ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "perPlayer": {
+      "a": { "gross": 17, "toPar": 5, "pickedUp": 1, "holesEntered": 3, "marks": ["x","",""], "effectiveStrokes": [10,4,3] },
+      "b": { "gross": 12, "toPar": 0, "pickedUp": 0 }
+    },
+    "games": {
+      "g_stroke": { "strokes": { "a": [10,4,3] }, "totals": { "a": 17, "b": 12, "c": 14, "d": 13 }, "outcome": "b" },
+      "g_stab":   { "points": { "a": [0,2,2], "b": [2,2,2], "c": [2,1,1], "d": [1,2,2] }, "totals": { "a": 4, "b": 6, "c": 4, "d": 5 }, "outcome": "b" },
+      "g_vegas": {
+        "perHole": [
+          { "hole": 1, "numbers": { "a+b": 59, "c+d": 56 }, "flipped": { "a+b": false, "c+d": false }, "points": { "a+b": 0, "c+d": 3 } },
+          { "hole": 2, "numbers": { "a+b": 44, "c+d": 45 }, "points": { "a+b": 1, "c+d": 0 } },
+          { "hole": 3, "numbers": { "a+b": 33, "c+d": 34 }, "points": { "a+b": 1, "c+d": 0 } }
+        ],
+        "totals": { "a+b": 2, "c+d": 3 },
+        "outcome": { "side": 1, "players": ["c","d"] }
+      }
+    },
+    "medals": [
+      { "profile": "b", "key": "stroke_low_gross", "opponent": null },
+      { "profile": "b", "key": "stableford_top",   "opponent": null }
+    ],
+    "rivalPoints": { "a": 0, "b": 20, "c": 6, "d": 6 },
+    "leaderboard": {
+      "gross": [ { "player": "b", "value": 12, "rank": 1 }, { "player": "d", "value": 13, "rank": 2 }, { "player": "c", "value": 14, "rank": 3 }, { "player": "a", "value": 17, "rank": 4 } ]
+    }
+  },
+  "notes": [
+    "a's pick-up on hole 1 (par 5) = 2 × 5 = 10 effective strokes: gross 17, Stableford 0 on that hole, mark x.",
+    "Vegas hole 1: a's 10 is capped to a 9 digit, so a+b = 59 against c+d = 56; nobody birdies; c+d take 3.",
+    "Rival Points: b wins stroke (10) and stableford (10) at factor 1; c and d win Vegas (team base 6)."
+  ]
+}
