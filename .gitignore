@@ -13,3 +13,7 @@ DerivedData/
 
 # Design files live outside the repo
 *.zip
+
+# Supabase local state
+supabase/.branches/
+supabase/.temp/
