@@ -96,3 +96,22 @@ final class MedalsAndRivalPointsTests: XCTestCase {
         XCTAssertEqual(r.leaderboard[.birdies]?.map { "\($0.player):\($0.value)" }, ["a:1", "b:0"])
     }
 }
+
+final class MedalTieRuleTests: XCTestCase {
+    /// Top/low style keys are shared by every tied player; match-style keys never award on a halve.
+    func testTopStyleKeysShareOnTiesAndMatchStyleKeysNeverAwardOnHalves() {
+        let scores: [[HoleScore?]] = [[4, 4, 4], [4, 4, 4]]
+        let input = RoundInput(holes: 3, par: [4, 4, 4], strokeIndex: [],
+                               players: [PlayerInput(id: "a", level: 5), PlayerInput(id: "b", level: 5)],
+                               scores: scores,
+                               games: [GameInput(id: "st", format: .stableford, players: ["a", "b"]),
+                                       GameInput(id: "m", format: .matchPlay, players: ["a", "b"])])
+        let r = ScoringEngine.score(input)
+        XCTAssertEqual(r.games[0].outcome, .tied(["a", "b"]))
+        XCTAssertEqual(r.games[1].outcome, .halved)
+        XCTAssertEqual(r.medals, [MedalAward(profile: "a", key: .stablefordTop, opponent: "b"),
+                                  MedalAward(profile: "b", key: .stablefordTop, opponent: "a")])
+        XCTAssertFalse(r.medals.contains { $0.key == .matchplayWin })
+        XCTAssertEqual(r.rivalPoints, ["a": 10, "b": 10], "half of 10 from each game")
+    }
+}
