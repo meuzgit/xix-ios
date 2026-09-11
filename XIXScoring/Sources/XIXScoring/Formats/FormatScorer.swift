@@ -31,6 +31,9 @@ enum FormatRegistry {
         case .stableford: return StablefordScorer.self
         case .strokePlay: return StrokePlayScorer.self
         case .bestBall: return BestBallScorer.self
+        case .scramble: return ScrambleScorer.self
+        case .alternateShot: return AlternateShotScorer.self
+        case .chapman: return ChapmanScorer.self
         default: return nil
         }
     }

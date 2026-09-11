@@ -1,0 +1,41 @@
+{
+  "fixture": "scramble_sides",
+  "description": "Two side rows (ab, cd) carry the strokes for Scramble, Alternate Shot and Chapman over four holes. Expected block worked by hand before the formats were written.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 4,
+    "par": [4,4,4,4],
+    "strokeIndex": [],
+    "players": [ { "id": "ab", "name": "A & B" }, { "id": "cd", "name": "C & D" } ],
+    "scores": { "ab": [4,3,4,4], "cd": [4,4,3,5] },
+    "games": [
+      { "id": "g_scramble", "format": "scramble",       "players": ["ab","cd"] },
+      { "id": "g_alt",      "format": "alternate_shot", "players": ["ab","cd"] },
+      { "id": "g_chapman",  "format": "chapman",        "players": ["ab","cd"] }
+    ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "perPlayer": { "ab": { "gross": 15, "toPar": -1 }, "cd": { "gross": 16, "toPar": 0 } },
+    "games": {
+      "g_scramble": {
+        "sides": [["ab"],["cd"]], "count": 1,
+        "perHole": { "ab": [4,3,4,4], "cd": [4,4,3,5] },
+        "totals": { "ab": 15, "cd": 16 },
+        "outcome": "ab",
+        "display": { "ab": "Scramble 15", "cd": "Scramble 16" },
+        "standings": [ { "player": "ab", "rank": 1 }, { "player": "cd", "rank": 2 } ]
+      },
+      "g_alt":     { "totals": { "ab": 15, "cd": 16 }, "outcome": "ab", "display": { "ab": "Alternate Shot 15" } },
+      "g_chapman": { "totals": { "ab": 15, "cd": 16 }, "outcome": "ab", "display": { "ab": "Chapman 15" } }
+    },
+    "medals": [],
+    "rivalPoints": { "ab": 18, "cd": 0 },
+    "leaderboard": { "gross": [ { "player": "ab", "value": 15, "rank": 1 }, { "player": "cd", "value": 16, "rank": 2 } ] }
+  },
+  "notes": [
+    "Side-scored formats: one row per side carries the strokes, so the round's players are the side rows and no sides map is needed.",
+    "Rival Points: team base 6 per game, no Levels so factor 1; ab wins all three → 18. No medal keys exist for these formats."
+  ]
+}

@@ -36,3 +36,25 @@ final class SideFormatTests: XCTestCase {
         XCTAssertEqual(r.games[0].display["a"], "Best Ball 1 up")
     }
 }
+
+final class SideRowFormatTests: XCTestCase {
+    func testScrambleFixture() throws {
+        try FixtureRunner.run("scramble_sides")
+    }
+
+    func testSideRowResolvesWhenOneRowPerSideIsEntered() {
+        // Four rows mapped to two sides; only a and c carry scores. The game resolves per hole
+        // while the round itself stays in progress (b and d have no rows entered).
+        let input = RoundInput(holes: 2, par: [4, 4], strokeIndex: [],
+                               players: ["a", "b", "c", "d"].map { PlayerInput(id: PlayerID($0)) },
+                               scores: [[4, 3], [nil, nil], [5, 3], [nil, nil]],
+                               games: [GameInput(id: "g", format: .scramble, players: ["a", "b", "c", "d"],
+                                                 sides: ["a": 0, "b": 0, "c": 1, "d": 1])])
+        let r = ScoringEngine.score(input)
+        XCTAssertEqual(r.status, .inProgress(throughHole: 0))
+        XCTAssertEqual(r.games[0].throughHole, 2)
+        XCTAssertEqual(r.games[0].outcome, .winningSide(0, players: ["a", "b"]))
+        if case .sideStroke(let d)? = r.games.first?.detail { XCTAssertEqual(d.totals, ["a+b": 7, "c+d": 8]) } else { XCTFail() }
+        XCTAssertTrue(r.rivalPoints.isEmpty, "round not complete")
+    }
+}
