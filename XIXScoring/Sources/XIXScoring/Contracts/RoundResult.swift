@@ -170,10 +170,12 @@ public struct Standing: Codable, Equatable, Sendable {
 /// Format-specific result detail. Cases are added as formats are implemented.
 public enum GameDetail: Equatable, Sendable {
     case none
+    case skins(SkinsDetail)
 
     var kind: String {
         switch self {
         case .none: return "none"
+        case .skins: return "skins"
         }
     }
 
@@ -181,6 +183,8 @@ public enum GameDetail: Equatable, Sendable {
         switch kind {
         case "none":
             self = .none
+        case "skins":
+            self = .skins(try SkinsDetail(from: container))
         default:
             throw DecodingError.dataCorruptedError(
                 forKey: AnyCodingKey("detail"), in: container, debugDescription: "unknown game detail kind '\(kind)'")
@@ -191,6 +195,8 @@ public enum GameDetail: Equatable, Sendable {
         switch self {
         case .none:
             break
+        case .skins(let d):
+            try d.encode(into: &container)
         }
     }
 }

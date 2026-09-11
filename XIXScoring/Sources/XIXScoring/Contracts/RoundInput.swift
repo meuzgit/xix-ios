@@ -361,3 +361,8 @@ public enum TargetGoal: Equatable, Codable, Sendable {
         }
     }
 }
+
+extension HoleScore: ExpressibleByIntegerLiteral {
+    /// `let s: HoleScore = 5` reads as five strokes; handy for tests and fixtures in code.
+    public init(integerLiteral value: Int) { self = .strokes(value) }
+}

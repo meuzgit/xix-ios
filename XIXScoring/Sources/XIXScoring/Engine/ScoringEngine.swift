@@ -14,7 +14,12 @@ public enum ScoringEngine {
         }
 
         let context = ScoringContext(callouts: input.callouts)
-        let games = input.games.map { scoreGame($0, round: round, context: context) }
+        let scored = input.games.map { scoreGame($0, round: round, context: context) }
+        let games = scored.map(\.result)
+        // Ink lines in hole order; games in input order within a hole.
+        let holeEvents = scored.flatMap(\.events).enumerated()
+            .sorted { a, b in a.element.hole != b.element.hole ? a.element.hole < b.element.hole : a.offset < b.offset }
+            .map(\.element)
 
         let callouts = input.callouts.map { c in
             CalloutResult(calloutID: c.id, kind: c.kind, hole: c.hole, status: c.status,
@@ -27,23 +32,23 @@ public enum ScoringEngine {
             perPlayer: perPlayer,
             games: games,
             callouts: callouts,
-            holeEvents: [],
+            holeEvents: holeEvents,
             medals: [],
             rivalPoints: [:],
-            leaderboard: [:])
+            leaderboard: LeaderboardBuilder.build(games: games, round: round))
     }
 
-    static func scoreGame(_ game: GameInput, round: NormalisedRound, context: ScoringContext) -> GameResult {
+    static func scoreGame(_ game: GameInput, round: NormalisedRound, context: ScoringContext) -> ScoredGame {
         let unknown = game.players.filter { round.seat($0) == nil }
         guard unknown.isEmpty else {
-            return .unavailable(game, reason: "unknown player \(unknown.map(\.rawValue).joined(separator: ", "))", throughHole: 0)
+            return ScoredGame(result: .unavailable(game, reason: "unknown player \(unknown.map(\.rawValue).joined(separator: ", "))", throughHole: 0))
         }
         guard !game.players.isEmpty else {
-            return .unavailable(game, reason: "no players", throughHole: 0)
+            return ScoredGame(result: .unavailable(game, reason: "no players", throughHole: 0))
         }
         let through = round.throughHole(players: game.players)
         guard let scorer = FormatRegistry.scorer(for: game.format) else {
-            return .unavailable(game, reason: "\(game.format.rawValue) is not implemented in engine version \(version)", throughHole: through)
+            return ScoredGame(result: .unavailable(game, reason: "\(game.format.rawValue) is not implemented in engine version \(version)", throughHole: through))
         }
         return scorer.score(game, round: round, context: context)
     }
