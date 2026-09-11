@@ -1,0 +1,50 @@
+/// Entry point. Pure and deterministic: no I/O, no clock.
+public enum ScoringEngine {
+    /// Increments on any rule change (B.10).
+    public static let version = 1
+
+    public static func score(_ input: RoundInput) -> RoundResult {
+        let round = NormalisedRound(input)
+        let through = round.throughHole(seats: round.allSeats)
+        let status: RoundStatus = round.isComplete ? .complete : .inProgress(throughHole: through)
+
+        var perPlayer: [PlayerID: PlayerSummary] = [:]
+        for (seat, player) in round.players.enumerated() where perPlayer[player.id] == nil {
+            perPlayer[player.id] = round.summary(seat: seat)
+        }
+
+        let context = ScoringContext(callouts: input.callouts)
+        let games = input.games.map { scoreGame($0, round: round, context: context) }
+
+        let callouts = input.callouts.map { c in
+            CalloutResult(calloutID: c.id, kind: c.kind, hole: c.hole, status: c.status,
+                          caller: c.caller, targets: c.targets)
+        }
+
+        return RoundResult(
+            engineVersion: version,
+            status: status,
+            perPlayer: perPlayer,
+            games: games,
+            callouts: callouts,
+            holeEvents: [],
+            medals: [],
+            rivalPoints: [:],
+            leaderboard: [:])
+    }
+
+    static func scoreGame(_ game: GameInput, round: NormalisedRound, context: ScoringContext) -> GameResult {
+        let unknown = game.players.filter { round.seat($0) == nil }
+        guard unknown.isEmpty else {
+            return .unavailable(game, reason: "unknown player \(unknown.map(\.rawValue).joined(separator: ", "))", throughHole: 0)
+        }
+        guard !game.players.isEmpty else {
+            return .unavailable(game, reason: "no players", throughHole: 0)
+        }
+        let through = round.throughHole(players: game.players)
+        guard let scorer = FormatRegistry.scorer(for: game.format) else {
+            return .unavailable(game, reason: "\(game.format.rawValue) is not implemented in engine version \(version)", throughHole: through)
+        }
+        return scorer.score(game, round: round, context: context)
+    }
+}

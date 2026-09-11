@@ -1,0 +1,138 @@
+{
+  "fixture": "fraserview_2026-09-09",
+  "description": "Four players, 18 holes, par known. Games: Nassau (Ray-Dave, gross), Skins (all four, carryover, no validation, gross), Stableford (Mo-Tess, gross). Callouts: target par on 8 (Ray->Dave, signed, missed), target par on 12 (Ray->Dave, ducked). Mo picks up on 13. Expected block computed by hand; every value must match exactly.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 18,
+    "par":         [4,3,5,4,4,3,4,5,4, 4,5,4,4,4,3,4,5,3],
+    "strokeIndex": [7,15,1,9,5,17,11,3,13, 8,2,10,4,12,18,6,14,16],
+    "players": [
+      { "id": "ray",  "level": 5 },
+      { "id": "dave", "level": 4 },
+      { "id": "mo",   "level": 3 },
+      { "id": "tess", "level": 5 }
+    ],
+    "scores": {
+      "ray":  [5,3,6,4,5,3,4,6,3, 5,4,3,4,4,5,3,6,5],
+      "dave": [4,4,5,5,6,3,7,6,5, 4,5,4,5,4,4,4,5,4],
+      "mo":   [6,4,7,5,5,4,5,7,6, 4,5,4,"PU",4,3,4,4,3],
+      "tess": [5,3,5,4,4,3,5,6,4, 4,5,3,4,5,3,6,5,4]
+    },
+    "games": [
+      { "id": "g_nassau", "format": "nassau", "options": { "net": false, "presses": false }, "players": ["ray","dave"] },
+      { "id": "g_skins",  "format": "skins",  "options": { "net": false, "carryover": true, "validation": false }, "players": ["ray","dave","mo","tess"] },
+      { "id": "g_stab",   "format": "stableford", "options": { "net": false }, "players": ["mo","tess"] }
+    ],
+    "callouts": [
+      { "id": "c8",  "hole": 8,  "kind": "target", "caller": "ray", "targets": ["dave"], "params": { "goal": "par" }, "status": "signed", "responder": "dave" },
+      { "id": "c12", "hole": 12, "kind": "target", "caller": "ray", "targets": ["dave"], "params": { "goal": "par" }, "status": "ducked", "responder": "dave" }
+    ]
+  },
+  "expected": {
+    "status": "complete",
+    "perPlayer": {
+      "ray":  { "gross": 78, "toPar": 6,  "holesEntered": 18, "pickedUp": 0,
+                "marks": ["","circle","square","","square","","","square","circle", "square","circle","circle","","","filled","circle","square","filled"] },
+      "dave": { "gross": 84, "toPar": 12, "holesEntered": 18, "pickedUp": 0,
+                "marks": ["","square","","square","filled","","filled","square","square", "","","","square","","square","","","square"] },
+      "mo":   { "gross": 88, "toPar": 16, "holesEntered": 18, "pickedUp": 1,
+                "marks": ["filled","square","filled","square","square","square","square","filled","filled", "","","","x","","","","circle",""] },
+      "tess": { "gross": 78, "toPar": 6,  "holesEntered": 18, "pickedUp": 0,
+                "marks": ["square","","","","","","square","square","", "","","circle","","square","","filled","","square"] }
+    },
+    "games": {
+      "g_nassau": {
+        "front": { "holesWon": { "ray": 5, "dave": 2 }, "halved": 2, "result": "ray 3 up" },
+        "back":  { "holesWon": { "ray": 4, "dave": 4 }, "halved": 1, "result": "halved" },
+        "match18": { "holesWon": { "ray": 9, "dave": 6 }, "halved": 3, "result": "ray 3 up" },
+        "display": { "ray": "Nassau 3 up front · back halved · 3 up 18", "dave": "Nassau 3 down front · back halved · 3 down 18" }
+      },
+      "g_skins": {
+        "perHole": [
+          { "hole": 1,  "winner": "dave", "skins": 1, "carryAfter": 0 },
+          { "hole": 2,  "winner": null,   "skins": 0, "carryAfter": 1 },
+          { "hole": 3,  "winner": null,   "skins": 0, "carryAfter": 2 },
+          { "hole": 4,  "winner": null,   "skins": 0, "carryAfter": 3 },
+          { "hole": 5,  "winner": "tess", "skins": 4, "carryAfter": 0 },
+          { "hole": 6,  "winner": null,   "skins": 0, "carryAfter": 1 },
+          { "hole": 7,  "winner": "ray",  "skins": 2, "carryAfter": 0 },
+          { "hole": 8,  "winner": null,   "skins": 0, "carryAfter": 1 },
+          { "hole": 9,  "winner": "ray",  "skins": 2, "carryAfter": 0 },
+          { "hole": 10, "winner": null,   "skins": 0, "carryAfter": 1 },
+          { "hole": 11, "winner": "ray",  "skins": 2, "carryAfter": 0 },
+          { "hole": 12, "winner": null,   "skins": 0, "carryAfter": 1 },
+          { "hole": 13, "winner": null,   "skins": 0, "carryAfter": 2 },
+          { "hole": 14, "winner": null,   "skins": 0, "carryAfter": 3 },
+          { "hole": 15, "winner": null,   "skins": 0, "carryAfter": 4 },
+          { "hole": 16, "winner": "ray",  "skins": 5, "carryAfter": 0 },
+          { "hole": 17, "winner": "mo",   "skins": 1, "carryAfter": 0 },
+          { "hole": 18, "winner": "mo",   "skins": 1, "carryAfter": 0 }
+        ],
+        "totals": { "ray": 11, "dave": 1, "mo": 2, "tess": 4 },
+        "voidCarry": 0,
+        "outcome": "ray"
+      },
+      "g_stab": {
+        "points": {
+          "mo":   [0,1,0,1,1,1,1,0,0, 2,2,2,0,2,2,2,3,2],
+          "tess": [1,2,2,2,2,2,1,1,2, 2,2,3,2,1,2,0,2,1]
+        },
+        "totals": { "mo": 22, "tess": 30 },
+        "outcome": "tess"
+      }
+    },
+    "callouts": {
+      "c8":  { "status": "resolved", "hit": [], "winner": "ray", "note": "Dave 6 on par 5; nobody beat par; caller wins" },
+      "c12": { "status": "ducked", "winner": null, "duckedBy": "dave" }
+    },
+    "holeEvents": [
+      { "hole": 1,  "text": "Skin to Dave." },
+      { "hole": 2,  "text": "Halved. 1 carrying to 3." },
+      { "hole": 3,  "text": "Halved. 2 carrying to 4." },
+      { "hole": 4,  "text": "Halved. 3 carrying to 5." },
+      { "hole": 5,  "text": "Skin to Tess. Carry cleared." },
+      { "hole": 6,  "text": "Halved. 1 carrying to 7." },
+      { "hole": 7,  "text": "Skin to Ray. Carry cleared." },
+      { "hole": 8,  "text": "Halved. 1 carrying to 9." },
+      { "hole": 9,  "text": "Skin to Ray. Carry cleared." },
+      { "hole": 10, "text": "Halved. 1 carrying to 11." },
+      { "hole": 11, "text": "Skin to Ray. Carry cleared." },
+      { "hole": 12, "text": "Halved. 1 carrying to 13." },
+      { "hole": 13, "text": "Halved. 2 carrying to 14." },
+      { "hole": 14, "text": "Halved. 3 carrying to 15." },
+      { "hole": 15, "text": "Halved. 4 carrying to 16." },
+      { "hole": 16, "text": "Skin to Ray. Carry cleared." },
+      { "hole": 17, "text": "Skin to Mo." },
+      { "hole": 18, "text": "Skin to Mo." }
+    ],
+    "medals": [
+      { "profile": "ray",  "key": "nassau_front",      "opponent": "dave" },
+      { "profile": "ray",  "key": "nassau_18",         "opponent": "dave" },
+      { "profile": "ray",  "key": "skins_two",         "opponent": null },
+      { "profile": "ray",  "key": "skins_four",        "opponent": null },
+      { "profile": "tess", "key": "skins_two",         "opponent": null },
+      { "profile": "tess", "key": "skins_four",        "opponent": null },
+      { "profile": "mo",   "key": "skins_two",         "opponent": null },
+      { "profile": "tess", "key": "stableford_top",    "opponent": "mo" },
+      { "profile": "ray",  "key": "callout_called_it", "opponent": "dave" }
+    ],
+    "rivalPoints": {
+      "_formula": "base 10 individual, 3 callout; factor = 1 + 0.1*max(0, strongestOpponentLevel - ownLevel); halved = half each; ducked = 0",
+      "ray":  38,
+      "dave": 5,
+      "mo":   0,
+      "tess": 10
+    },
+    "leaderboard": {
+      "skins": [ { "player": "ray", "value": 11 }, { "player": "tess", "value": 4 }, { "player": "mo", "value": 2 }, { "player": "dave", "value": 1 } ],
+      "gross": [ { "player": "ray", "value": 78 }, { "player": "tess", "value": 78 }, { "player": "dave", "value": 84 }, { "player": "mo", "value": 88 } ]
+    }
+  },
+  "notes": [
+    "Mo's pick-up on 13 (par 4) counts as 8 strokes for gross and skins, 0 Stableford points, and the 'x' mark.",
+    "Skins are gross with carryover and no validation; the final carry is 0 so nothing is void.",
+    "Nassau back nine halved 4-4-1: no nassau_back medal.",
+    "Rival Points: Ray = skins 10 + nassau front 10 + nassau 18 10 + back halved 5 + callout 3 = 38; Dave = back halved 5; Tess = stableford 10; Mo = 0. Strongest-opponent levels never exceed own level here, so every factor is 1.0.",
+    "Medals derive only from activated games and callouts; five_pars/no_blowups etc. are not awarded because those games were not activated."
+  ]
+}
