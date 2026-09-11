@@ -1,0 +1,111 @@
+{
+  "fixture": "callout_expiry",
+  "description": "B.8.11: expiry keys off the first score from a participant. An open callout stays open when a non-participant scores; another expires when its target scores; a signed callout resolves once its participants have scored regardless of who scored first. Round in progress. Expected block worked by hand.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 2,
+    "par": [
+      4,
+      4
+    ],
+    "strokeIndex": [],
+    "players": [
+      {
+        "id": "a",
+        "level": 5
+      },
+      {
+        "id": "b",
+        "level": 5
+      },
+      {
+        "id": "c",
+        "level": 5
+      }
+    ],
+    "scores": {
+      "a": [
+        null,
+        null
+      ],
+      "b": [
+        null,
+        5
+      ],
+      "c": [
+        4,
+        4
+      ]
+    },
+    "games": [],
+    "callouts": [
+      {
+        "id": "o1",
+        "hole": 1,
+        "kind": "target",
+        "caller": "a",
+        "targets": [
+          "b"
+        ],
+        "params": {
+          "goal": "par"
+        },
+        "status": "open"
+      },
+      {
+        "id": "o2",
+        "hole": 2,
+        "kind": "target",
+        "caller": "a",
+        "targets": [
+          "b"
+        ],
+        "params": {
+          "goal": "par"
+        },
+        "status": "open"
+      },
+      {
+        "id": "s3",
+        "hole": 2,
+        "kind": "target",
+        "caller": "c",
+        "targets": [
+          "b"
+        ],
+        "params": {
+          "goal": "par"
+        },
+        "status": "signed",
+        "responder": "b"
+      }
+    ]
+  },
+  "expected": {
+    "status": {
+      "inProgress": 0
+    },
+    "callouts": {
+      "o1": {
+        "status": "open",
+        "winner": null
+      },
+      "o2": {
+        "status": "expired",
+        "winner": null
+      },
+      "s3": {
+        "status": "resolved",
+        "hit": [],
+        "winner": "c"
+      }
+    },
+    "medals": [],
+    "rivalPoints": {}
+  },
+  "notes": [
+    "o1: only c has scored hole 1 and c is not a participant → still open.",
+    "o2: b (a participant) scored hole 2 → expired.",
+    "s3: signed; c and b have both scored hole 2 → resolved, b missed par, caller wins. No medals or points until the round is complete."
+  ]
+}
