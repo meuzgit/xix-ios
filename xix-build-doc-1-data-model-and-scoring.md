@@ -1,6 +1,6 @@
 # XIX — Build Document 1: Data Model and Scoring Engine
 
-**Version:** 1.0 · 12 September 2026  
+**Version:** 1.2 · 11 September 2026 — clarifications from engine v0.2.0 (crew callout responses, Skins void, abandonment, Worst Hole points)  
 **Source of truth:** PRD v0.3, Claude Design Passes 5–7  
 **Scope:** the Supabase schema and RLS, and the pure-Swift scoring module with its contracts, algorithms, edge cases and test fixtures. No UI, no sync logic (Build Document 2).
 
@@ -96,10 +96,15 @@ callouts
   caller_id uuid fk players
   target_ids uuid[]             -- one player, or all others
   params jsonb                  -- target: {"goal":"par"|"birdie"|n}; duel: {}; partner: {"partner_id"|null}; multiplier: {"game_id", "factor":2}
-  status text ('open','signed','ducked','expired','resolved')
-  responder_id uuid fk players  -- who signed/ducked
-  responded_at timestamptz
+  status text ('open','live','expired','resolved')   -- derived from responses + scores
   created_at timestamptz
+
+callout_responses               -- one row per target; crew callouts have several
+  callout_id uuid fk callouts
+  player_id uuid fk players     -- must be in callouts.target_ids
+  action text ('signed','ducked')
+  responded_at timestamptz
+  pk (callout_id, player_id)
 
 stickers
   id uuid pk
@@ -149,7 +154,7 @@ ranking_entries                  -- materialised nightly
 - `players`: readable by round members; insert/update by owner; a member may update only their own row's `display_name` after claiming; `claimed_at` set via RPC `claim_row(round_id, player_id)` which requires the row be unclaimed.
 - `scores`: insert/update allowed if (a) `player_id` is the caller's own row, or (b) caller is round owner. Read for members.
 - `games`, `game_players`: owner only, and only while `rounds.status = 'setup'` or no `scores` exist for hole 1 (enforced in RPC `set_games`).
-- `callouts`: insert by any member for a hole with no scores yet; update `status/responder_id` only by a member in `target_ids`; expiry set by trigger when a score lands on that hole.
+- `callouts`: insert by any member for a hole with no participant scores yet. `callout_responses`: insert only by a player in `target_ids`, one row per player, immutable once written. Expiry set by trigger when a participant's score lands on that hole.
 - `stickers`: insert by any member; `sender_player_id` must equal the caller's own row (trigger); cap 3 per hole per sender (trigger); `played_at` updatable only by the target.
 - `results`: written by the engine (service role or edge function); read by members.
 - `medals`: read own; written by engine.
@@ -157,7 +162,7 @@ ranking_entries                  -- materialised nightly
 
 ### A.4 Triggers
 
-- `expire_callouts_on_score`: on insert/update of `scores`, set any `callouts.status='open'` for that hole to `'expired'`.
+- `expire_callouts_on_score`: on insert/update of `scores` by a callout participant (caller or target), mark that callout's hole as closed to further responses; targets without a response are treated as expired for that callout.
 - `sticker_rate_limit`: reject the 4th sticker per (round, hole, sender).
 - `recompute_results`: on any change to `scores`, `games`, `game_players`, `callouts` for a round → enqueue engine run (edge function) → upsert `results`. Client also computes locally for instant UI; server result is authoritative for medals and rankings.
 - `auto_confirm`: nightly job marks rounds ended > 48h with ≥ 1 confirmation or no objection as counted.
@@ -187,7 +192,7 @@ struct RoundInput {
 enum HoleScore { case strokes(Int), pickedUp }
 struct PlayerInput { let id: PlayerID; let level: Double? }   // Level 1–10 or index; nil = none
 struct GameInput { let id: GameID; let format: Format; let options: Options; let players: [PlayerID]; let sides: [PlayerID: Int]? }
-struct CalloutInput { let id: CalloutID; let hole: Int; let kind: CalloutKind; let caller: PlayerID; let targets: [PlayerID]; let params: CalloutParams; let status: CalloutStatus }
+struct CalloutInput { let id: CalloutID; let hole: Int; let kind: CalloutKind; let caller: PlayerID; let targets: [PlayerID]; let params: CalloutParams; let responses: [PlayerID: CalloutResponse] /* .signed | .ducked; absent = no response */ }
 ```
 
 ### B.3 Output contract
@@ -257,31 +262,31 @@ Each format defines `standings(throughHole)` and `outcome()`; ties are explicit,
 
 ### B.6 Callouts
 
-Resolve only if `status == .signed` at the time the hole's scores are complete. `open` → becomes `expired` when the hole resolves without signature. `ducked` → no result; recorded as ducked by responder.
+**Responses are per target.** Every target signs or ducks independently; a crew callout is several individual acceptances, not one. The callout resolves among the targets who signed, once the caller and those targets have scores on the hole. Targets who ducked are recorded as ducked (no result for them). Targets with no response when a participant's score lands are expired for that callout. If nobody signed, the callout has no result and is reported `expired` (or `ducked` if every target ducked). The caller is never a target (B.8.10).
 
-- **Target** `goal ∈ {par, birdie, n}`: each target player hits if effective strokes ≤ goal. Any hit → hitters win; none → caller wins.
+- **Target** `goal ∈ {par, birdie, n}`: each *signed* target hits if effective strokes ≤ goal. Any hit → hitters win; none → caller wins (against the signed targets only).
 - **Duel**: caller vs single target on the hole; lower wins; tie → halved.
-- **Partner** (one-hole Wolf): caller (+ partner if any) vs the rest; best ball per side; lower wins; tie halved. Lone caller who wins earns `double` in the callout medal set.
-- **Multiplier**: applies `factor` to the referenced game on that hole only — Skins: hole worth `factor` skins; Match Play/Nassau: hole counts as `factor` holes up; Stableford/Stroke: points/strokes difference on that hole × factor in standings. Never alters other games.
+- **Partner** (one-hole Wolf): caller (+ partner if any) vs the rest; the named partner is on the caller's side and is not a target, so does not respond — only the "rest" must sign; best ball per side; lower wins; tie halved. Lone caller who wins earns `double` in the callout medal set.
+- **Multiplier**: takes effect only when **every** target signed; a partly signed multiplier resolves as expired with a reason and the game ignores it. When live it applies `factor` to the referenced game on that hole only — Skins: hole worth `factor` skins; Match Play/Nassau: hole counts as `factor` holes up; Stableford/Stroke: points/strokes difference on that hole × factor in standings. Never alters other games.
 
 ### B.7 Medals and Rival Points (on `.complete` only)
 
-Medal keys (V1): `nassau_front`, `nassau_back`, `nassau_18`, `skins_two` (≥2 skins in a round), `skins_four`, `matchplay_win`, `stableford_top`, `stroke_low_gross`, `five_pars`, `no_blowups`, `beat_average`, `callout_called_it` (target won as caller), `callout_duel`, `callout_lone_wolf`, `callout_ducked_nothing` (signed every callout received, ≥2), `rabbit_9`, `rabbit_18`, `personal_best` (needs history input).
+Medal keys (V1): `nassau_front`, `nassau_back`, `nassau_18`, `skins_two` (≥2 skins in a round), `skins_four`, `matchplay_win`, `stableford_top`, `stroke_low_gross`, `five_pars`, `no_blowups`, `beat_average`, `callout_called_it` (target won as caller), `callout_duel`, `callout_lone_wolf`, `callout_ducked_nothing` (signed every callout the player personally received as a target, ≥2), `rabbit_9`, `rabbit_18`, `personal_best` (needs history input).
 
-Rival Points: for each game outcome, winner(s) receive `base(format) × opponentFactor`, where `base` = 10 (individual formats), 6 (team formats), 4 (casual-first), 3 (callout); `opponentFactor = 1 + 0.1 × max(0, opponentLevel − ownLevel)` using the strongest opponent; halved → half to each side. Ducked callouts give 0 to everyone. Points are integers (rounded).
+Rival Points: for each game outcome, winner(s) receive `base(format) × opponentFactor`, where `base` = 10 (individual formats), 6 (team formats), 4 (casual-first), 3 (callout); `opponentFactor = 1 + 0.1 × max(0, opponentLevel − ownLevel)` using the strongest opponent; halved → half to each side. Ducked callouts give 0 to everyone. **Worst Hole awards 0 Rival Points** (a booby prize is not a win). A Skins game in which no skin was won has no outcome and awards nothing. Fractions accumulate per player and round once at the end of the round (points are not additive per game). Points are integers.
 
 ### B.8 Edge cases (must have tests)
 
 1. Round with par nil on some holes: Stableford unavailable; Skins/Match/Nassau fine; toPar nil; marks only where par exists.
-2. Player leaves after hole 6: their games report `.abandoned(byPlayer)`; skins they hold stay; Nassau vs them ends as `.void`.
-3. All four tie every hole in Skins → 18 carry, void at end, zero skins to all.
+2. Player leaves after hole 6: Skins continues among the remaining players (skins already won stay; the game reports `.abandoned(by:)` only if fewer than two remain). Two-sided matches (Match Play, Best Ball match, Sixes segments) go `.void` unless already decided. Nassau reports `.abandoned(by:)` at game level with `.void` on undecided segments. Best-ball sides resolve on their remaining members and never wait for a departed one.
+3. All four tie every hole in Skins → 18 carry, void at end; the game outcome is `.void` (not a tie) and awards no medal or points.
 4. Skins with validation: carry of 3 won by a bogey → not awarded, carry continues.
 5. Picked up on a par-5 → 10 strokes; Stableford 0; Vegas digit is 10 → treat as two-digit component using effective strokes capped at 9 for digit concat (document: cap 9 for Vegas only).
 6. Match Play decided early (5&4): remaining holes don't change the result; standings freeze.
 7. Nassau 18 halved while front and back split.
 8. Nines with two tied high on a hole → 5/2/2.
 9. Multiplier callout on a Skins hole that is then halved → carry increases by `factor`.
-10. Target callout to "crew" where the caller also hits the target → caller does not count as a target; only targets can hit.
+10. Target callout to "crew" where the caller also hits the target → caller does not count as a target; only signed targets can hit. Tess signs, Dave ducks, Mo never responds → resolves between Ray and Tess only; Dave recorded ducked; Mo expired.
 11. Callout signed then a score lands on that hole from another player before the target plays: still valid (signature was before any score on that hole for the callout's participants — rule: expiry is triggered by the first score *from a participant*).
 12. 9-hole round: Nassau unavailable (needs 18); Sixes unavailable; Rabbit awards at 9 only.
 13. Two players only: Skins/Nines/Sixes unavailable (Skins allowed at 2? → allowed; Nines requires exactly 3; Sixes exactly 4).
@@ -291,7 +296,7 @@ Rival Points: for each game outcome, winner(s) receive `base(format) × opponent
 ### B.9 Test fixtures
 
 Provide as JSON under `Tests/Fixtures/`:
-- `fraserview_2026-09-09.json` — the four-player round used in every design pass (Ray 78, Dave 84, Mo 88 with one picked-up, Tess 78), games: Nassau (Ray–Dave), Skins (all, carryover, no validation), Stableford (Mo–Tess); callouts: target par on 8 (Ray→Dave, signed, nobody hit → Ray wins), target par on 12 (Ray→Dave, ducked). Expected: Nassau front Ray 1 up, back Dave, 18 halved; Skins Ray 2, Tess 2, Dave 1, Mo 0 with 1 carry void; medals `nassau_front` (Ray), `skins_two` (Ray, Tess), `callout_called_it` (Ray).
+- `fraserview_2026-09-09.json` — the four-player round used in every design pass (Ray 78, Dave 84, Mo 88 with one picked-up, Tess 78), games: Nassau (Ray–Dave), Skins (all, carryover, no validation), Stableford (Mo–Tess); callouts: target par on 8 (Ray→Dave, signed, nobody hit → Ray wins), target par on 12 (Ray→Dave, ducked). Expected (as corrected during engine build): Nassau front Ray 2&1 at 8, back halved, 18 Ray 5&4 at 14; Skins Ray 11, Tess 4, Mo 2, Dave 1, no void carry; Stableford Tess 30, Mo 22; medals `nassau_front`, `nassau_18`, `skins_two`, `skins_four`, `callout_called_it` (Ray), `skins_two`, `skins_four`, `stableford_top` (Tess), `skins_two` (Mo); Rival Points Ray 38, Dave 6, Tess 10, Mo 0.
 - `two_player_matchplay.json` — decided 4&3.
 - `nine_hole_no_par.json` — par nil, skins only.
 - `vegas_birdie_flip.json`, `nines_ties.json`, `sixes_rotation.json`, `quota.json`, `rabbit_moves.json`, `pickup_par5.json`, `abandon_hole6.json`, `multiplier_halved.json`.
