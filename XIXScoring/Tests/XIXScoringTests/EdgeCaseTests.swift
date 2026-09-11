@@ -63,4 +63,21 @@ final class EdgeCaseTests: XCTestCase {
     func testB8_14_MixedLevels() throws {
         try FixtureRunner.run("mixed_levels")
     }
+
+    func testB8_15_RecomputeIsIdempotentAndMedalsAreRederivedWithoutDuplicates() throws {
+        let fixture = try FixtureLoader.load("fraserview_2026-09-09")
+        let first = ScoringEngine.score(fixture.input)
+        XCTAssertEqual(ScoringEngine.score(fixture.input), first, "same input → identical result")
+
+        // Dave eagles 17 (was 5 on the par 5): he takes that skin, reaching two skins.
+        var edited = fixture.input
+        edited.scores[1][16] = 3
+        let recomputed = ScoringEngine.score(edited)
+        XCTAssertEqual(recomputed.engineVersion, first.engineVersion)
+        XCTAssertFalse(first.medals.contains(MedalAward(profile: "dave", key: .skinsTwo)))
+        XCTAssertTrue(recomputed.medals.contains(MedalAward(profile: "dave", key: .skinsTwo)), "medals derive from the edited scores")
+        let keys = recomputed.medals.map { "\($0.profile.rawValue)|\($0.key.rawValue)" }
+        XCTAssertEqual(Set(keys).count, keys.count, "never more than one medal per (profile, key)")
+        XCTAssertEqual(ScoringEngine.score(edited), recomputed)
+    }
 }
