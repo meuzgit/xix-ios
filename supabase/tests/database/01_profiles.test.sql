@@ -27,8 +27,8 @@ begin
   return n;
 end $$;
 -- A signed-in user who is in no round and no crew.
-insert into auth.users (instance_id, id, aud, role, email, raw_app_meta_data, raw_user_meta_data, is_anonymous, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change)
-values ('00000000-0000-0000-0000-000000000000', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'authenticated', 'authenticated', 'nobody@xix.local', '{}', '{"display_name":"Nobody"}', false, now(), now(), '', '', '', '');
+insert into auth.users (instance_id, id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change)
+values ('00000000-0000-0000-0000-000000000000', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'authenticated', 'authenticated', 'nobody@xix.local', '{}', '{"display_name":"Nobody"}', now(), now(), '', '', '', '');
 insert into xix.profiles (id, display_name) values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Nobody');
 
 -- Seeded ids (supabase/seed.sql)
@@ -52,8 +52,8 @@ select is(pg_temp.affected($$update xix.profiles set display_name = 'Raymond' wh
 select is(pg_temp.affected($$update xix.profiles set display_name = 'X' where id = (select dave from ids)$$), 0, 'another profile does not');
 select throws_ok($$insert into xix.profiles (id, display_name) values ('dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'Nope')$$, '42501', null, 'profiles are not inserted directly');
 select pg_temp.as_postgres();
-insert into auth.users (instance_id, id, aud, role, email, raw_app_meta_data, raw_user_meta_data, is_anonymous, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change)
-values ('00000000-0000-0000-0000-000000000000', 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'authenticated', 'authenticated', 'new@xix.local', '{}', '{"display_name":"Newcomer"}', false, now(), now(), '', '', '', '');
+insert into auth.users (instance_id, id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change)
+values ('00000000-0000-0000-0000-000000000000', 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'authenticated', 'authenticated', 'new@xix.local', '{}', '{"display_name":"Newcomer"}', now(), now(), '', '', '', '');
 select pg_temp.as_user('dddddddd-dddd-4ddd-8ddd-dddddddddddd');
 select is((select count(*)::int from xix.profiles), 0, 'a new auth user has no profile until their first XIX action');
 select is((select display_name from xix.ensure_profile()), 'Newcomer', 'ensure_profile creates it from the auth metadata');

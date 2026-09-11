@@ -2,29 +2,22 @@
 -- The Fraserview round (2026-09-09) as data: users, course, round, players, scores, games, callouts.
 begin;
 
--- Auth users and their xix.profiles rows (no trigger on auth.users; profiles come from ensure_profile()). Password is for local use only.
-insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, is_anonymous, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change)
-values ('00000000-0000-0000-0000-000000000000', '11111111-1111-4111-8111-111111111111', 'authenticated', 'authenticated', 'ray@xix.local', extensions.crypt('xix-local', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"display_name":"Ray"}'::jsonb, false, now(), now(), '', '', '', '');
-insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
-values ('11111111-1111-4111-8111-111111111111', '11111111-1111-4111-8111-111111111111', '11111111-1111-4111-8111-111111111111', '{"sub":"11111111-1111-4111-8111-111111111111","email":"ray@xix.local"}'::jsonb, 'email', now(), now(), now());
-insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, is_anonymous, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change)
-values ('00000000-0000-0000-0000-000000000000', '22222222-2222-4222-8222-222222222222', 'authenticated', 'authenticated', 'dave@xix.local', extensions.crypt('xix-local', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"display_name":"Dave"}'::jsonb, false, now(), now(), '', '', '', '');
-insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
-values ('22222222-2222-4222-8222-222222222222', '22222222-2222-4222-8222-222222222222', '22222222-2222-4222-8222-222222222222', '{"sub":"22222222-2222-4222-8222-222222222222","email":"dave@xix.local"}'::jsonb, 'email', now(), now(), now());
-insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, is_anonymous, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change)
-values ('00000000-0000-0000-0000-000000000000', '33333333-3333-4333-8333-333333333333', 'authenticated', 'authenticated', 'mo@xix.local', extensions.crypt('xix-local', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"display_name":"Mo"}'::jsonb, false, now(), now(), '', '', '', '');
-insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
-values ('33333333-3333-4333-8333-333333333333', '33333333-3333-4333-8333-333333333333', '33333333-3333-4333-8333-333333333333', '{"sub":"33333333-3333-4333-8333-333333333333","email":"mo@xix.local"}'::jsonb, 'email', now(), now(), now());
-insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, is_anonymous, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change)
-values ('00000000-0000-0000-0000-000000000000', '44444444-4444-4444-8444-444444444444', 'authenticated', 'authenticated', 'tess@xix.local', extensions.crypt('xix-local', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"display_name":"Tess"}'::jsonb, false, now(), now(), '', '', '', '');
-insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
-values ('44444444-4444-4444-8444-444444444444', '44444444-4444-4444-8444-444444444444', '44444444-4444-4444-8444-444444444444', '{"sub":"44444444-4444-4444-8444-444444444444","email":"tess@xix.local"}'::jsonb, 'email', now(), now(), now());
+-- Auth users. Sign in with Apple only: no password and no identity rows here; local sessions for
+-- these users are minted from the local JWT secret in tests.
+insert into auth.users (instance_id, id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change)
+values ('00000000-0000-0000-0000-000000000000', '11111111-1111-4111-8111-111111111111', 'authenticated', 'authenticated', 'ray@privaterelay.appleid.com', now(), '{"provider":"apple","providers":["apple"]}', '{"display_name":"Ray"}'::jsonb, now(), now(), '', '', '', '');
+insert into auth.users (instance_id, id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change)
+values ('00000000-0000-0000-0000-000000000000', '22222222-2222-4222-8222-222222222222', 'authenticated', 'authenticated', 'dave@privaterelay.appleid.com', now(), '{"provider":"apple","providers":["apple"]}', '{"display_name":"Dave"}'::jsonb, now(), now(), '', '', '', '');
+insert into auth.users (instance_id, id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change)
+values ('00000000-0000-0000-0000-000000000000', '33333333-3333-4333-8333-333333333333', 'authenticated', 'authenticated', 'mo@privaterelay.appleid.com', now(), '{"provider":"apple","providers":["apple"]}', '{"display_name":"Mo"}'::jsonb, now(), now(), '', '', '', '');
+insert into auth.users (instance_id, id, aud, role, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change)
+values ('00000000-0000-0000-0000-000000000000', '44444444-4444-4444-8444-444444444444', 'authenticated', 'authenticated', 'tess@privaterelay.appleid.com', now(), '{"provider":"apple","providers":["apple"]}', '{"display_name":"Tess"}'::jsonb, now(), now(), '', '', '', '');
 
 -- Profiles; Level (auto) is the fixture's level for each player.
-insert into xix.profiles (id, display_name, is_anonymous, level_auto) values ('11111111-1111-4111-8111-111111111111', 'Ray', false, 5);
-insert into xix.profiles (id, display_name, is_anonymous, level_auto) values ('22222222-2222-4222-8222-222222222222', 'Dave', false, 4);
-insert into xix.profiles (id, display_name, is_anonymous, level_auto) values ('33333333-3333-4333-8333-333333333333', 'Mo', false, 3);
-insert into xix.profiles (id, display_name, is_anonymous, level_auto) values ('44444444-4444-4444-8444-444444444444', 'Tess', false, 5);
+insert into xix.profiles (id, display_name, level_auto) values ('11111111-1111-4111-8111-111111111111', 'Ray', 5);
+insert into xix.profiles (id, display_name, level_auto) values ('22222222-2222-4222-8222-222222222222', 'Dave', 4);
+insert into xix.profiles (id, display_name, level_auto) values ('33333333-3333-4333-8333-333333333333', 'Mo', 3);
+insert into xix.profiles (id, display_name, level_auto) values ('44444444-4444-4444-8444-444444444444', 'Tess', 5);
 
 -- Course
 insert into xix.courses (id, name, region, created_by) values ('55555555-5555-4555-8555-555555555555', 'Fraserview', 'Vancouver', '11111111-1111-4111-8111-111111111111');

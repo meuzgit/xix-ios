@@ -10,18 +10,19 @@ begin
 end;
 $$;
 
--- Upsert the caller's profile from auth.users. Called by the client on its first XIX action and by every
--- RPC below, so a profile always exists before anything references it. Keeps is_anonymous in step.
+-- Create the caller's profile from auth.users if it does not exist yet. Called by the client right after
+-- the first Sign in with Apple and by every RPC below, so a profile always exists before anything
+-- references it. The display name comes from the Apple credential's metadata and stays editable.
 create or replace function xix.ensure_profile()
 returns xix.profiles language plpgsql security definer set search_path = xix, pg_temp as $$
 declare me uuid := xix.require_auth(); p xix.profiles;
 begin
-  insert into xix.profiles (id, display_name, is_anonymous)
-  select u.id, nullif(trim(u.raw_user_meta_data ->> 'display_name'), ''), coalesce(u.is_anonymous, false)
+  insert into xix.profiles (id, display_name)
+  select u.id, nullif(trim(coalesce(u.raw_user_meta_data ->> 'display_name', u.raw_user_meta_data ->> 'full_name', u.raw_user_meta_data ->> 'name')), '')
     from auth.users u where u.id = me
-  on conflict (id) do update set is_anonymous = excluded.is_anonymous
-  returning * into p;
-  if p.id is null then
+  on conflict (id) do nothing;
+  select * into p from xix.profiles x where x.id = me;
+  if not found then
     raise exception 'no auth user for %', me using errcode = 'P0002';
   end if;
   return p;

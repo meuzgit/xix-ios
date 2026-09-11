@@ -7,18 +7,18 @@ alter default privileges in schema xix grant all on tables to service_role;
 alter default privileges in schema xix grant all on sequences to service_role;
 alter default privileges in schema xix grant execute on functions to service_role;
 
--- profiles: one per auth user, created by ensure_profile(); never by a trigger on auth.users.
+-- profiles: one per auth user (Sign in with Apple on the shared Meuz auth), created by ensure_profile();
+-- never by a trigger on auth.users. No anonymous tier.
 create table xix.profiles (
   id            uuid primary key references auth.users (id) on delete cascade,
   display_name  text,
-  is_anonymous  boolean not null default true,      -- mirrors auth.users.is_anonymous
   level_auto    numeric(4,1),                       -- rolling avg vs par; null until 3 rounds
   level_index   numeric(4,1),                       -- user-entered index, overrides
   created_at    timestamptz not null default now()
 );
 
--- Profiles are created lazily by xix.ensure_profile() (0010) on the caller's first XIX action.
--- Nothing in this schema touches auth.users: the Supabase project is shared with other apps.
+-- Profiles are created lazily by xix.ensure_profile() (0010) right after the first sign-in.
+-- Nothing in this schema touches auth.users or auth settings: the Supabase project is shared with other apps.
 
 -- courses: free text, no match required; global merge is a later concern.
 create table xix.courses (
