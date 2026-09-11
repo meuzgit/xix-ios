@@ -176,6 +176,7 @@ public enum GameDetail: Equatable, Sendable {
     case stableford(StablefordDetail)
     case strokePlay(StrokePlayDetail)
     case sideStroke(SideStrokeDetail)
+    case vegas(VegasDetail)
 
     var kind: String {
         switch self {
@@ -186,6 +187,7 @@ public enum GameDetail: Equatable, Sendable {
         case .stableford: return "stableford"
         case .strokePlay: return "strokePlay"
         case .sideStroke: return "sideStroke"
+        case .vegas: return "vegas"
         }
     }
 
@@ -205,6 +207,8 @@ public enum GameDetail: Equatable, Sendable {
             self = .strokePlay(try StrokePlayDetail(from: container))
         case "sideStroke":
             self = .sideStroke(try SideStrokeDetail(from: container))
+        case "vegas":
+            self = .vegas(try VegasDetail(from: container))
         default:
             throw DecodingError.dataCorruptedError(
                 forKey: AnyCodingKey("detail"), in: container, debugDescription: "unknown game detail kind '\(kind)'")
@@ -226,6 +230,8 @@ public enum GameDetail: Equatable, Sendable {
         case .strokePlay(let d):
             try d.encode(into: &container)
         case .sideStroke(let d):
+            try d.encode(into: &container)
+        case .vegas(let d):
             try d.encode(into: &container)
         }
     }

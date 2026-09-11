@@ -284,3 +284,44 @@ public struct SideStrokeDetail: Equatable, Sendable {
         adjusted = try c.decode([String: Int].self, forKey: AnyCodingKey("adjusted"))
     }
 }
+
+// MARK: - Vegas
+
+public struct VegasDetail: Equatable, Sendable {
+    public var sides: [[PlayerID]]
+    public var perHole: [VegasHole]
+    public var totals: [String: Int]
+
+    public init(sides: [[PlayerID]], perHole: [VegasHole], totals: [String: Int]) {
+        self.sides = sides
+        self.perHole = perHole
+        self.totals = totals
+    }
+
+    func encode(into c: inout KeyedEncodingContainer<AnyCodingKey>) throws {
+        try c.encode(sides, forKey: AnyCodingKey("sides"))
+        try c.encode(perHole, forKey: AnyCodingKey("perHole"))
+        try c.encode(totals, forKey: AnyCodingKey("totals"))
+    }
+
+    init(from c: KeyedDecodingContainer<AnyCodingKey>) throws {
+        sides = try c.decode([[PlayerID]].self, forKey: AnyCodingKey("sides"))
+        perHole = try c.decode([VegasHole].self, forKey: AnyCodingKey("perHole"))
+        totals = try c.decode([String: Int].self, forKey: AnyCodingKey("totals"))
+    }
+}
+
+public struct VegasHole: Codable, Equatable, Sendable {
+    public var hole: Int
+    /// Each side's number after any birdie flip, keyed by side label.
+    public var numbers: [String: Int]
+    public var flipped: [String: Bool]
+    public var points: [String: Int]
+
+    public init(hole: Int, numbers: [String: Int], flipped: [String: Bool], points: [String: Int]) {
+        self.hole = hole
+        self.numbers = numbers
+        self.flipped = flipped
+        self.points = points
+    }
+}

@@ -35,6 +35,7 @@ enum FormatRegistry {
         case .alternateShot: return AlternateShotScorer.self
         case .chapman: return ChapmanScorer.self
         case .shamble: return ShambleScorer.self
+        case .vegas: return VegasScorer.self
         default: return nil
         }
     }

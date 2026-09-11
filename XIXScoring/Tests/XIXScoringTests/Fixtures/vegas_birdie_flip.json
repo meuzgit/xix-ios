@@ -1,0 +1,55 @@
+{
+  "fixture": "vegas_birdie_flip",
+  "description": "Vegas, sides a+b and c+d, four holes. Covers no flip, both sides flipped, a flip against a picked-up (digit capped at 9), and a flip on the last hole. Expected block worked by hand before the format was written.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 4,
+    "par": [4,3,5,4],
+    "strokeIndex": [],
+    "players": [ { "id": "a", "level": 5 }, { "id": "b", "level": 5 }, { "id": "c", "level": 5 }, { "id": "d", "level": 5 } ],
+    "scores": {
+      "a": [4,2,"PU",4],
+      "b": [5,4,5,5],
+      "c": [5,2,4,3],
+      "d": [6,3,7,3]
+    },
+    "games": [
+      { "id": "g_vegas", "format": "vegas", "players": ["a","b","c","d"], "sides": { "a": 0, "b": 0, "c": 1, "d": 1 } }
+    ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "perPlayer": {
+      "a": { "gross": 20, "toPar": 4, "pickedUp": 1, "marks": ["","circle","x",""] },
+      "c": { "gross": 14, "toPar": -2 }
+    },
+    "games": {
+      "g_vegas": {
+        "sides": [["a","b"],["c","d"]],
+        "perHole": [
+          { "hole": 1, "numbers": { "a+b": 45, "c+d": 56 }, "flipped": { "a+b": false, "c+d": false }, "points": { "a+b": 11, "c+d": 0 } },
+          { "hole": 2, "numbers": { "a+b": 42, "c+d": 32 }, "flipped": { "a+b": true,  "c+d": true  }, "points": { "a+b": 0,  "c+d": 10 } },
+          { "hole": 3, "numbers": { "a+b": 95, "c+d": 47 }, "flipped": { "a+b": true,  "c+d": false }, "points": { "a+b": 0,  "c+d": 48 } },
+          { "hole": 4, "numbers": { "a+b": 54, "c+d": 33 }, "flipped": { "a+b": true,  "c+d": false }, "points": { "a+b": 0,  "c+d": 21 } }
+        ],
+        "totals": { "a+b": 11, "c+d": 79 },
+        "outcome": { "side": 1, "players": ["c","d"] },
+        "display": { "a": "Vegas 11", "d": "Vegas 79" },
+        "standings": [ { "player": "c", "side": 1, "rank": 1 }, { "player": "d", "side": 1, "rank": 1 }, { "player": "a", "side": 0, "rank": 2 }, { "player": "b", "side": 0, "rank": 2 } ]
+      }
+    },
+    "medals": [],
+    "rivalPoints": { "a": 0, "b": 0, "c": 6, "d": 6 },
+    "leaderboard": {
+      "gross": [ { "player": "c", "value": 14, "rank": 1 }, { "player": "b", "value": 19, "rank": 2 }, { "player": "d", "value": 19, "rank": 2 }, { "player": "a", "value": 20, "rank": 4 } ]
+    }
+  },
+  "notes": [
+    "Hole 1 (par 4): 4,5 → 45 vs 5,6 → 56; no birdie; a+b take 11.",
+    "Hole 2 (par 3): a and c both birdie, so both sides flip: 24 → 42 and 23 → 32; c+d take 10.",
+    "Hole 3 (par 5): a picks up = 10 strokes, capped at 9 for the digit → 59; c birdies (4) so a+b flip to 95 vs 47; c+d take 48.",
+    "Hole 4 (par 4): 45 vs 33 with c and d both birdie → a+b flip to 54; c+d take 21.",
+    "Rival Points: team base 6, factor 1; c+d win → 6 each. No Vegas medal keys."
+  ]
+}
