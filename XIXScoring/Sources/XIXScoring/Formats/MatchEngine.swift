@@ -27,7 +27,14 @@ enum MatchEngine {
         var lastPlayed = range.lowerBound   // count of holes played, as an absolute 1-based hole number
 
         let allSeats = sides.flatMap(\.seats)
+        var abandonedBy: PlayerID? = nil
         for hole in range {
+            // A side with no active member left has departed: the match is void unless already decided (B.8.2).
+            if let gone = sides.first(where: { side in side.seats.allSatisfy { hole >= round.activeHoles[$0] } }) {
+                let leaver = gone.seats.first { round.activeHoles[$0] < round.holes } ?? gone.seats[0]
+                abandonedBy = round.players[leaver].id
+                break
+            }
             // Every active participant must have scored the hole (B.4.2).
             guard round.isResolved(hole: hole, seats: allSeats) else { break }
             let sideScores: [Int?] = sides.map { side in
@@ -57,12 +64,15 @@ enum MatchEngine {
         let lead = won[0] - won[1]
         let leader: MatchSide? = lead == 0 ? nil : (lead > 0 ? sides[0] : sides[1])
         let up = abs(lead)
-        let remaining = decidedAt != nil ? 0 : range.upperBound - lastPlayed
-        let complete = decidedAt != nil || lastPlayed == range.upperBound
+        let remaining = (decidedAt != nil || abandonedBy != nil) ? 0 : range.upperBound - lastPlayed
+        let complete = decidedAt != nil || abandonedBy != nil || lastPlayed == range.upperBound
 
         let result: String
         var outcome: Outcome? = nil
-        if let leader {
+        if abandonedBy != nil {
+            result = "void"
+            outcome = .void
+        } else if let leader {
             if let decidedAt {
                 result = "\(leader.label) \(up)&\(range.upperBound - decidedAt)"
             } else {
@@ -87,6 +97,7 @@ enum MatchEngine {
             leader: leader?.label,
             up: up,
             decidedAtHole: decidedAt,
+            abandonedBy: abandonedBy,
             complete: complete,
             result: result,
             matchOutcome: outcome,
@@ -98,6 +109,7 @@ enum MatchEngine {
     static func text(_ match: MatchPlayDetail, forSide side: Int, segment: String?) -> String {
         let seg = segment.map { " \($0)" } ?? ""
         let mine = match.sides[side].map(\.rawValue).joined(separator: "+")
+        if match.abandonedBy != nil { return segment.map { "\($0) void" } ?? "void" }
         let started = match.throughHole > match.firstHole - 1
         guard started else { return segment.map { "\($0) to play" } ?? "to play" }
         guard let leader = match.leader else {

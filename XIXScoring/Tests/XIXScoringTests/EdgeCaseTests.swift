@@ -6,4 +6,21 @@ final class EdgeCaseTests: XCTestCase {
     func testB8_5_PickedUpOnParFive() throws {
         try FixtureRunner.run("pickup_par5")
     }
+
+    func testB8_2_PlayerLeavesAfterHole6() throws {
+        try FixtureRunner.run("abandon_hole6")
+    }
+
+    func testB8_2_SkinsWithOnePlayerLeftIsAbandoned() {
+        var players = [PlayerInput(id: "a", level: 5), PlayerInput(id: "b", level: 5)]
+        players[1].extras = PlayerExtras(leftAfterHole: 1)
+        let input = RoundInput(holes: 3, par: [4, 4, 4], strokeIndex: [], players: players,
+                               scores: [[3, 4, 4], [4, nil, nil]],
+                               games: [GameInput(id: "s", format: .skins, players: ["a", "b"])])
+        let r = ScoringEngine.score(input)
+        XCTAssertEqual(r.games[0].outcome, .abandoned(by: "b"))
+        if case .skins(let d)? = r.games.first?.detail { XCTAssertEqual(d.totals["a"], 1, "skins held before the departure stay") } else { XCTFail() }
+        XCTAssertTrue(r.medals.isEmpty)
+        XCTAssertEqual(r.rivalPoints, ["a": 0, "b": 0])
+    }
 }

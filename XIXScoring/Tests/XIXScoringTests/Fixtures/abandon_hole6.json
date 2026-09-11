@@ -1,0 +1,79 @@
+{
+  "fixture": "abandon_hole6",
+  "description": "B.8.2: Mo leaves after hole 6. The Nassau front was already decided 5&4 and stands; the back and 18 are void and the game reports abandoned by Mo. Mo's skin stays and Skins continues among the other three. A Match Play against Mo is void. Stableford between the others is unaffected. Expected block worked by hand before the engine change.",
+  "engineVersion": 1,
+  "input": {
+    "holes": 18,
+    "par": [4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4],
+    "strokeIndex": [],
+    "players": [
+      { "id": "ray",  "level": 5 },
+      { "id": "dave", "level": 5 },
+      { "id": "mo",   "level": 5, "extras": { "leftAfterHole": 6 } },
+      { "id": "tess", "level": 5 }
+    ],
+    "scores": {
+      "ray":  [3,3,3,3,3,4, 4,4,4,4,4,4, 4,4,4,4,4,4],
+      "dave": [4,4,4,4,4,4, 4,4,4,3,4,4, 4,4,4,4,4,4],
+      "mo":   [4,4,4,4,4,3, null,null,null,null,null,null, null,null,null,null,null,null],
+      "tess": [4,4,4,4,4,4, 4,4,3,4,4,4, 4,4,4,4,4,3]
+    },
+    "games": [
+      { "id": "g_nassau", "format": "nassau",     "players": ["ray","mo"] },
+      { "id": "g_skins",  "format": "skins",      "players": ["ray","dave","mo","tess"] },
+      { "id": "g_stab",   "format": "stableford", "players": ["ray","dave"] },
+      { "id": "g_match",  "format": "match_play", "players": ["dave","mo"] }
+    ],
+    "callouts": []
+  },
+  "expected": {
+    "status": "complete",
+    "perPlayer": { "mo": { "gross": 23, "holesEntered": 6 }, "ray": { "gross": 67 } },
+    "games": {
+      "g_nassau": {
+        "front":   { "holesWon": { "ray": 5, "mo": 0 }, "halved": 0, "decidedAtHole": 5, "result": "ray 5&4", "matchOutcome": "ray" },
+        "back":    { "holesWon": { "ray": 0, "mo": 0 }, "halved": 0, "result": "void", "abandonedBy": "mo", "matchOutcome": "void" },
+        "match18": { "holesWon": { "ray": 5, "mo": 1 }, "halved": 0, "result": "void", "abandonedBy": "mo", "matchOutcome": "void" },
+        "outcome": { "abandoned": "mo" },
+        "display": { "ray": "Nassau won front 5&4 · back void · 18 void", "mo": "Nassau lost front 5&4 · back void · 18 void" }
+      },
+      "g_skins": {
+        "totals": { "ray": 5, "dave": 1, "mo": 1, "tess": 11 },
+        "voidCarry": 0,
+        "outcome": "tess"
+      },
+      "g_stab":  { "totals": { "ray": 41, "dave": 37 }, "outcome": "ray" },
+      "g_match": {
+        "holesWon": { "dave": 0, "mo": 1 }, "halved": 5, "result": "void", "abandonedBy": "mo",
+        "outcome": { "abandoned": "mo" },
+        "display": { "dave": "Match void", "mo": "Match void" }
+      }
+    },
+    "holeEvents": [
+      { "hole": 1,  "text": "Skin to Ray." }, { "hole": 2, "text": "Skin to Ray." }, { "hole": 3, "text": "Skin to Ray." },
+      { "hole": 4,  "text": "Skin to Ray." }, { "hole": 5, "text": "Skin to Ray." }, { "hole": 6, "text": "Skin to Mo." },
+      { "hole": 7,  "text": "Halved. 1 carrying to 8." }, { "hole": 8, "text": "Halved. 2 carrying to 9." },
+      { "hole": 9,  "text": "Skin to Tess. Carry cleared." }, { "hole": 10, "text": "Skin to Dave." },
+      { "hole": 11, "text": "Halved. 1 carrying to 12." }, { "hole": 12, "text": "Halved. 2 carrying to 13." },
+      { "hole": 13, "text": "Halved. 3 carrying to 14." }, { "hole": 14, "text": "Halved. 4 carrying to 15." },
+      { "hole": 15, "text": "Halved. 5 carrying to 16." }, { "hole": 16, "text": "Halved. 6 carrying to 17." },
+      { "hole": 17, "text": "Halved. 7 carrying to 18." }, { "hole": 18, "text": "Skin to Tess. Carry cleared." }
+    ],
+    "medals": [
+      { "profile": "ray",  "key": "nassau_front",   "opponent": "mo" },
+      { "profile": "tess", "key": "skins_two",      "opponent": null },
+      { "profile": "tess", "key": "skins_four",     "opponent": null },
+      { "profile": "ray",  "key": "skins_two",      "opponent": null },
+      { "profile": "ray",  "key": "skins_four",     "opponent": null },
+      { "profile": "ray",  "key": "stableford_top", "opponent": "dave" }
+    ],
+    "rivalPoints": { "ray": 20, "dave": 0, "mo": 0, "tess": 10 }
+  },
+  "notes": [
+    "Round is complete once every player has entered every hole they are expected to play; Mo is expected through 6 only.",
+    "Nassau front: Ray wins 1–5 → 5 up with 4 to play → 5&4 at hole 5, decided before Mo left, so it stands and awards nassau_front and 10 points.",
+    "Nassau back never starts and the 18 is undecided when Mo leaves (Ray 4 up after 6) → both void; the game reports abandoned by Mo. Void segments award nothing.",
+    "Skins: Mo's skin on 6 stays. From hole 7 the other three contest; the carry runs 1–2 then Tess takes 3 on hole 9, Dave 1 on 10, and Tess 8 on 18 after seven halved holes.",
+    "Match Play Dave–Mo: five halves, Mo 1 up after 6, void when Mo leaves → abandoned; no matchplay_win."
+  ]
+}

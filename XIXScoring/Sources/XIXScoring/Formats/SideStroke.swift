@@ -119,7 +119,8 @@ enum BestBallScorer: FormatScorer {
             })
             let result = GameResult(gameID: game.id, format: .bestBall, throughHole: through,
                                     standings: MatchEngine.standings(match, sides: sides),
-                                    outcome: match.matchOutcome, display: display, detail: .matchPlay(match))
+                                    outcome: match.abandonedBy.map { .abandoned(by: $0) } ?? match.matchOutcome,
+                                    display: display, detail: .matchPlay(match))
             return ScoredGame(result: result)
         }
     }

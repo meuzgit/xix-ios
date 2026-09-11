@@ -81,6 +81,8 @@ public struct MatchPlayDetail: Codable, Equatable, Sendable {
     public var up: Int                       // leader's lead
     /// Set when the match was decided before its last hole (B.5, B.8.6). Standings freeze there.
     public var decidedAtHole: Int?
+    /// Set when a side lost its last active member before the match was decided (B.8.2): the match is void.
+    public var abandonedBy: PlayerID?
     public var complete: Bool
     /// "ray 3 up", "halved", "ray 5&4", "all square".
     public var result: String
@@ -89,7 +91,7 @@ public struct MatchPlayDetail: Codable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case sides, holesWon, halved, firstHole, lastHole, throughHole, holesRemaining, leader, up,
-             decidedAtHole, complete, result, matchOutcome, perHole
+             decidedAtHole, abandonedBy, complete, result, matchOutcome, perHole
     }
 
     func encode(into c: inout KeyedEncodingContainer<AnyCodingKey>) throws {
@@ -103,6 +105,7 @@ public struct MatchPlayDetail: Codable, Equatable, Sendable {
         try c.encodeIfPresent(leader, forKey: AnyCodingKey("leader"))
         try c.encode(up, forKey: AnyCodingKey("up"))
         try c.encodeIfPresent(decidedAtHole, forKey: AnyCodingKey("decidedAtHole"))
+        try c.encodeIfPresent(abandonedBy, forKey: AnyCodingKey("abandonedBy"))
         try c.encode(complete, forKey: AnyCodingKey("complete"))
         try c.encode(result, forKey: AnyCodingKey("result"))
         try c.encodeIfPresent(matchOutcome, forKey: AnyCodingKey("matchOutcome"))
@@ -120,6 +123,7 @@ public struct MatchPlayDetail: Codable, Equatable, Sendable {
         leader = try c.decodeIfPresent(String.self, forKey: AnyCodingKey("leader"))
         up = try c.decode(Int.self, forKey: AnyCodingKey("up"))
         decidedAtHole = try c.decodeIfPresent(Int.self, forKey: AnyCodingKey("decidedAtHole"))
+        abandonedBy = try c.decodeIfPresent(PlayerID.self, forKey: AnyCodingKey("abandonedBy"))
         complete = try c.decode(Bool.self, forKey: AnyCodingKey("complete"))
         result = try c.decode(String.self, forKey: AnyCodingKey("result"))
         matchOutcome = try c.decodeIfPresent(Outcome.self, forKey: AnyCodingKey("matchOutcome"))
@@ -128,7 +132,7 @@ public struct MatchPlayDetail: Codable, Equatable, Sendable {
 
     public init(sides: [[PlayerID]], holesWon: [String: Int], halved: Int, firstHole: Int, lastHole: Int,
                 throughHole: Int, holesRemaining: Int, leader: String?, up: Int, decidedAtHole: Int?,
-                complete: Bool, result: String, matchOutcome: Outcome?, perHole: [MatchHole]) {
+                abandonedBy: PlayerID? = nil, complete: Bool, result: String, matchOutcome: Outcome?, perHole: [MatchHole]) {
         self.sides = sides
         self.holesWon = holesWon
         self.halved = halved
@@ -139,6 +143,7 @@ public struct MatchPlayDetail: Codable, Equatable, Sendable {
         self.leader = leader
         self.up = up
         self.decidedAtHole = decidedAtHole
+        self.abandonedBy = abandonedBy
         self.complete = complete
         self.result = result
         self.matchOutcome = matchOutcome

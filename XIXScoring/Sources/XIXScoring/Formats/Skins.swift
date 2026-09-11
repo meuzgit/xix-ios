@@ -24,6 +24,7 @@ enum SkinsScorer: FormatScorer {
         var totals: [PlayerID: Int] = Dictionary(uniqueKeysWithValues: game.players.map { ($0, 0) })
         var perHole: [SkinsHole] = []
         var events: [HoleEvent] = []
+        var abandonedBy: PlayerID? = nil
 
         for hole in 0..<through {
             let holeNumber = hole + 1
@@ -31,6 +32,11 @@ enum SkinsScorer: FormatScorer {
             let worth = context.multiplier(for: game.id, hole: holeNumber)
             let scored = seats.compactMap { seat in strokes(seat, hole).map { (seat: seat, strokes: $0) } }
             guard scored.count >= 2, let low = scored.map(\.strokes).min() else {
+                // Fewer than two players left to contest the hole: a departure ends the game (B.8.2).
+                if let gone = seats.first(where: { round.activeHoles[$0] < round.holes }) {
+                    abandonedBy = round.players[gone].id
+                    break
+                }
                 perHole.append(SkinsHole(hole: holeNumber, winner: nil, skins: 0, carryAfter: carry))
                 continue
             }
@@ -79,7 +85,12 @@ enum SkinsScorer: FormatScorer {
             "\(n) skin\(n == 1 ? "" : "s")"
         }
         let display = GameDisplay(uniqueKeysWithValues: values.map { ($0.0, "Skins \($0.1)") })
-        let outcome: Outcome? = complete ? FormatSupport.outcome(values, higherIsBetter: true, round: round) : nil
+        var outcome: Outcome? = nil
+        if let abandonedBy {
+            outcome = .abandoned(by: abandonedBy)
+        } else if complete {
+            outcome = FormatSupport.outcome(values, higherIsBetter: true, round: round)
+        }
 
         let result = GameResult(
             gameID: game.id, format: .skins, throughHole: through, standings: standings, outcome: outcome,

@@ -44,7 +44,9 @@ enum SixesScorer: FormatScorer {
         let values = p.map { ($0, totals[$0] ?? 0) }
         let standings = FormatSupport.standings(values, higherIsBetter: true, round: round) { "\($0) pts" }
         let display = GameDisplay(uniqueKeysWithValues: values.map { ($0.0, "Sixes \($0.1)") })
-        let outcome: Outcome? = complete ? FormatSupport.outcome(values, higherIsBetter: true, round: round) : nil
+        let abandonedBy = segments.compactMap(\.match.abandonedBy).first
+        let outcome: Outcome? = abandonedBy.map { .abandoned(by: $0) }
+            ?? (complete ? FormatSupport.outcome(values, higherIsBetter: true, round: round) : nil)
         let result = GameResult(gameID: game.id, format: .sixes, throughHole: through, standings: standings, outcome: outcome,
                                 display: display, detail: .sixes(SixesDetail(segments: segments, totals: totals)))
         return ScoredGame(result: result)

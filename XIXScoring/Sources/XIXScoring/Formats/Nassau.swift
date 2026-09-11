@@ -42,9 +42,12 @@ enum NassauScorer: FormatScorer {
         for i in standings.indices { standings[i].side = sides.first { $0.ids.contains(standings[i].player) }?.index }
 
         // The game-level outcome is the 18-hole match; each segment carries its own in `detail`.
+        // A departure (B.8.2) voids the undecided segments and the game reports abandoned.
         let allComplete = detail.segments.allSatisfy(\.match.complete)
+        let abandonedBy = detail.segments.compactMap(\.match.abandonedBy).first
+        let outcome: Outcome? = abandonedBy.map { .abandoned(by: $0) } ?? (allComplete ? detail.match18.matchOutcome : nil)
         let result = GameResult(gameID: game.id, format: .nassau, throughHole: through, standings: standings,
-                                outcome: allComplete ? detail.match18.matchOutcome : nil,
+                                outcome: outcome,
                                 display: display, detail: .nassau(detail))
         return ScoredGame(result: result)
     }
