@@ -61,6 +61,8 @@ begin
   if not found then
     raise exception 'row is not available to claim' using errcode = 'P0002';
   end if;
+  -- A claimed row can now hold medals: recompute so they appear on claiming, not on the next score.
+  perform xix.enqueue_engine_run(claim_row.round_id);
   return p;
 end;
 $$;

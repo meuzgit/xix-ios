@@ -103,10 +103,20 @@ begin
   if xix.is_round_owner(new.round_id) then
     return new;
   end if;
+  -- Claiming a free row as yourself (claim_row) and leaving (leave_round) are the two changes a
+  -- non-owner may make beyond display_name; both go through their RPCs.
+  if old.profile_id is null and new.profile_id = auth.uid() and new.claimed_at is not null
+     and new.round_id = old.round_id and new.seat = old.seat and new.level_snapshot is not distinct from old.level_snapshot
+     and new.left_at is not distinct from old.left_at then
+    return new;
+  end if;
   if new.round_id is distinct from old.round_id or new.profile_id is distinct from old.profile_id
      or new.seat is distinct from old.seat or new.level_snapshot is distinct from old.level_snapshot
-     or new.claimed_at is distinct from old.claimed_at or new.left_at is distinct from old.left_at then
+     or new.claimed_at is distinct from old.claimed_at then
     raise exception 'members may change only their own display_name' using errcode = '42501';
+  end if;
+  if new.left_at is distinct from old.left_at and old.profile_id is distinct from auth.uid() then
+    raise exception 'only the player or the owner can mark a row as left' using errcode = '42501';
   end if;
   return new;
 end;
