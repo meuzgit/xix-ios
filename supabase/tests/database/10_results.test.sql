@@ -44,6 +44,8 @@ select pg_temp.share();
 
 select plan(4);
 
+-- The engine may already have written this round; the test owns the row for the transaction.
+delete from xix.results where round_id = (select round from ids);
 insert into xix.results (round_id, version, payload) values ((select round from ids), 1, '{"engineVersion":1}'::jsonb);
 select pg_temp.as_user((select dave from ids));
 select is((select count(*)::int from xix.results), 1, 'a member reads the result');

@@ -1,0 +1,37 @@
+name: engine parity
+
+# The native and WebAssembly builds of XIXScoring must produce identical RoundResult JSON for every
+# fixture (Build Doc 2 B.3). This is what lets the app trust its local engine against the server's.
+on:
+  push:
+    paths: ["XIXScoring/**", "scripts/**", ".github/workflows/engine-parity.yml"]
+  pull_request:
+    paths: ["XIXScoring/**", "scripts/**", ".github/workflows/engine-parity.yml"]
+
+jobs:
+  parity:
+    runs-on: ubuntu-24.04
+    env:
+      SWIFT_VERSION: 6.3.3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install swiftly and Swift ${{ env.SWIFT_VERSION }}
+        run: |
+          curl -sSfL "https://download.swift.org/swiftly/linux/swiftly-$(uname -m).tar.gz" | tar xz
+          ./swiftly init --assume-yes --skip-install --no-modify-profile --quiet-shell-followup
+          echo "$HOME/.local/share/swiftly/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.local/share/swiftly/bin:$PATH"
+          swiftly install "$SWIFT_VERSION" --use --assume-yes
+          swift --version
+      - name: Install the matching Wasm SDK
+        run: |
+          swift sdk install "https://download.swift.org/swift-${SWIFT_VERSION}-release/wasm-sdk/swift-${SWIFT_VERSION}-RELEASE/swift-${SWIFT_VERSION}-RELEASE_wasm.artifactbundle.tar.gz" \
+            --checksum cabfa08b73bb8ac783927ecd15fa386e99d0c139c5f232445067bcf58379cae7
+          swift sdk list
+      - name: Unit tests and fixtures (native)
+        run: swift test --package-path XIXScoring
+      - name: Native vs Wasm parity on every fixture
+        run: ./scripts/engine-parity.sh

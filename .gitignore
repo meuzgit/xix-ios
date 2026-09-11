@@ -17,3 +17,8 @@ DerivedData/
 # Supabase local state
 supabase/.branches/
 supabase/.temp/
+
+# Engine build products
+XIXScoring/.build-wasm/
+supabase/functions/xix-engine/*.wasm
+__pycache__/

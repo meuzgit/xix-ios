@@ -44,6 +44,8 @@ select pg_temp.share();
 
 select plan(4);
 
+-- The engine may already have awarded this round; the test owns the rows for the transaction.
+delete from xix.medals where round_id = (select round from ids);
 insert into xix.medals (profile_id, round_id, key, opponent_profile_id) values ((select ray from ids), (select round from ids), 'nassau_front', (select dave from ids));
 insert into xix.medals (profile_id, round_id, key) values ((select tess from ids), (select round from ids), 'skins_two');
 select pg_temp.as_user((select ray from ids));
