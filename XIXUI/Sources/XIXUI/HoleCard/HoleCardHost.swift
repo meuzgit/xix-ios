@@ -1,5 +1,6 @@
 // Binds the hole card to a RoundSession: one page per hole, opens on the current hole, swipe between
 // holes, pad and tray panels, the nudge after the last score lands, rejections as a toast.
+import Supabase
 import SwiftUI
 import XIXData
 import XIXModels
@@ -12,8 +13,13 @@ public struct HoleCardHost: View {
     let headerAccessory: AnyView?
     /// Quiet mode for this round: the slap plays, the cue does not.
     let quiet: Bool
+    /// Callouts are a Full feature (PRD 8.6). False shows the contextual gate instead of the composer;
+    /// the entitlement itself is the app's to decide, and StoreKit arrives in step 9.
+    let canCallOut: Bool
+    let onSeeFull: (() -> Void)?
     @State private var hole: Int
     @State private var playing: HoleCardModel.Sticker?
+    @State private var composing = false
     @State private var state: RoundSession.State?
     @State private var panel: HoleCardModel.Panel = .none
     @State private var nudge: (hole: Int, text: String)?
@@ -22,12 +28,14 @@ public struct HoleCardHost: View {
 
     /// - Parameter startHole: the hole to open on; nil opens on the current hole (first with an empty score).
     public init(session: RoundSession, isOwner: Bool, startHole: Int? = nil, onMenu: (() -> Void)? = nil, headerAccessory: AnyView? = nil,
-                quiet: Bool = false) {
+                quiet: Bool = false, canCallOut: Bool = true, onSeeFull: (() -> Void)? = nil) {
         self.session = session
         self.isOwner = isOwner
         self.onMenu = onMenu
         self.headerAccessory = headerAccessory
         self.quiet = quiet
+        self.canCallOut = canCallOut
+        self.onSeeFull = onSeeFull
         _hole = State(initialValue: startHole ?? 0)
     }
 
@@ -48,6 +56,17 @@ public struct HoleCardHost: View {
             }
         }
         .animation(.easeOut(duration: 0.18), value: playing?.id)
+        .sheet(isPresented: $composing) {
+            if canCallOut, let s = state {
+                CalloutComposer(model: Self.composerModel(s, hole: hole, callerID: myPlayerID(s)), onSend: { draft in
+                    composing = false
+                    send(draft, state: s)
+                }, onClose: { composing = false })
+            } else {
+                CalloutGate(onClose: { composing = false }, onSeeFull: { composing = false; onSeeFull?() })
+                    .presentationDetents([.height(280)])
+            }
+        }
         .task {
             var s = await session.currentState()
             if s.result == nil { _ = await session.recompute(); s = await session.currentState() }
@@ -92,6 +111,33 @@ public struct HoleCardHost: View {
 
     private var sessionUserID: UUID? { session.userID }
 
+    private func myPlayerID(_ s: RoundSession.State) -> UUID? {
+        s.players.first { $0.profile_id != nil && $0.profile_id == sessionUserID }?.id
+    }
+
+    /// Everything the composer needs, from the state the card already holds. The games come from the
+    /// engine's own result, so the list is exactly the games this round is playing.
+    static func composerModel(_ s: RoundSession.State, hole: Int, callerID: UUID?) -> CalloutComposerModel {
+        let players = s.players.filter { $0.left_at == nil }.sorted { $0.seat < $1.seat }.map {
+            CalloutComposerModel.Player(id: $0.id, name: $0.display_name, initials: ScorecardModel.initials(for: $0.display_name))
+        }
+        let games: [CalloutComposerModel.Game] = (s.result?.games ?? []).compactMap { g in
+            guard let id = UUID(uuidString: g.gameID.rawValue) else { return nil }
+            return .init(id: id, name: HoleCardModel.gameName(g.format))
+        }
+        let par = s.courseHoles.first { $0.hole == hole }?.par
+        let scored = Set(s.scores.filter { $0.hole == hole && ($0.strokes != nil || $0.picked_up) }.map(\.player_id))
+        return CalloutComposerModel(hole: hole, par: par, players: players, games: games,
+                                    callerID: callerID ?? UUID(), scored: scored)
+    }
+
+    private func send(_ draft: CalloutDraft, state s: RoundSession.State) {
+        let model = Self.composerModel(s, hole: hole, callerID: myPlayerID(s))
+        let targets = Array(draft.targets.subtracting([model.callerID]))
+        let params = model.params(for: draft).mapValues { AnyJSON.string($0) }
+        Task { await session.createCallout(hole: hole, kind: draft.kind.rawValue, targets: targets, params: params) }
+    }
+
     private func actions(for s: RoundSession.State, hole h: Int) -> HoleCardActions {
         HoleCardActions(
             openPad: { playerID in
@@ -119,7 +165,7 @@ public struct HoleCardHost: View {
             respond: { calloutID, response in
                 Task { await session.respond(calloutID: calloutID, action: response == .signed ? .signed : .ducked) }
             },
-            composeCallout: { show("Callouts arrive with the composer in Build Doc 3") },
+            composeCallout: { composing = true },
             go: { hole = $0 },
             playSticker: { id in
                 guard let sticker = s.stickers.first(where: { $0.id == id }) else { return }

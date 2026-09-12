@@ -30,7 +30,8 @@ struct RoundScreen: View {
                                    headerAccessory: AnyView(layerSwitch))
                 case .card:
                     HoleCardHost(session: session, isOwner: isOwner, startHole: holeToOpen, onMenu: { menu = true }, headerAccessory: AnyView(layerSwitch),
-                                 quiet: env.isQuiet(roundID))
+                                 quiet: env.isQuiet(roundID), canCallOut: XIXFull.isActive,
+                                 onSeeFull: { error = "XIX Full is not on sale yet." })
                         .id(holeToOpen ?? -1)
                 }
             } else if let error {

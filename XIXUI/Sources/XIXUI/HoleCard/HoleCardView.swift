@@ -205,6 +205,7 @@ public struct HoleCardView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.top, 8)
+                .accessibilityIdentifier("composeCallout")
             }
         }
     }

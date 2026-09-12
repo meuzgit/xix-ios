@@ -47,6 +47,8 @@ public struct CalloutBanner: View {
             Text(callout.detail).trackedCaps(9).foregroundStyle(XIXColor.green).multilineTextAlignment(.center).lineLimit(2)
         }
         .opacity(callout.canRespond ? 1 : 0.92)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("callout-banner")
     }
 
     /// True while the still is on screen: the pressed look is drawn here. With a Rive asset for
@@ -68,6 +70,12 @@ public struct CalloutBanner: View {
                 .onChanged { _ in if callout.canRespond { pressed = bubble } }
                 .onEnded { _ in if callout.canRespond { pressed = nil; action() } })
             .allowsHitTesting(callout.canRespond)
+            // The drawn bubbles are the controls, so they carry the labels anything reading the screen needs.
+            .accessibilityElement()
+            .accessibilityAddTraits(.isButton)
+            .accessibilityIdentifier("callout-\(bubble.rawValue)")
+            .accessibilityLabel(bubble == .sign ? "Sign it" : "Duck it")
+            .accessibilityHidden(!callout.canRespond)
     }
 
     /// A ~16pt sender chip, welded to the die-cut edge. Signed fills green; ducked is crossed out.

@@ -11,6 +11,7 @@ struct SettingsScreen: View {
     @State private var linking = false
     #if DEBUG
     @State private var lab = false
+    @State private var full = XIXFull.isActive
     #endif
     @State private var quietDefault = UserDefaults.standard.bool(forKey: "xix.quietDefault")
     @State private var initials = UserDefaults.standard.bool(forKey: "xix.initialsOnExport")
@@ -51,6 +52,9 @@ struct SettingsScreen: View {
                     }
                     ListRow("User id", sub: env.userID?.uuidString ?? "—")
                     ListRow("Sticker lab", sub: "Play all twelve and measure the frame rate", action: { lab = true }) { chevron }
+                    ListRow("XIX Full", sub: full ? "On. Callouts are available" : "Off. The callout gate shows instead") {
+                        InkToggle(on: Binding(get: { full }, set: { full = $0; XIXFull.isActive = $0 }))
+                    }
                     #endif
                 }
             }

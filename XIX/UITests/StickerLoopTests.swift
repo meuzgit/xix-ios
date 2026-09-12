@@ -140,8 +140,8 @@ enum UITestFlow {
         pause(1)
     }
 
-    /// Course, par, one guest, no games, sign-in, as far as the share screen.
-    static func newRound(_ app: XCUIApplication, course: String, guest: String, name: String) {
+    /// Course, par, guests, games, sign-in, as far as the share screen.
+    static func newRound(_ app: XCUIApplication, course: String, guests: [String], games: [String] = [], name: String) {
         app.buttons["New round"].tap()
         let field = app.textFields["courseField"]
         _ = field.waitForExistence(timeout: 5)
@@ -154,13 +154,28 @@ enum UITestFlow {
         app.buttons["Next"].tap()
         let player = app.textFields["playerField"]
         _ = player.waitForExistence(timeout: 5)
-        player.tap(); player.typeText(guest)
-        app.buttons["Add"].tap(); pause(0.6)
+        for guest in guests {
+            player.tap(); player.typeText(guest)
+            app.buttons["Add"].tap(); pause(0.6)
+        }
         app.buttons["Next"].tap()
         _ = app.buttons["game-skins-0"].waitForExistence(timeout: 5)
         pause(0.4)
+        // Every seat into every named game.
+        for game in games {
+            for seat in 0..<(guests.count + 1) {
+                let toggle = app.buttons["game-\(game)-\(seat)"]
+                if toggle.exists { toggle.tap(); pause(0.3) }
+            }
+        }
+        pause(0.4)
         app.buttons["Next"].tap()
         signInLocallyIfAsked(app, name: name)
+    }
+
+    /// The single-guest form the earlier suites use.
+    static func newRound(_ app: XCUIApplication, course: String, guest: String, name: String) {
+        newRound(app, course: course, guests: [guest], games: [], name: name)
     }
 
     static func score(_ app: XCUIApplication, row: String, strokes: Int) {

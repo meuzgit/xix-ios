@@ -66,11 +66,17 @@ struct ResultsHost: View {
         var par = [Int?](repeating: nil, count: s.round.holes)
         for h in s.courseHoles where h.hole >= 1 && h.hole <= s.round.holes { par[h.hole - 1] = h.par }
         let myID = claimRow ?? s.players.first { $0.profile_id != nil && $0.profile_id == env.userID }?.id
+        let gameNames: [String: String] = Dictionary(uniqueKeysWithValues: (result?.games ?? []).map {
+            ($0.gameID.rawValue.lowercased(), HoleCardModel.gameName($0.format))
+        })
         let callouts = s.callouts.map { c in
             let targets = (try? JSONDecoder().decode([UUID].self, from: Data(c.target_ids.utf8))) ?? []
-            let goal = (try? JSONSerialization.jsonObject(with: Data(c.params.utf8)) as? [String: Any])?["goal"]
+            let params = (try? JSONSerialization.jsonObject(with: Data(c.params.utf8))) as? [String: Any]
+            let goal = params?["goal"]
+            let gameID = (params?["game_id"] as? String)?.lowercased()
             return ResultsModel.CalloutInput(id: c.id, hole: c.hole, kind: c.kind, callerID: c.caller_id, targetIDs: targets,
-                                             goal: (goal as? String) ?? (goal as? Int).map(String.init))
+                                             goal: (goal as? String) ?? (goal as? Int).map(String.init),
+                                             gameName: gameID.flatMap { gameNames[$0] })
         }
         let stickers = s.stickers.map { HoleCardModel.StickerInputModel(id: $0.id, targetPlayerID: $0.target_player_id, senderPlayerID: $0.sender_player_id, hole: $0.hole, key: $0.sticker_key, createdAt: $0.created_at) }
         var confirm: ResultsModel.ConfirmCard? = nil
@@ -82,8 +88,8 @@ struct ResultsHost: View {
                                    players: players, engineID: { PlayerID($0.uuidString.lowercased()) }, result: result, callouts: callouts,
                                    stickers: stickers, myPlayerID: myID, confirm: confirm)
         // Waiting on the server: the round has ended but its authoritative result has not landed yet.
-        if s.round.status == "ended" && s.serverResult?.status.isComplete != true && result?.status.isComplete == true { m.pending = false }
-        if s.round.status == "ended" && s.serverResult == nil { m.pending = true }
+        // A round ended with holes left open is not waiting for anything; it simply has blank cells.
+        m.pending = s.round.status == "ended" && s.serverResult == nil
         return m
     }
 

@@ -80,6 +80,18 @@ The step 1 acceptance (two phones, one round, a guest joining by link mid-round)
 XIX_SIM_A=<udid> XIX_SIM_B=<udid> ./scripts/acceptance-video.sh   # writes docs/acceptance-step1.mp4
 ```
 
+The same script records the later steps' acceptances, taking the tests to run and a third phone when one is needed:
+
+```bash
+XIX_SIM_A=<a> XIX_SIM_B=<b> XIX_SIM_C=<c> \
+  XIX_TESTS_A=XIXUITests/CalloutLoopTests/testOwnerThrowsAllFourKinds \
+  XIX_TESTS_B=XIXUITests/CalloutLoopTests/testDaveAnswersAsATarget \
+  XIX_TESTS_C=XIXUITests/CalloutLoopTests/testMoDucksThenSigns \
+  XIX_VIDEO_OUT=docs/acceptance-step3.mp4 ./scripts/acceptance-video.sh
+```
+
+A run needs `supabase functions serve --no-verify-jwt` alongside the local stack, so the engine webhook has somewhere to post. If a recording ever fails to start with "Host recording is already in progress", a simulator was left holding a video session: reboot it.
+
 ## Stickers
 
 The twelve die-cuts are bundled at 512² (3.5 MB) and generated from the 1024 masters:
@@ -92,6 +104,14 @@ python3 scripts/build-sticker-bundle.py --check  # fail when the bundle is stale
 A sticker draws through `\.stickerRenderer`. XIXUI itself only ever draws the still PNG, which is what the snapshots and the exported card use; the app installs `RiveStickerRenderer`, so any key with a `<KEY>.riv` in the bundle plays its Rive state machine instead — pinned on the card, the slap when it is opened, and the pressed bubbles on CALLED\_OUT. Until those files are authored, the same slap plays from `StickerSlap`, which holds Pass 5's timing (peel in 1.4× / −34°, contact on frame 3 with the cue, squash 0.82 × 1.18, rebound 1.08 × 0.92, settled at 620 ms). `masters/README.md` is the contract for the editor work.
 
 Tapping a sticker somebody threw at you plays it full screen and marks it played; the sender's phone says so in ink ("Dave opened your YIKES"). The sound is one cue on the contact frame, muted by the Settings toggle, by quiet mode for the round, and by the phone's silent switch.
+
+## Callouts
+
+"Call someone out" on the hole card opens the composer: the kind (Target, Duel, Partner, Double), who it is aimed at, and the one extra each kind needs — a goal, a partner, or the game that doubles. The CALLED OUT banner previews itself as you choose, because that banner is what the others will see, and their two drawn bubbles are the controls that answer it.
+
+`CalloutComposerModel` holds the same rules as `xix.create_callout`, so a player never meets a round trip that was never going to work: somebody other than the caller, one target for a duel, a game for a Double, a partner who is not also an opponent, and a hole nobody in the callout has scored yet. The server holds them too, and a refusal it raises reaches the card as the toast.
+
+Callouts are a Full feature. Nothing is on sale yet, so `XIXFull.isActive` defaults to on; the contextual gate from Pass 6 6g is built and a Debug toggle in Settings shows it. Step 9 replaces the flag with StoreKit and a server-side check.
 
 ## Engine toolchain (WebAssembly)
 

@@ -84,11 +84,14 @@ struct JoinScreen: View {
                 Text(ended ? "The round has ended. Claim the row and the scores \(owner) kept are yours to confirm."
                            : "Claim the row and you score it yourself from here. Holes already scored stay as \(owner) entered them.")
                     .font(XIXType.body(13)).foregroundStyle(XIXColor.ink)
-                PrimaryButton(title: claiming ? "Claiming…" : (ended ? "See my scores" : "Claim this row"), enabled: !claiming) { Task { await claim(r, s) } }.padding(.top, 6)
+                PrimaryButton(title: claiming ? "Claiming…" : (ended ? "See my scores" : "Claim this row"), enabled: !claiming) { Task { await claim(r, s) } }
+                    .padding(.top, 6)
+                    .accessibilityIdentifier("claim-\(r.displayName)")
             } else {
                 Text("WHICH ROW IS YOURS?").trackedCaps(9, weight: .bold).foregroundStyle(XIXColor.green)
                 ForEach(rows, id: \.id) { r in
                     SecondaryButton(title: r.displayName) { Task { await claim(r, s) } }
+                        .accessibilityIdentifier("claim-\(r.displayName)")
                 }
             }
         }

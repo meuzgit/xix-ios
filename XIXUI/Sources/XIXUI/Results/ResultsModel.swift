@@ -74,8 +74,11 @@ public struct ResultsModel: Equatable, Sendable {
 
     public struct CalloutInput: Equatable, Sendable {
         public var id: UUID; public var hole: Int; public var kind: String; public var callerID: UUID; public var targetIDs: [UUID]; public var goal: String?
-        public init(id: UUID, hole: Int, kind: String, callerID: UUID, targetIDs: [UUID], goal: String?) {
+        /// The game a Double doubled, when the round still has it.
+        public var gameName: String?
+        public init(id: UUID, hole: Int, kind: String, callerID: UUID, targetIDs: [UUID], goal: String?, gameName: String? = nil) {
             self.id = id; self.hole = hole; self.kind = kind; self.callerID = callerID; self.targetIDs = targetIDs; self.goal = goal
+            self.gameName = gameName
         }
     }
 
@@ -145,21 +148,40 @@ public struct ResultsModel: Equatable, Sendable {
                 title = goal == "birdie" ? "Birdie on \(c.hole)" : (Int(goal ?? "").map { "Under \($0) on \(c.hole)" } ?? "Beat par on \(c.hole)")
             case .duel: title = "Duel on \(c.hole)"
             case .partner: title = "Partner pick on \(c.hole)"
-            case .multiplier: title = "Double on \(c.hole)"
+            case .multiplier:
+                let game = input?.gameName.map { " · \($0)" } ?? ""
+                title = "Double on \(c.hole)\(game)"
             }
             let sub = "\(nameOf[c.caller] ?? "?") → \(c.targets.compactMap { nameOf[$0] }.joined(separator: ", "))"
             var mark: String
             switch c.status {
             case .ducked: mark = "DUCKED"
-            case .expired: mark = "EXPIRED"
+            case .expired: mark = c.reason?.uppercased() ?? "EXPIRED"
             case .open, .live: mark = "OPEN"
             case .resolved:
-                if case .player(let w)? = c.winner { mark = w == c.caller ? "CALLED IT" : "\(nameOf[w] ?? "?") TAKES IT".uppercased() }
-                else if case .players(let ws)? = c.winner { mark = ws.compactMap { nameOf[$0] }.joined(separator: " & ").uppercased() }
-                else if case .halved? = c.winner { mark = "HALVED" }
-                else if let hit = c.hit, !hit.isEmpty { mark = "SIGNED · MADE IT" }
-                else if let reason = c.reason { mark = reason.uppercased() }
-                else { mark = "SIGNED · MISSED" }
+                switch c.kind {
+                case .multiplier:
+                    // A double that every target signed simply counted twice; there is no winner to name.
+                    mark = "DOUBLED"
+                case .target:
+                    if let hit = c.hit, !hit.isEmpty {
+                        mark = hit.count == c.targets.count ? "THEY MADE IT" : "\(hit.compactMap { nameOf[$0] }.joined(separator: " & ")) MADE IT".uppercased()
+                    } else if case .player(let w)? = c.winner, w == c.caller {
+                        mark = "CALLED IT"
+                    } else {
+                        mark = "MISSED IT"
+                    }
+                case .duel, .partner:
+                    if case .player(let w)? = c.winner { mark = w == c.caller ? "CALLED IT" : "\(nameOf[w] ?? "?") TOOK IT".uppercased() }
+                    else if case .players(let ws)? = c.winner {
+                        let names = ws.compactMap { nameOf[$0] }.joined(separator: " & ")
+                        mark = ws.contains(c.caller) ? "CALLED IT · WITH \(names)".uppercased() : "\(names) TOOK IT".uppercased()
+                    }
+                    else if case .halved? = c.winner { mark = "HALVED" }
+                    else if let reason = c.reason { mark = reason.uppercased() }
+                    else { mark = "NO RESULT" }
+                }
+                if c.loneWolf == true { mark += " · LONE WOLF" }
             }
             if !c.ducked.isEmpty && c.status == .resolved { mark += " · \(c.ducked.compactMap { nameOf[$0] }.joined(separator: ", ")) DUCKED".uppercased() }
             return Callout(id: c.calloutID.rawValue, title: title, sub: sub, mark: mark)
@@ -188,8 +210,10 @@ public struct ResultsModel: Equatable, Sendable {
         }
 
         let rp = focus.flatMap { result.rivalPoints[$0] }
+        // `pending` means the result has not landed, not that the card has gaps: a round ended with
+        // holes left open still has a final result, and the screen must not wait for one for ever.
         return ResultsModel(kicker: kicker, title: title, headline: headline, headlineSub: subParts.joined(separator: " · "),
                             gamesLine: gamesLine, medals: medals, games: gameRows, callouts: calloutRows, stickersReceived: received,
-                            highlights: highlights, rivalPoints: rp, confirm: confirm, pending: !result.status.isComplete)
+                            highlights: highlights, rivalPoints: rp, confirm: confirm, pending: false)
     }
 }
