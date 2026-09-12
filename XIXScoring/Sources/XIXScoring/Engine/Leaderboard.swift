@@ -58,6 +58,28 @@ enum LeaderboardBuilder {
             board[.stableford] = rows(stableford.map { ($0.key, $0.value) }, higherIsBetter: true, round: round)
         }
 
+        // Stableford vs Level (PRD 8.11): the passive ranking metric. Standard table against the
+        // player's net strokes, for every player who has a Level or an index, on every round with par —
+        // no game required. Holes without par, and players without a handicap, are left out rather than
+        // guessed at, so a round with no par produces no entries at all.
+        if !played.isEmpty, round.par.contains(where: { $0 != nil }) {
+            let table = StablefordTable.standard
+            let scored: [(PlayerID, Int)] = played.compactMap { id, summary in
+                guard let seat = round.seat(id), round.allocation[seat] != nil else { return nil }
+                var points = 0
+                for hole in 0..<round.holes {
+                    guard let par = round.par[hole], let net = round.net[seat][hole] else { continue }
+                    // Picked up is zero points whatever the table says (B.4.1).
+                    points += round.pickedUp[seat][hole] ? 0 : table.points(net - par)
+                }
+                _ = summary
+                return (id, points)
+            }
+            if !scored.isEmpty {
+                board[.stablefordVsLevel] = rows(scored, higherIsBetter: true, round: round)
+            }
+        }
+
         // Birdies: gross strokes ≤ par − 1 on holes with par, for players who have entered a hole.
         if !played.isEmpty, round.par.contains(where: { $0 != nil }) {
             let birdies = played.map { id, summary in

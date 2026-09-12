@@ -90,6 +90,11 @@ struct HomeScreen: View {
         VStack(spacing: 8) {
             PrimaryButton(title: "New round") { env.router.path.append(.setup(.group)) }
             SecondaryButton(title: "Solo round") { env.router.path.append(.setup(.solo)) }
+            HStack(spacing: 8) {
+                SecondaryButton(title: "Cabinet") { env.router.path.append(.cabinet) }
+                SecondaryButton(title: "Boards") { env.router.path.append(.rankings) }
+                SecondaryButton(title: "Rivals") { env.router.path.append(.rivals) }
+            }
         }
         .padding(.horizontal, 12).padding(.top, 12)
     }

@@ -4,6 +4,10 @@
 #
 # Requires: a Swift 6.3.3 toolchain with the swift-6.3.3-RELEASE_wasm SDK (swift sdk list), node ≥ 20 for WASI.
 set -euo pipefail
+# The Wasm SDK belongs to the swift.org toolchain, not Xcode's. A shell that has not sourced a profile
+# (a script runner, CI, an agent) will not have swiftly on PATH, and the build fails with a bare
+# "unknown SDK" — so add it when it is there.
+[ -d "$HOME/.swiftly/bin" ] && PATH="$HOME/.swiftly/bin:$PATH"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PKG="$ROOT/XIXScoring"
 SDK="${XIX_WASM_SDK:-swift-6.3.3-RELEASE_wasm}"

@@ -1,6 +1,6 @@
 # One command per check. Everything runs against the local Supabase stack (never the shared project).
 
-.PHONY: engine-tests pgtap data-tests ui-tests parity wasm models reset acceptance app xcconfig app-build stickers sticker-check
+.PHONY: engine-tests pgtap data-tests ui-tests parity wasm models reset acceptance app xcconfig app-build stickers sticker-check rankings-acceptance
 
 engine-tests:            ## XIXScoring unit tests and fixtures
 	swift test --package-path XIXScoring
@@ -44,3 +44,7 @@ stickers:                ## rebuild the 512px sticker bundle from masters/
 
 sticker-check:           ## fail when the bundle is stale (CI)
 	python3 scripts/build-sticker-bundle.py --check
+
+rankings-acceptance: reset wasm  ## step 5: three rounds across two accounts, checked against a hand tally
+	@(supabase functions serve --no-verify-jwt > /tmp/xix-functions.log 2>&1 & echo $$! > /tmp/xix-functions.pid); sleep 15
+	XIX_ACCEPTANCE=1 swift test --package-path XIXData --filter RankingsAcceptanceTests; status=$$?; kill $$(cat /tmp/xix-functions.pid) 2>/dev/null; exit $$status

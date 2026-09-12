@@ -270,11 +270,13 @@ public enum XixSchema {
   public struct CrewsSelect: Codable, Hashable, Sendable {
     public let createdAt: String
     public let id: UUID
+    public let joinCode: String
     public let name: String
     public let ownerId: UUID
     public enum CodingKeys: String, CodingKey {
       case createdAt = "created_at"
       case id = "id"
+      case joinCode = "join_code"
       case name = "name"
       case ownerId = "owner_id"
     }
@@ -282,11 +284,13 @@ public enum XixSchema {
   public struct CrewsInsert: Codable, Hashable, Sendable {
     public let createdAt: String?
     public let id: UUID?
+    public let joinCode: String?
     public let name: String
     public let ownerId: UUID
     public enum CodingKeys: String, CodingKey {
       case createdAt = "created_at"
       case id = "id"
+      case joinCode = "join_code"
       case name = "name"
       case ownerId = "owner_id"
     }
@@ -294,11 +298,13 @@ public enum XixSchema {
   public struct CrewsUpdate: Codable, Hashable, Sendable {
     public let createdAt: String?
     public let id: UUID?
+    public let joinCode: String?
     public let name: String?
     public let ownerId: UUID?
     public enum CodingKeys: String, CodingKey {
       case createdAt = "created_at"
       case id = "id"
+      case joinCode = "join_code"
       case name = "name"
       case ownerId = "owner_id"
     }
@@ -623,42 +629,72 @@ public enum XixSchema {
   }
   public struct RankingEntriesSelect: Codable, Hashable, Sendable {
     public let computedAt: String
+    public let displayName: String?
+    public let level: Decimal?
     public let metric: String
+    public let previousRank: Int32?
     public let profileId: UUID
+    public let rank: Int32?
+    public let rounds: Int32
     public let value: Decimal
     public let window: String
     public enum CodingKeys: String, CodingKey {
       case computedAt = "computed_at"
+      case displayName = "display_name"
+      case level = "level"
       case metric = "metric"
+      case previousRank = "previous_rank"
       case profileId = "profile_id"
+      case rank = "rank"
+      case rounds = "rounds"
       case value = "value"
       case window = "window"
     }
   }
   public struct RankingEntriesInsert: Codable, Hashable, Sendable {
     public let computedAt: String?
+    public let displayName: String?
+    public let level: Decimal?
     public let metric: String
+    public let previousRank: Int32?
     public let profileId: UUID
+    public let rank: Int32?
+    public let rounds: Int32?
     public let value: Decimal
     public let window: String
     public enum CodingKeys: String, CodingKey {
       case computedAt = "computed_at"
+      case displayName = "display_name"
+      case level = "level"
       case metric = "metric"
+      case previousRank = "previous_rank"
       case profileId = "profile_id"
+      case rank = "rank"
+      case rounds = "rounds"
       case value = "value"
       case window = "window"
     }
   }
   public struct RankingEntriesUpdate: Codable, Hashable, Sendable {
     public let computedAt: String?
+    public let displayName: String?
+    public let level: Decimal?
     public let metric: String?
+    public let previousRank: Int32?
     public let profileId: UUID?
+    public let rank: Int32?
+    public let rounds: Int32?
     public let value: Decimal?
     public let window: String?
     public enum CodingKeys: String, CodingKey {
       case computedAt = "computed_at"
+      case displayName = "display_name"
+      case level = "level"
       case metric = "metric"
+      case previousRank = "previous_rank"
       case profileId = "profile_id"
+      case rank = "rank"
+      case rounds = "rounds"
       case value = "value"
       case window = "window"
     }

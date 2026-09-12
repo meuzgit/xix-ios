@@ -8,6 +8,12 @@ enum Route: Hashable {
     case results(UUID)
     case join(code: String)
     case settings
+    case cabinet
+    case medal(UUID)
+    case rivals
+    case rivalry(UUID)
+    case rankings
+    case crewNew
 }
 
 enum SetupMode: Hashable { case group, solo }
@@ -20,6 +26,14 @@ final class Router {
         if let code = Router.joinCode(in: url) {
             path = [.join(code: code)]
         }
+    }
+
+    /// A crew invite: "xix.golf/c/8K2M" or "xix://c/8K2M".
+    static func crewCode(in url: URL) -> String? {
+        let parts = url.pathComponents.filter { $0 != "/" }
+        if let i = parts.firstIndex(of: "c"), i + 1 < parts.count { return parts[i + 1].uppercased() }
+        if url.scheme == "xix", url.host == "c", let last = parts.last { return last.uppercased() }
+        return nil
     }
 
     /// "xix.golf/r/8K2M", "https://xix.golf/r/8K2M", "xix://r/8K2M" → "8K2M".

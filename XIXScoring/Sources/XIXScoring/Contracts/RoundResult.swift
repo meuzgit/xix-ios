@@ -516,6 +516,10 @@ public enum LeaderboardMode: String, Codable, CodingKeyRepresentable, CaseIterab
     case skins
     case stableford
     case birdies
+    /// The passive ranking metric (PRD 8.11): Stableford points against the player's own Level, for
+    /// every player on every round, whether or not a Stableford game was played. `stableford` above is
+    /// the games' total and exists only when one was.
+    case stablefordVsLevel = "stableford_vs_level"
 }
 
 public struct LeaderboardRow: Codable, Equatable, Sendable {

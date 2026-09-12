@@ -116,6 +116,17 @@ public struct AuthService: Sendable {
         try? await client.supabase.auth.session
     }
 
+    /// Settings › Level (PRD 8.21): a player may enter their own index instead of the Level XIX works
+    /// out for them. It is frozen onto the player row when they next join a round, so a Level change
+    /// never rewrites a round that has already been played.
+    @discardableResult
+    public func updateLevelIndex(_ index: Double?) async throws -> ProfileRow {
+        guard let me = client.userID else { throw XIXDataError.notSignedIn }
+        struct U: Encodable { let level_index: Double? }
+        return try await client.supabase.schema("xix").from("profiles")
+            .update(U(level_index: index)).eq("id", value: me).select().single().execute().value
+    }
+
     /// Upserts the caller's xix.profiles row; idempotent.
     public func ensureProfile() async throws -> ProfileRow {
         try await client.supabase.rpc("ensure_profile").single().execute().value

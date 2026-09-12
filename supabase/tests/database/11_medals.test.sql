@@ -49,11 +49,13 @@ delete from xix.medals where round_id = (select round from ids);
 insert into xix.medals (profile_id, round_id, key, opponent_profile_id) values ((select ray from ids), (select round from ids), 'nassau_front', (select dave from ids));
 insert into xix.medals (profile_id, round_id, key) values ((select tess from ids), (select round from ids), 'skins_two');
 select pg_temp.as_user((select ray from ids));
-select is((select count(*)::int from xix.medals), 1, 'a player sees their own medals');
-select is((select key from xix.medals), 'nassau_front', 'and only those');
+-- 0021 widened this on purpose: a medal from a round you played in is not private from the people you
+-- played it with, or a rivalry would only ever have one side to it.
+select is((select count(*)::int from xix.medals), 2, 'a player sees the medals from a round they were in');
+select is((select count(*)::int from xix.medals where profile_id = (select ray from ids)), 1, 'one of them their own');
 select throws_ok($$insert into xix.medals (profile_id, round_id, key) values ((select ray from ids), (select round from ids), 'skins_four')$$, '42501', null, 'no client insert');
-select pg_temp.as_user((select dave from ids));
-select is((select count(*)::int from xix.medals), 0, 'someone with no medal sees none');
+select pg_temp.as_user((select nobody from ids));
+select is((select count(*)::int from xix.medals), 0, 'somebody who was not in the round sees none');
 
 select * from finish();
 rollback;

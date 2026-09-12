@@ -16,6 +16,12 @@ struct RootView: View {
                     case .results(let id): ResultsHost(roundID: id)
                     case .join(let code): JoinScreen(code: code)
                     case .settings: SettingsScreen()
+                    case .cabinet: CabinetHost()
+                    case .medal(let id): MedalHost(medalID: id)
+                    case .rivals: RivalsHost()
+                    case .rivalry(let id): RivalryHost(profileID: id)
+                    case .rankings: RankingsHost()
+                    case .crewNew: CrewFlow()
                     }
                 }
         }

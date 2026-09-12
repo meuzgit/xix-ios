@@ -18,17 +18,19 @@ create temp table ids as select
   '99999999-9999-4999-8999-999999999991'::uuid as callout, '88888888-8888-4888-8888-888888888882'::uuid as skins;
 do $$ begin execute format('grant select on all tables in schema %I to authenticated', (select nspname from pg_namespace where oid = pg_my_temp_schema())); end $$;
 
-select plan(27);
+select plan(28);
 
 -- 1. The census. Trigger functions are excluded (they cannot be called directly).
 select is(
   (select array_agg(p.proname::text order by p.proname) from pg_proc p
     where p.pronamespace = 'xix'::regnamespace and p.prosecdef and p.prorettype <> 'trigger'::regtype),
   array[
-    'add_guest', 'apply_engine_result', 'auto_confirm', 'claim_row', 'confirm_round', 'create_callout', 'end_round',
-    'engine_run_failed', 'enqueue_engine_run', 'ensure_profile', 'enter_score', 'is_crew_member', 'is_crew_owner',
-    'is_own_player_row', 'is_round_member', 'is_round_owner', 'join_round', 'joinable_rows', 'leave_round', 'my_player_id',
-    'respond_callout', 'round_input', 'round_preview', 'send_sticker', 'set_games', 'shares_round_or_crew', 'update_level_auto'
+    'add_guest', 'apply_engine_result', 'auto_confirm', 'claim_row', 'confirm_round', 'create_callout', 'create_crew',
+    'crew_preview', 'end_round', 'engine_run_failed', 'enqueue_engine_run', 'ensure_profile', 'enter_score',
+    'is_crew_member', 'is_crew_owner', 'is_own_player_row', 'is_round_member', 'is_round_owner', 'join_crew',
+    'join_round', 'joinable_rows', 'leave_crew', 'leave_round', 'my_player_id', 'pending_rounds', 'rankings',
+    'refresh_rankings', 'respond_callout', 'rivalry', 'rivals', 'round_input', 'round_preview', 'send_sticker',
+    'set_games', 'shares_round_or_crew', 'update_level_auto'
   ]::text[],
   'every security-definer function is accounted for below');
 
@@ -62,6 +64,7 @@ select throws_ok($$select xix.engine_run_failed((select round from ids), 'x')$$,
 select throws_ok($$select xix.update_level_auto((select nobody from ids))$$, '42501', null, 'update_level_auto (no execute grant)');
 select throws_ok($$select xix.enqueue_engine_run((select round from ids))$$, '42501', null, 'enqueue_engine_run (no execute grant)');
 select throws_ok($$select xix.auto_confirm()$$, '42501', null, 'auto_confirm (cron only)');
+select throws_ok($$select xix.refresh_rankings()$$, '42501', null, 'refresh_rankings (the nightly job, cron only)');
 
 -- 4. Read-only helpers answer false or nothing for a non-member.
 select is(xix.is_round_member((select round from ids)), false, 'is_round_member');
