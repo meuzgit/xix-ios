@@ -91,9 +91,9 @@ Setup (owner) → Play (hole card: score, callouts, stickers; grid as overview)
 |---|---|---|
 | **Free** | Scorecard and sync, hole card, personal record, global and crew rankings, base sticker pack (12), **two games per round**, export | Free forever |
 | **XIX Full** | Full games library and unlimited games per round, **callouts** | Subscription ≈ CAD 40/yr; monthly option |
-| **Where to now?** | The MMM feed inside XIX | Gated by **MMM**, not XIX: MMM's free allowance applies, then MMM Insider is required (see §8.10) |
+| **Where to now?** | The MMM feed inside XIX | Not a tier. An optional integration: connect a My Main Man account in Settings and the feed appears; otherwise it is simply absent (see §8.10) |
 
-Sticker packs beyond the base are consumable IAP. XIX Full locked-state copy: *"Callouts and every game"* / *"Scoring and stickers stay free."* Where to now is product placement for MMM inside XIX and carries MMM's own entitlement: it is not part of XIX Full.
+Sticker packs beyond the base are consumable IAP. XIX Full locked-state copy: *"Callouts and every game"* / *"Scoring and stickers stay free."* **Where to now is not part of XIX Full and is not gated by it** — it is an optional MMM integration (§8.10). XIX stands alone: a user with no relation to MMM uses the whole app normally.
 
 ### 8.2 Round setup (owner)
 
@@ -183,14 +183,15 @@ A player-initiated, single-hole mini-game inside the round. All resolve from str
 - Never displays debts, stakes or "owes".
 - Exportable as an image via the shared renderer.
 
-### 8.10 Where to now? (MMM-gated)
+### 8.10 Where to now? (optional MMM integration)
 
 - Follows the results screen. **The MMM feed reproduced exactly as built** — not reinterpreted: MMM header ("[Course area] through [Source]" with sort chevrons), MMM pill row showing **Eat** and **Drink** only, hero card (name, city, action icons, watercolour, drive-time · distance, OPEN), two-column grid cards with status dots and status lines, MMM's own empty-state tiles ("Missing a favourite? Add a place" / "Sharing is caring — Invite a friend"). XIX adds only a "WHERE TO NOW?" tracked-caps line above the header and the yellow "Open in My Main Man" button below.
 - Recommendations from the group's circle surface first when they exist; otherwise MMM's area intelligence. Nothing is hand-curated by XIX.
 - Tap anywhere → deep link to MMM (App Store if not installed).
-- **Data:** fed the same way MMM itself is fed — the same Supabase source and the same query path, filtered to eat/drink and the course's location. No XIX-specific service.
-- **Gating (MMM's, not XIX's):** the feed runs on MMM's own entitlement. An MMM Insider who signs into XIX gets the full feed. A non-Insider gets MMM's free allowance inside XIX, then hits MMM's gate; the upgrade offered is **MMM Insider**, not XIX Full. XIX Full never unlocks Where to now.
-- **Locked state:** the same feed blurred behind one card in MMM's own styling — MMM white card, Insider badge, yellow "Become an Insider" button, footnote "Nothing to do with XIX Full". **The allowance copy must mirror MMM's actual free-allowance rule** (period and count); XIX does not invent one. Never a redesigned feed, never an XIX Full pitch.
+- **XIX is a window, not a participant.** XIX queries none of MMM's tables and evaluates none of MMM's rules. One MMM-owned endpoint returns the finished feed — places in MMM's order, MMM's drive time and distance, already gated by MMM's entitlement — plus the gate state and copy when the user is out. XIX renders the response and deep links out.
+- **Connection, not entitlement.** Settings carries a "My Main Man" toggle; switching it on triggers MMM's own authentication. Connected, the feed appears after a round. Not connected, or no MMM account, and the feed is simply absent — nothing else in XIX changes. Disconnect is one toggle and is non-destructive. XIX's own account and XIX Full are unrelated to it.
+- **Unconnected state:** an invitation to connect, never a paywall.
+- **Out-of-allowance state:** MMM's own gate, returned by MMM and rendered as sent — MMM card, MMM copy, MMM upgrade action. XIX invents no rule and no wording. Never a redesigned feed, never an XIX Full pitch.
 - **Empty state:** MMM's one-line message and its two tiles; XIX adds nothing.
 - No bookings, no payments, no "settle".
 
@@ -243,8 +244,8 @@ Capture: frame overlay, "Fill the frame with the card", rows named before the sh
 
 ## 9. Monetization
 
-- **XIX Full subscription** (≈ CAD 40/yr, monthly option): full games library, callouts. Standalone; does not include MMM.
-- **Where to now** earns nothing for XIX directly; it drives MMM installs and MMM Insider upgrades (product placement).
+- **XIX Full subscription** (≈ CAD 40/yr, monthly option): full games library, callouts. Standalone; unrelated to MMM.
+- **Where to now** earns nothing for XIX directly and is not sold; it is a convenience for users who also use MMM.
 - **Sticker packs:** consumable IAP.
 - **Post-V1:** sponsored callouts/challenges (contest rules per jurisdiction); MMM cross-promotion value.
 - Never a revenue line: anything involving money between players.
@@ -263,7 +264,7 @@ Capture: frame overlay, "Fill the frame with the card", rows named before the sh
 
 - **Client:** native SwiftUI, latest iOS kits; iPhone + Apple Watch in V1 (iPad later).
 - **Backend:** Supabase (Postgres + Realtime), consistent with MMM and OM. Rounds, players and score rows as tables with row-level security (players write only their own row; owner writes any); Realtime channel per round for scores, callouts and stickers; client-side offline queue, last-write-wins per cell with a light merge notice. Shared auth with MMM/OM.
-- **MMM integration:** XIX reads the feed exactly as MMM does — same Supabase source, same queries, filtered to eat/drink and the course location; MMM's entitlement (free allowance / Insider) is evaluated by the same rules MMM applies. No separate API layer; deep-link scheme to MMM.
+- **MMM integration:** optional, connection-based. One MMM-owned endpoint (`mmm.feed_for_xix(profile_id, lat, lng, category)`) returns the finished, already-gated feed; XIX reads no MMM tables and holds no MMM rules. Connecting triggers MMM's own authentication; the connection is stored per user and revocable. Deep-link scheme to MMM.
 - **Course data:** never a prerequisite. Free/open sources in order: OpenStreetMap (ODbL; hole geometry doubles as optional UI silhouettes; map gaps via OpenCourseMaps), OpenGolfAPI (US), Open Course data model (interchange), our own table (par read from cards / entered once; Vancouver hand-seeded). Paid sources deferred.
 - **Recognition:** OM pipeline adapted for handwritten scorecard grids; on-device first, server fallback.
 - **Animation:** Rive (native iOS runtime, SwiftUI view model). Sticker state machines own pinned/played and the callout pressed states. Packs are design deliverables.
@@ -284,7 +285,7 @@ Capture: frame overlay, "Fill the frame with the card", rows named before the sh
 - **Fun:** callouts per round; stickers sent and played per round; nudge → tray conversion; % of rounds with ≥ 1 export.
 - **Retention:** crews (≥ 3 players) with rounds in 3 consecutive months.
 - **Growth:** installs attributed to card/result links.
-- **MMM:** where-next view rate; MMM handoff rate.
+- **MMM:** connection rate among users who have MMM; where-next view rate; MMM handoff rate.
 - **Revenue:** Full conversion at the 2-game limit and at the callout gate; pack attach rate; MMM Insider upgrades originating in XIX.
 
 ## 14. Competitive note
@@ -305,7 +306,7 @@ Passes 5 and 6 are locked. Pass 7 closes the remainder: round menu (quiet mode f
 2. Free-tier limit of two games per round — validate in the group test.
 3. Sound: one slap cue in V1 (as designed in Settings), or per-pack cues later.
 
-**Decided:** Picked up = double par / zero Stableford points. Where to now is fed the same way MMM is fed from Supabase. XIX Full is a standalone subscription; Where to now is MMM product placement gated by MMM's own free allowance and Insider tier. Level displays as a number.
+**Decided:** Picked up = double par / zero Stableford points. XIX Full is a standalone subscription covering callouts and the full games library. Where to now is an optional MMM integration behind a Settings connection, served by one MMM-owned endpoint, gated only by MMM; XIX works completely without it. Level displays as a number.
 
 ---
 *v0.3 — consolidates decisions through Claude Design Pass 6 (12 Sep 2026). Build can start: data model, scoring engine, sync, hole card. Next revision after Pass 7 and the group validation.*
