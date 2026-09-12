@@ -169,6 +169,7 @@ public actor RoundSession {
         let ch = realtime.channel("xix:round:\(roundID.uuidString.lowercased())") { config in config.presence.key = UUID().uuidString }
         channel = ch
         let id = roundID.uuidString.lowercased()
+        let rounds = ch.postgresChange(AnyAction.self, schema: "xix", table: "rounds", filter: .eq("id", value: id))
         let scores = ch.postgresChange(AnyAction.self, schema: "xix", table: "scores", filter: .eq("round_id", value: id))
         let players = ch.postgresChange(AnyAction.self, schema: "xix", table: "players", filter: .eq("round_id", value: id))
         let games = ch.postgresChange(AnyAction.self, schema: "xix", table: "games", filter: .eq("round_id", value: id))
@@ -179,6 +180,7 @@ public actor RoundSession {
         let results = ch.postgresChange(AnyAction.self, schema: "xix", table: "results", filter: .eq("round_id", value: id))
         let presence = ch.presenceChange()
 
+        tasks.append(Task { [weak self] in for await a in rounds { await self?.apply(roundAction: a) } })
         tasks.append(Task { [weak self] in for await a in scores { await self?.apply(scoreAction: a) } })
         tasks.append(Task { [weak self] in for await a in players { await self?.apply(playerAction: a) } })
         tasks.append(Task { [weak self] in for await _ in games { await self?.refreshGames() } })
@@ -232,6 +234,20 @@ public actor RoundSession {
             emit(.notice(notice))
         }
         if outcome != .keptLocal { runEngine() }
+    }
+
+    /// The round row itself: status and ended_at move when the owner ends it, which every member must see.
+    private func apply(roundAction action: AnyAction) {
+        let record: [String: AnyJSON]?
+        switch action {
+        case .insert(let a): record = a.record
+        case .update(let a): record = a.record
+        case .delete: record = nil
+        }
+        guard let record, let row = try? decodeRow(RoundRow.self, record) else { return }
+        let existing = try? client.store.dbQueue.read { db in try LocalRound.fetchOne(db, key: roundID) }
+        try? client.store.dbQueue.write { db in try LocalRound(row: row, courseName: existing?.course_name).save(db) }
+        publishState()
     }
 
     private func apply(playerAction action: AnyAction) {

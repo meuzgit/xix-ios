@@ -31,6 +31,25 @@ public struct AuthService: Sendable {
         return try await ensureProfile()
     }
 
+    /// The name Apple gave us at first sign-in (or the one set since), if any.
+    public var displayName: String? {
+        if case .string(let s)? = client.supabase.auth.currentUser?.userMetadata["display_name"], !s.isEmpty { return s }
+        return nil
+    }
+
+    /// Email and password on the local stack only (the debug menu; the shared project has no email sign-up).
+    /// Creates the account when it does not exist yet. Never used on a Release build.
+    @discardableResult
+    public func signInLocally(email: String, password: String, displayName: String) async throws -> ProfileRow {
+        do {
+            _ = try await client.supabase.auth.signIn(email: email, password: password)
+        } catch {
+            _ = try await client.supabase.auth.signUp(email: email, password: password, data: ["display_name": .string(displayName)])
+            if client.supabase.auth.currentSession == nil { _ = try await client.supabase.auth.signIn(email: email, password: password) }
+        }
+        return try await ensureProfile()
+    }
+
     /// The persisted session, refreshed if needed; nil when signed out.
     public func restoreSession() async -> Session? {
         try? await client.supabase.auth.session

@@ -1,6 +1,6 @@
 # One command per check. Everything runs against the local Supabase stack (never the shared project).
 
-.PHONY: engine-tests pgtap data-tests ui-tests parity wasm models reset acceptance
+.PHONY: engine-tests pgtap data-tests ui-tests parity wasm models reset acceptance app xcconfig app-build
 
 engine-tests:            ## XIXScoring unit tests and fixtures
 	swift test --package-path XIXScoring
@@ -29,3 +29,12 @@ parity:                  ## native vs Wasm on every fixture
 
 models:                  ## regenerate XIXModels row types from the local database
 	./scripts/gen-models.sh
+
+app:                     ## generate XIX/XIX.xcodeproj from XIX/project.yml (xcodegen)
+	cd XIX && xcodegen generate
+
+xcconfig:                ## write XIX/Config/Shared.xcconfig from the linked project's anon key (never printed)
+	./scripts/gen-xcconfig.sh
+
+app-build: app           ## build the app for the simulator (Debug → local stack)
+	xcodebuild -project XIX/XIX.xcodeproj -scheme XIX -configuration Debug -destination 'generic/platform=iOS Simulator' build | grep -E "error:|BUILD"

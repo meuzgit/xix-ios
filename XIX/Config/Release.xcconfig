@@ -1,0 +1,3 @@
+#include "Local.xcconfig"
+#include? "Shared.xcconfig"
+XIX_DEFAULT_BACKEND = shared

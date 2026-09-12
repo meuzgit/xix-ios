@@ -8,6 +8,8 @@ import XIXScoring
 public struct HoleCardHost: View {
     let session: RoundSession
     let isOwner: Bool
+    let onMenu: (() -> Void)?
+    let headerAccessory: AnyView?
     @State private var hole: Int
     @State private var state: RoundSession.State?
     @State private var panel: HoleCardModel.Panel = .none
@@ -15,10 +17,13 @@ public struct HoleCardHost: View {
     @State private var notice: String?
     @State private var awaitingHoleComplete: Int?
 
-    public init(session: RoundSession, isOwner: Bool, startHole: Int? = nil) {
+    /// - Parameter startHole: the hole to open on; nil opens on the current hole (first with an empty score).
+    public init(session: RoundSession, isOwner: Bool, startHole: Int? = nil, onMenu: (() -> Void)? = nil, headerAccessory: AnyView? = nil) {
         self.session = session
         self.isOwner = isOwner
-        _hole = State(initialValue: startHole ?? 1)
+        self.onMenu = onMenu
+        self.headerAccessory = headerAccessory
+        _hole = State(initialValue: startHole ?? 0)
     }
 
     public var body: some View {
@@ -69,7 +74,7 @@ public struct HoleCardHost: View {
         let myID = s.players.first { $0.profile_id == sessionUserID }?.id
         var m = Self.model(s, hole: h, myPlayerID: myID, isOwner: isOwner, panel: h == hole ? panel : .none, nudge: nudge?.hole == h ? nudge?.text : nil)
         m.notice = notice
-        return HoleCardView(model: m, width: width, actions: actions(for: s, hole: h))
+        return HoleCardView(model: m, width: width, actions: actions(for: s, hole: h), headerAccessory: headerAccessory)
     }
 
     private var sessionUserID: UUID? { session.userID }
@@ -102,7 +107,8 @@ public struct HoleCardHost: View {
                 Task { await session.respond(calloutID: calloutID, action: response == .signed ? .signed : .ducked) }
             },
             composeCallout: { show("Callouts arrive with the composer in Build Doc 3") },
-            go: { hole = $0 })
+            go: { hole = $0 },
+            menu: onMenu)
     }
 
     private func show(_ text: String) {

@@ -42,7 +42,7 @@ create temp table ids as select
   '55555555-5555-4555-8555-555555555555'::uuid as course;
 select pg_temp.share();
 
-select plan(10);
+select plan(11);
 
 create temp table newround (id uuid, join_code text);
 select pg_temp.share();
@@ -58,7 +58,8 @@ select is((select count(*)::int from xix.rounds), 1, 'a member sees the round');
 select is(pg_temp.affected($$update xix.rounds set played_on = '2026-09-10' where id = (select round from ids)$$), 0, 'a member cannot update it');
 select pg_temp.as_user((select nobody from ids));
 select is((select count(*)::int from xix.rounds), 0, 'a non-member sees nothing');
-select throws_ok($$select xix.join_round('FRSRVW')$$, 'P0002', null, 'join by code refuses an ended round');
+select is((select id from xix.join_round('FRSRVW')), (select round from ids), 'join by code resolves an ended round (result links, 0019)');
+select is((select count(*)::int from xix.rounds), 0, 'without granting membership: the non-member still sees nothing');
 
 select * from finish();
 rollback;

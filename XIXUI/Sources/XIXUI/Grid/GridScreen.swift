@@ -7,18 +7,24 @@ public struct GridScreen: View {
     @Binding public var selectedPill: String?
     public let width: CGFloat
     public let onOpenHole: (Int) -> Void
+    /// The round menu ("···" in the header, Pass 7 §1); nil hides the control.
+    public let onMenu: (() -> Void)?
+    public let headerAccessory: AnyView?
 
-    public init(model: GridScreenModel, selectedPill: Binding<String?>, width: CGFloat = XIXMetric.screenWidth, onOpenHole: @escaping (Int) -> Void) {
+    public init(model: GridScreenModel, selectedPill: Binding<String?>, width: CGFloat = XIXMetric.screenWidth, onOpenHole: @escaping (Int) -> Void,
+                onMenu: (() -> Void)? = nil, headerAccessory: AnyView? = nil) {
         self.model = model
         self._selectedPill = selectedPill
         self.width = width
         self.onOpenHole = onOpenHole
+        self.onMenu = onMenu
+        self.headerAccessory = headerAccessory
     }
 
     public var body: some View {
         ZStack(alignment: .top) {
             ScrollView {
-                GridScreenContent(model: model, selectedPill: $selectedPill, width: width, onOpenHole: onOpenHole)
+                GridScreenContent(model: model, selectedPill: $selectedPill, width: width, onOpenHole: onOpenHole, onMenu: onMenu, headerAccessory: headerAccessory)
             }
             .background(XIXColor.sheet)
             if let notice = model.notice {
@@ -36,12 +42,17 @@ public struct GridScreenContent: View {
     @Binding public var selectedPill: String?
     public let width: CGFloat
     public let onOpenHole: (Int) -> Void
+    public let onMenu: (() -> Void)?
+    public let headerAccessory: AnyView?
 
-    public init(model: GridScreenModel, selectedPill: Binding<String?>, width: CGFloat = XIXMetric.screenWidth, onOpenHole: @escaping (Int) -> Void) {
+    public init(model: GridScreenModel, selectedPill: Binding<String?>, width: CGFloat = XIXMetric.screenWidth, onOpenHole: @escaping (Int) -> Void,
+                onMenu: (() -> Void)? = nil, headerAccessory: AnyView? = nil) {
         self.model = model
         self._selectedPill = selectedPill
         self.width = width
         self.onOpenHole = onOpenHole
+        self.onMenu = onMenu
+        self.headerAccessory = headerAccessory
     }
 
     public var body: some View {
@@ -65,7 +76,8 @@ public struct GridScreenContent: View {
             HStack(alignment: .firstTextBaseline) {
                 Text("XIX").trackedCaps(11, weight: .bold).foregroundStyle(XIXColor.onGreen)
                 Spacer()
-                Text(model.scorecard.dateLabel).trackedCaps(9).foregroundStyle(XIXColor.faint)
+                if let headerAccessory { headerAccessory } else { Text(model.scorecard.dateLabel).trackedCaps(9).foregroundStyle(XIXColor.faint) }
+                if let onMenu { MenuDots(action: onMenu) }
             }
             HStack(alignment: .firstTextBaseline) {
                 Text(model.scorecard.courseName).font(XIXType.body(17, weight: .semibold)).foregroundStyle(XIXColor.onGreen).lineLimit(1)
@@ -101,6 +113,20 @@ public struct GridScreenContent: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 12)
+    }
+}
+
+/// The "···" that opens the round menu from either layer (Pass 7 §1). 44pt hit area, ink on green.
+public struct MenuDots: View {
+    public let action: () -> Void
+    public init(action: @escaping () -> Void) { self.action = action }
+    public var body: some View {
+        Button(action: action) {
+            Text("···").font(XIXType.body(18, weight: .bold)).foregroundStyle(XIXColor.onGreen)
+                .frame(width: 32, height: 24).contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Round menu")
     }
 }
 

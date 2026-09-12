@@ -1,0 +1,8 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      { "appIDs": ["P4V33834SQ.golf.xix.app"], "components": [ { "/": "/r/*", "comment": "join and result links" } ] }
+    ]
+  }
+}

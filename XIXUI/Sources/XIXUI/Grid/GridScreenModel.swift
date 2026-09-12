@@ -119,7 +119,7 @@ public struct GridScreenModel: Equatable, Sendable {
         return GridScreenModel(scorecard: scorecard, pills: pills, selectedPill: selectedPill ?? pills.first?.id, currentHole: current)
     }
 
-    static func pillLabel(_ format: Format) -> String {
+    public static func pillLabel(_ format: Format) -> String {
         switch format {
         case .strokePlay: return "STROKE"
         case .matchPlay: return "MATCH"
@@ -148,5 +148,5 @@ public struct GridScreenModel: Equatable, Sendable {
         text.hasPrefix(prefix) ? String(text.dropFirst(prefix.count)) : text
     }
 
-    static func toParText(_ v: Int) -> String { v == 0 ? "E" : (v > 0 ? "+\(v)" : "\(v)") }
+    public static func toParText(_ v: Int) -> String { v == 0 ? "E" : (v > 0 ? "+\(v)" : "\(v)") }
 }

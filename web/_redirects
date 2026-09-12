@@ -1,0 +1,2 @@
+# Netlify / Cloudflare Pages style rewrite: every join link renders the landing page.
+/r/*  /index.html  200

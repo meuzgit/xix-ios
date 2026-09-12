@@ -45,7 +45,7 @@ public struct ScorePad: View {
                     Text("Save").font(XIXType.body(15, weight: .semibold)).foregroundStyle(XIXColor.onGreen)
                         .frame(maxWidth: .infinity).frame(height: XIXMetric.control)
                         .background(Capsule().fill(XIXColor.green))
-                }.buttonStyle(.plain).disabled(pad.entered == nil && !pad.pickedUp)
+                }.buttonStyle(.plain).disabled(pad.entered == nil && !pad.pickedUp).accessibilityIdentifier("pad-save")
             }
         }
         .padding(12)
@@ -64,5 +64,6 @@ public struct ScorePad: View {
         }
         .buttonStyle(.plain)
         .frame(maxWidth: wide ? .infinity : nil)
+        .accessibilityIdentifier("pad-\(label.lowercased().replacingOccurrences(of: " ", with: "-"))")
     }
 }

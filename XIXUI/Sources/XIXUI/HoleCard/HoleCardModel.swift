@@ -178,7 +178,8 @@ public struct HoleCardModel: Equatable, Sendable {
                              inPlay: inPlay.joined(separator: " · "), rows: rows, callout: banner, events: events, nudge: nudge, strip: strip, panel: panel)
     }
 
-    static func gameName(_ format: Format) -> String {
+    /// Short game name for rows and strips: "Skins", "Nassau", "Best Ball".
+    public static func gameName(_ format: Format) -> String {
         switch format {
         case .strokePlay: return "Stroke"
         case .matchPlay: return "Match"

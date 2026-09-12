@@ -8,22 +8,27 @@ public struct GridScreenHost: View {
     let session: RoundSession
     let nameStyle: ScorecardModel.NameStyle
     let onOpenHole: (Int) -> Void
+    let onMenu: (() -> Void)?
+    let headerAccessory: AnyView?
     @State private var model: GridScreenModel?
     @State private var selectedPill: String?
     @State private var notice: String?
     @State private var noticeTask: Task<Void, Never>?
 
-    public init(session: RoundSession, nameStyle: ScorecardModel.NameStyle = .names, onOpenHole: @escaping (Int) -> Void) {
+    public init(session: RoundSession, nameStyle: ScorecardModel.NameStyle = .names, onOpenHole: @escaping (Int) -> Void, onMenu: (() -> Void)? = nil,
+                headerAccessory: AnyView? = nil) {
         self.session = session
         self.nameStyle = nameStyle
         self.onOpenHole = onOpenHole
+        self.onMenu = onMenu
+        self.headerAccessory = headerAccessory
     }
 
     public var body: some View {
         GeometryReader { geo in
             Group {
                 if let model {
-                    GridScreen(model: withNotice(model), selectedPill: $selectedPill, width: geo.size.width, onOpenHole: onOpenHole)
+                    GridScreen(model: withNotice(model), selectedPill: $selectedPill, width: geo.size.width, onOpenHole: onOpenHole, onMenu: onMenu, headerAccessory: headerAccessory)
                 } else {
                     XIXColor.sheet
                 }

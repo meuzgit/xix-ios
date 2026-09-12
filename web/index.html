@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XIX · You're asked to play</title>
+<!-- The no-app landing page for xix.golf/r/{code} (Build Doc 3 step 1, Pass 6 6c). Static: any host
+     that rewrites /r/* to this file (see _redirects). It shows the invite and the two buttons; the round
+     itself is read by the app after sign-in, since the join screen RPC needs an identity. -->
+<style>
+  :root { --green: #0A3A2A; --green-soft: #1C4F2E; --cream: #F4EBD6; --faint: rgba(255,255,255,.42); }
+  html, body { margin: 0; background: var(--green); color: #fff; font: 15px/1.5 "SF Pro Text", -apple-system, system-ui, sans-serif; }
+  .wrap { max-width: 390px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; padding: 24px 30px 40px; box-sizing: border-box; }
+  .bar { display: flex; justify-content: space-between; font: 700 11px/1 "SF Pro Text", system-ui; letter-spacing: .14em; text-transform: uppercase; }
+  .bar span:last-child { color: var(--faint); font-weight: 600; }
+  h1 { font: 900 40px/1.02 "SF Pro Text", -apple-system, system-ui, sans-serif; margin: 64px 0 0; letter-spacing: -.01em; }
+  .sub { color: rgba(255,255,255,.65); margin-top: 14px; }
+  .code { display: inline-block; margin-top: 22px; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,.1); font: 700 15px/1 "SF Mono", ui-monospace, monospace; letter-spacing: .12em; }
+  .btn { display: block; width: 100%; height: 54px; line-height: 54px; margin-top: 34px; border: 0; border-radius: 999px; text-align: center; text-decoration: none; font: 700 16px/54px "SF Pro Text", system-ui; }
+  .btn.open { background: var(--cream); color: var(--green); }
+  .btn.get { background: rgba(255,255,255,.12); color: #fff; margin-top: 3px; font-weight: 600; }
+  .foot { color: var(--faint); font-size: 12px; margin-top: 20px; }
+  .spacer { flex: 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar"><span>XIX</span><span>Scoring is free</span></div>
+  <h1>You're asked<br>to play</h1>
+  <div class="sub">A round on XIX, today.<br>Open it in the app and your row is ready to claim.</div>
+  <div class="code" id="code">····</div>
+  <a class="btn open" id="open" href="#">Open in XIX</a>
+  <a class="btn get" id="get" href="https://apps.apple.com/app/xix">Get XIX</a>
+  <div class="foot">Scoring is free. No account needed to be scored by the person who set the round up.</div>
+  <div class="spacer"></div>
+  <div class="foot">xix.golf</div>
+</div>
+<script>
+  // /r/8K2M → 8K2M. The app opens on the universal link when installed; the button is the custom scheme fallback.
+  var parts = location.pathname.split('/').filter(Boolean);
+  var i = parts.indexOf('r');
+  var code = (i >= 0 && parts[i + 1]) ? parts[i + 1].toUpperCase() : (new URLSearchParams(location.search).get('code') || '').toUpperCase();
+  if (code) {
+    document.getElementById('code').textContent = code;
+    document.getElementById('open').href = 'xix://r/' + code;
+    document.title = 'XIX · Join round ' + code;
+  } else {
+    document.getElementById('code').textContent = 'No round in this link';
+    document.getElementById('open').style.display = 'none';
+  }
+</script>
+</body>
+</html>

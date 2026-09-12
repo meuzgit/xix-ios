@@ -1,0 +1,4 @@
+// The shared project. Copy to Shared.xcconfig (gitignored) or run `make xcconfig`, which fills it from
+// `supabase projects api-keys` without printing the key. The anon key is the client key; RLS does the rest.
+XIX_SHARED_URL = https:/$()/zsipifaskpupjwfiinen.supabase.co
+XIX_SHARED_ANON_KEY =

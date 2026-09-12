@@ -15,6 +15,8 @@ Vocabulary rule for every file, comment and test name: no money, stake, wager or
 | `XIXModels/` | Row types mirroring the `xix` tables, generated from the local database (`scripts/gen-models.sh`) and hand-wrapped. |
 | `XIXData/` | Supabase client, Sign in with Apple, repositories, `RoundSession` (one Realtime channel per round, last-write-wins per cell, merge notices), GRDB local store and offline queue. No UI. |
 | `XIXUI/` | Design tokens from Pass 5, the base sticker pack, `ScorecardRenderer` (one view tree for the screen and for export), the grid screen and the hole card bound to `RoundSession`, with pixel snapshots. |
+| `XIX/` | The app target (Build Doc 3): `project.yml` for xcodegen, the screens that compose the packages (Home, setup, round, results, join, sign-in), and the two-device UI tests. |
+| `web/` | The static no-app landing page for join links and the universal-link association file. |
 | `supabase/` | Migrations, seed, pgTAP tests, the `xix-engine` edge function. |
 | `scripts/` | Engine build and parity checks. |
 | `fraserview_2026-09-09.json` | The reference round every design pass uses; source of the seed. |
@@ -33,7 +35,7 @@ Needs Docker (Colima works: `brew install colima docker && colima start`) and th
 
 ```bash
 supabase start                              # local stack on Postgres 17
-supabase db reset                           # migrations 0001–0013 plus the Fraserview seed
+supabase db reset                           # migrations plus the Fraserview seed and a dummy Vault secret for the local webhook
 supabase test db supabase/tests/database    # pgTAP: one file per RLS row, RPC and engine checks
 ```
 
@@ -59,6 +61,23 @@ RECORD_SNAPSHOTS=1 make ui-tests             # re-record after an intended visua
 ```
 
 Snapshots live in `XIXUI/Tests/XIXUITests/__Snapshots__` and are compared pixel-wise with a small tolerance; a failing comparison writes `<name>.failed.png` beside the reference. They are recorded on macOS and expect the same text rendering.
+
+## App
+
+```bash
+brew install xcodegen
+make app                                     # XIX/XIX.xcodeproj from XIX/project.yml (not committed)
+make xcconfig                                # XIX/Config/Shared.xcconfig from the CLI's anon key (not committed)
+open XIX/XIX.xcodeproj
+```
+
+Debug builds talk to the local stack (`supabase start`, plus `supabase functions serve --no-verify-jwt` so the local engine webhook has somewhere to post); Release builds talk to the shared project. The debug menu ("···" on Home in Debug builds) switches between the two and offers a password account on the local stack, since Sign in with Apple cannot run against a local GoTrue. The bundle id is `golf.xix.app`; it must match the Apple provider's client id on the shared project.
+
+The step 1 acceptance (two phones, one round, a guest joining by link mid-round) is a pair of UI tests in `XIX/UITests` driven on two booted simulators and recorded:
+
+```bash
+XIX_SIM_A=<udid> XIX_SIM_B=<udid> ./scripts/acceptance-video.sh   # writes docs/acceptance-step1.mp4
+```
 
 ## Engine toolchain (WebAssembly)
 
@@ -95,6 +114,7 @@ python3 supabase/scripts/verify_engine_result.py   # results.payload must equal 
 
 1. Expose the `xix` schema in the API settings (Data API → exposed schemas), matching `[api] schemas` in `supabase/config.toml`.
 2. Deploy the function with the module built first: `./scripts/build-engine-wasm.sh && supabase functions deploy xix-engine`. The `[functions.xix-engine]` entry in `config.toml` declares the `.wasm` as a static file and disables JWT verification (the webhook carries the service-role key).
-3. Add a Database Webhook on `xix.engine_queue` insert: POST to `xix-engine`, body `{ "record": { "round_id": … } }`, `Authorization: Bearer <service-role key>`. The function also accepts `{ "round_id": … }` directly.
+3. The engine webhook is migration 0018: `xix.notify_engine_webhook()` posts every `xix.engine_queue` row to the function through pg_net, with the bearer key read from Vault. Store it once per project: `select vault.create_secret('<service-role key>', 'xix_service_role_key')` (and optionally `xix_engine_url` to override the function URL). Locally `supabase/seeds/local_vault.sql` seeds a dummy key and points the URL at `supabase functions serve`.
+4. `make xcconfig` for the app's Release configuration; the anon key never leaves the machine.
 
 Auth is Sign in with Apple on the shared Meuz auth. No provider settings change for XIX; profiles are created by `xix.ensure_profile()` after the first sign-in.

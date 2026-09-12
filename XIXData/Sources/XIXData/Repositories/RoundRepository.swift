@@ -176,6 +176,34 @@ public struct RoundRepository: Sendable {
         return try await client.supabase.rpc("confirm_round", params: P(round_id: roundID, action: action.rawValue)).single().execute().value
     }
 
+    /// Courses anyone has created whose name starts with the typed text (setup's search).
+    public func searchCourses(_ text: String, limit: Int = 8) async throws -> [CourseRow] {
+        let q = text.trimmingCharacters(in: .whitespaces)
+        guard !q.isEmpty else { return [] }
+        return try await db.from("courses").select().ilike("name", pattern: "\(q)%").order("name").limit(limit).execute().value
+    }
+
+    /// Owner renames a row (RLS: owner or own row).
+    public func renamePlayer(playerID: UUID, displayName: String) async throws {
+        struct U: Encodable { let display_name: String }
+        try await db.from("players").update(U(display_name: displayName)).eq("id", value: playerID).execute()
+    }
+
+    /// Owner removes a row nobody has claimed (RLS refuses a claimed one).
+    public func removePlayer(playerID: UUID) async throws {
+        try await db.from("players").delete().eq("id", value: playerID).execute()
+    }
+
+    public func result(roundID: UUID) async throws -> ResultRow? {
+        let rows: [ResultRow] = try await db.from("results").select().eq("round_id", value: roundID).execute().value
+        return rows.first
+    }
+
+    /// The viewer's medals from one round (RLS: own medals only).
+    public func medals(roundID: UUID) async throws -> [MedalRow] {
+        try await db.from("medals").select().eq("round_id", value: roundID).order("created_at").execute().value
+    }
+
     public func medals() async throws -> [MedalRow] {
         try await db.from("medals").select().order("created_at", ascending: false).execute().value
     }

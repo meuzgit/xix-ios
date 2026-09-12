@@ -22,3 +22,9 @@ supabase/.temp/
 XIXScoring/.build-wasm/
 supabase/functions/xix-engine/*.wasm
 __pycache__/
+
+# App target: the project is generated (make app); the shared-project config carries a key
+XIX/XIX.xcodeproj/
+XIX/Config/Shared.xcconfig
+XIX/Info.plist
+XIX/XIX.entitlements

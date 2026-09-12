@@ -9,10 +9,13 @@ public struct HoleCardView: View {
     public let actions: HoleCardActions
     /// Offscreen renders (snapshots, exports) skip scroll views; pass false to lay the body out flat.
     public let scrolls: Bool
+    /// A control the app places in the header before the menu (the grid/card switch).
+    public let headerAccessory: AnyView?
     @State private var lifted: UUID? = nil
 
-    public init(model: HoleCardModel, width: CGFloat = XIXMetric.screenWidth, actions: HoleCardActions = .none, scrolls: Bool = true) {
-        self.model = model; self.width = width; self.actions = actions; self.scrolls = scrolls
+    public init(model: HoleCardModel, width: CGFloat = XIXMetric.screenWidth, actions: HoleCardActions = .none, scrolls: Bool = true,
+                headerAccessory: AnyView? = nil) {
+        self.model = model; self.width = width; self.actions = actions; self.scrolls = scrolls; self.headerAccessory = headerAccessory
     }
 
     public var body: some View {
@@ -59,7 +62,8 @@ public struct HoleCardView: View {
             if let si = model.strokeIndex { Text("SI \(si)").trackedCaps(9).foregroundStyle(XIXColor.faint) }
             if let y = model.yards { Text("\(y) YDS").trackedCaps(9).foregroundStyle(XIXColor.faint) }
             Spacer()
-            Text("\(model.hole) OF \(model.holes)").trackedCaps(9).foregroundStyle(XIXColor.faint)
+            if let headerAccessory { headerAccessory } else { Text("\(model.hole) OF \(model.holes)").trackedCaps(9).foregroundStyle(XIXColor.faint) }
+            if let menu = actions.menu { MenuDots(action: menu) }
         }
         .padding(.horizontal, 16).frame(height: XIXMetric.control)
         .background(XIXColor.green)
@@ -143,6 +147,7 @@ public struct HoleCardView: View {
         }
         .buttonStyle(.plain)
         .disabled(!row.canEdit)
+        .accessibilityIdentifier("score-\(row.name)")
     }
 
     // MARK: Lines and stubs
@@ -210,6 +215,7 @@ public struct HoleCardView: View {
                             .overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(item.filled > 0 && !full && !current ? XIXColor.green : XIXColor.hairline, lineWidth: 1)))
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("hole-\(item.hole)")
             }
         }
         .padding(.horizontal, 8).padding(.vertical, 8)
@@ -231,12 +237,16 @@ public struct HoleCardActions {
     public var respond: (UUID, HoleCardResponse) -> Void
     public var composeCallout: () -> Void
     public var go: (Int) -> Void
+    /// The round menu ("···" in the header); nil hides the control.
+    public var menu: (() -> Void)?
 
     public init(openPad: @escaping (UUID) -> Void, padTap: @escaping (Int) -> Void, padPickUp: @escaping () -> Void, padClear: @escaping () -> Void,
                 padSave: @escaping () -> Void, openTray: @escaping (UUID, StickerContext) -> Void, sendSticker: @escaping (UUID, StickerKey) -> Void,
-                closePanel: @escaping () -> Void, respond: @escaping (UUID, HoleCardResponse) -> Void, composeCallout: @escaping () -> Void, go: @escaping (Int) -> Void) {
+                closePanel: @escaping () -> Void, respond: @escaping (UUID, HoleCardResponse) -> Void, composeCallout: @escaping () -> Void, go: @escaping (Int) -> Void,
+                menu: (() -> Void)? = nil) {
         self.openPad = openPad; self.padTap = padTap; self.padPickUp = padPickUp; self.padClear = padClear; self.padSave = padSave
         self.openTray = openTray; self.sendSticker = sendSticker; self.closePanel = closePanel; self.respond = respond; self.composeCallout = composeCallout; self.go = go
+        self.menu = menu
     }
 
     public static let none = HoleCardActions(openPad: { _ in }, padTap: { _ in }, padPickUp: {}, padClear: {}, padSave: {}, openTray: { _, _ in },
