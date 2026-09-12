@@ -147,7 +147,18 @@ python3 supabase/scripts/verify_engine_result.py   # results.payload must equal 
 ## Shared project (applied by hand after each reviewed step)
 
 1. Expose the `xix` schema in the API settings (Data API → exposed schemas), matching `[api] schemas` in `supabase/config.toml`.
-2. Deploy the function with the module built first: `./scripts/build-engine-wasm.sh && supabase functions deploy xix-engine`. The `[functions.xix-engine]` entry in `config.toml` declares the `.wasm` as a static file and disables JWT verification (the webhook carries the service-role key).
+2. Deploy the engine with one command, never two:
+
+   ```bash
+   make deploy-engine     # builds the module, deploys the function, then proves the two match
+   make verify-engine     # the same proof on its own, any time
+   ```
+
+   The two halves must not be run separately. `supabase functions deploy` decides whether to upload by looking at the function's **source**, not at its static files, so a freshly built `.wasm` beside an unchanged `index.ts` deploys as "No change found in Function" and the project keeps running the old engine. `scripts/build-engine-wasm.sh` therefore stamps the module's sha256 into `index.ts`, which makes every rebuild a source change.
+
+   `make verify-engine` checks it two ways: the function reports the sha256 of the module it loaded, which must equal the local one, and a throwaway round is scored by the deployed function and its payload inspected for the metrics this engine emits. The round, its course and the account that owned it are deleted again; nothing is left behind. The `[functions.xix-engine]` entry in `config.toml` declares the `.wasm` as a static file and disables JWT verification (the webhook carries the service-role key).
+
+   **Redeploy the engine whenever `XIXScoring` changes**, and in the same breath as any migration that changes `xix.round_input`, since the two travel together.
 3. The engine webhook is migration 0018: `xix.notify_engine_webhook()` posts every `xix.engine_queue` row to the function through pg_net, with the bearer key read from Vault. Store it once per project: `select vault.create_secret('<service-role key>', 'xix_service_role_key')` (and optionally `xix_engine_url` to override the function URL). Locally `supabase/seeds/local_vault.sql` seeds a dummy key and points the URL at `supabase functions serve`.
 4. `make xcconfig` for the app's Release configuration; the anon key never leaves the machine.
 

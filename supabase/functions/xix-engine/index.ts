@@ -12,6 +12,13 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ENGINE_VERSION_KEY = "engineVersion";
 
+// The module this function was deployed with. `scripts/build-engine-wasm.sh` stamps it, so a rebuilt
+// engine always changes this file — without it `supabase functions deploy` reports "no change found"
+// and leaves the old module in place, which is how a stale engine reaches the shared project.
+// A GET (or any request carrying {"ping": true}) answers with it, so what is deployed can be checked
+// without touching a round.
+const ENGINE_MODULE_SHA = "8ebdae78614b55ffe343daa71c17e63ca31991d99be95766eb26e6a0b7a75f62";
+
 const wasmBytes = await Deno.readFile(new URL("./xix-engine-cli.wasm", import.meta.url));
 const wasmModule = await WebAssembly.compile(wasmBytes);
 
@@ -32,9 +39,13 @@ export async function runEngine(input: unknown): Promise<Record<string, unknown>
 
 Deno.serve(async (req) => {
   const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { db: { schema: "xix" }, auth: { persistSession: false } });
+  if (req.method === "GET") {
+    return Response.json({ module: ENGINE_MODULE_SHA, bytes: wasmBytes.byteLength });
+  }
   let roundID: string | undefined;
   try {
     const body = await req.json();
+    if (body?.ping) return Response.json({ module: ENGINE_MODULE_SHA, bytes: wasmBytes.byteLength });
     roundID = body?.record?.round_id ?? body?.round_id;
   } catch {
     return Response.json({ error: "expected JSON with round_id" }, { status: 400 });
