@@ -10,7 +10,10 @@ struct XIXApp: App {
         WindowGroup {
             RootView()
                 .environment(env)
-                .onOpenURL { url in env.router.open(url) }
+                .onOpenURL { url in
+                    if GoogleSignInBridge.handle(url) { return }
+                    env.router.open(url)
+                }
                 .onAppear {
                     #if DEBUG
                     // UI tests hand a link in as a launch argument (`-xix-open xix://r/CODE`).

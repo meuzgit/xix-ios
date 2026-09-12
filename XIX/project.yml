@@ -20,6 +20,9 @@ packages:
     path: ../XIXScoring
   XIXModels:
     path: ../XIXModels
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: "8.0.0"
 targets:
   XIX:
     type: application
@@ -35,6 +38,8 @@ targets:
       - package: XIXData
       - package: XIXScoring
       - package: XIXModels
+      - package: GoogleSignIn
+        product: GoogleSignIn
     entitlements:
       path: XIX.entitlements
       properties:
@@ -55,6 +60,9 @@ targets:
         CFBundleURLTypes:
           - CFBundleURLName: golf.xix.app
             CFBundleURLSchemes: [xix]
+          - CFBundleURLName: google-sign-in
+            CFBundleURLSchemes: [com.googleusercontent.apps.305118221674-a09hrvusqo1o294is6hhko5v8fp0d21b]
+        GIDClientID: 305118221674-a09hrvusqo1o294is6hhko5v8fp0d21b.apps.googleusercontent.com
         XIXLocalURL: $(XIX_LOCAL_URL)
         XIXLocalAnonKey: $(XIX_LOCAL_ANON_KEY)
         XIXSharedURL: $(XIX_SHARED_URL)

@@ -71,7 +71,7 @@ make xcconfig                                # XIX/Config/Shared.xcconfig from t
 open XIX/XIX.xcodeproj
 ```
 
-Debug builds talk to the local stack (`supabase start`, plus `supabase functions serve --no-verify-jwt` so the local engine webhook has somewhere to post); Release builds talk to the shared project. The debug menu ("···" on Home in Debug builds) switches between the two and offers a password account on the local stack, since Sign in with Apple cannot run against a local GoTrue. The bundle id is `golf.xix.app`; it must match the Apple provider's client id on the shared project.
+Debug builds talk to the local stack (`supabase start`, plus `supabase functions serve --no-verify-jwt` so the local engine webhook has somewhere to post); Release builds talk to the shared project. Settings ("···" on Home) carries a Debug-only backend switch, and the sign-in sheet in Debug builds offers a password account on the local stack, since Sign in with Apple cannot run against a local GoTrue. The bundle id is `golf.xix.app`; it must match the Apple provider's client id on the shared project.
 
 The step 1 acceptance (two phones, one round, a guest joining by link mid-round) is a pair of UI tests in `XIX/UITests` driven on two booted simulators and recorded:
 
@@ -117,4 +117,4 @@ python3 supabase/scripts/verify_engine_result.py   # results.payload must equal 
 3. The engine webhook is migration 0018: `xix.notify_engine_webhook()` posts every `xix.engine_queue` row to the function through pg_net, with the bearer key read from Vault. Store it once per project: `select vault.create_secret('<service-role key>', 'xix_service_role_key')` (and optionally `xix_engine_url` to override the function URL). Locally `supabase/seeds/local_vault.sql` seeds a dummy key and points the URL at `supabase functions serve`.
 4. `make xcconfig` for the app's Release configuration; the anon key never leaves the machine.
 
-Auth is Sign in with Apple on the shared Meuz auth. No provider settings change for XIX; profiles are created by `xix.ensure_profile()` after the first sign-in.
+Auth is the shared Meuz auth with three ways in: Sign in with Apple, Google (the native SDK's id token, exchanged like Apple's), and an email one-time code (`signInWithOTP` + `verifyOTP`; 8 digits on the shared project, 6 locally). Provider and linking settings are dashboard work, not the repo's. Profiles are created by `xix.ensure_profile()` after the first sign-in. Settings › "Add another sign-in method" attaches Apple or Google through `linkIdentity` with their id token, and an email address through the email-change code. Locally the code mails go to Mailpit on port 54324 with the templates in `supabase/templates/`; `AuthOTPTests` reads the code back from there.

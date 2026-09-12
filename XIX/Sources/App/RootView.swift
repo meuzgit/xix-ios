@@ -15,6 +15,7 @@ struct RootView: View {
                     case .round(let id): RoundScreen(roundID: id)
                     case .results(let id): ResultsHost(roundID: id)
                     case .join(let code): JoinScreen(code: code)
+                    case .settings: SettingsScreen()
                     }
                 }
         }

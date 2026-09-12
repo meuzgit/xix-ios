@@ -7,6 +7,7 @@ enum Route: Hashable {
     case round(UUID)
     case results(UUID)
     case join(code: String)
+    case settings
 }
 
 enum SetupMode: Hashable { case group, solo }

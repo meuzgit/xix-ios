@@ -143,9 +143,9 @@ final class PlayableLoopTests: XCTestCase {
 
     /// A fresh start for the video: the debug menu's Sign out, when a session was restored.
     private func signOutIfSignedIn(_ app: XCUIApplication) {
-        let debug = app.buttons["Debug menu"]
-        guard debug.waitForExistence(timeout: 5) else { return }
-        debug.tap()
+        let settings = app.buttons["Settings"]
+        guard settings.waitForExistence(timeout: 5) else { return }
+        settings.tap()
         let out = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Sign out")).firstMatch
         if out.waitForExistence(timeout: 3) { out.tap(); pause(1) } else { app.buttons["Back"].tap() }
         pause(1)

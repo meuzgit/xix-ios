@@ -12,7 +12,6 @@ struct HomeScreen: View {
     @State private var record: CourseRecord?
     @State private var starting = false
     @State private var error: String?
-    @State private var showDebug = false
 
     var body: some View {
         ScrollView {
@@ -31,7 +30,6 @@ struct HomeScreen: View {
         .background(XIXColor.sheet)
         .task { await env.closeSessions(); reload() }
         .onChange(of: env.isSignedIn) { reload() }
-        .sheet(isPresented: $showDebug) { DebugMenu() }
     }
 
     private func reload() {
@@ -45,13 +43,11 @@ struct HomeScreen: View {
                 Text("XIX").trackedCaps(11, weight: .bold).foregroundStyle(XIXColor.onGreen)
                 Spacer()
                 Text(Date().homeLabel).trackedCaps(9).foregroundStyle(XIXColor.faint)
-                #if DEBUG
-                Button { showDebug = true } label: {
+                Button { env.router.path.append(.settings) } label: {
                     Text("···").font(XIXType.body(16, weight: .bold)).foregroundStyle(XIXColor.onGreen).frame(width: 28, height: 24).contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Debug menu")
-                #endif
+                .accessibilityLabel("Settings")
             }
             Text("XIX").font(.system(size: 44, weight: .black)).foregroundStyle(XIXColor.onGreen).padding(.top, 10)
             Text(env.isSignedIn ? env.displayName.uppercased() : "SCORING IS FREE").trackedCaps(9).foregroundStyle(XIXColor.faint)
