@@ -33,6 +33,11 @@ enum NassauScorer: FormatScorer {
             }
         })
 
+        // Compact: "2&1 · AS · 3 up" (front · back · 18) from each player's side.
+        let compact = GameDisplay(uniqueKeysWithValues: sides.flatMap { side in
+            side.ids.map { id in (id, detail.segments.map { $0.match.compact[side.label] ?? "—" }.joined(separator: " · ")) }
+        })
+
         // Standings: segments won so far per side.
         let segmentsWon: [Int] = sides.map { side in
             detail.segments.filter { $0.match.complete && $0.match.leader == side.label }.count
@@ -48,7 +53,7 @@ enum NassauScorer: FormatScorer {
         let outcome: Outcome? = abandonedBy.map { .abandoned(by: $0) } ?? (allComplete ? detail.match18.matchOutcome : nil)
         let result = GameResult(gameID: game.id, format: .nassau, throughHole: through, standings: standings,
                                 outcome: outcome,
-                                display: display, detail: .nassau(detail))
+                                display: display, compact: compact, detail: .nassau(detail))
         return ScoredGame(result: result)
     }
 }

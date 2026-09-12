@@ -117,10 +117,11 @@ enum BestBallScorer: FormatScorer {
             let display = GameDisplay(uniqueKeysWithValues: sides.flatMap { side in
                 side.ids.map { ($0, "Best Ball \(MatchEngine.text(match, forSide: side.index, segment: nil))") }
             })
+            let compact = GameDisplay(uniqueKeysWithValues: sides.flatMap { side in side.ids.map { ($0, match.compact[side.label] ?? "") } })
             let result = GameResult(gameID: game.id, format: .bestBall, throughHole: through,
                                     standings: MatchEngine.standings(match, sides: sides),
                                     outcome: match.abandonedBy.map { .abandoned(by: $0) } ?? match.matchOutcome,
-                                    display: display, detail: .matchPlay(match))
+                                    display: display, compact: compact, detail: .matchPlay(match))
             return ScoredGame(result: result)
         }
     }

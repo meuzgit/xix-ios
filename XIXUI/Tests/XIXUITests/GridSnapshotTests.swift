@@ -89,7 +89,7 @@ final class GridSnapshotTests: XCTestCase {
     func testNassauRowsAndDefaultPill() throws {
         let model = try Self.model(selected: nil)
         XCTAssertEqual(model.selected?.label, "NASSAU", "the first active game is the default mode")
-        XCTAssertEqual(model.selected?.rows.first?.value, "won front 2&1 · back halved · won 18 5&4")
+        XCTAssertEqual(model.selected?.rows.map(\.value), ["2&1 · AS · 5&4", "L 2&1 · AS · L 5&4"], "compact front · back · 18 from each side")
     }
 
     func testCurrentHoleIsFirstWithAnyEmptyScoreAndLiveMark() throws {

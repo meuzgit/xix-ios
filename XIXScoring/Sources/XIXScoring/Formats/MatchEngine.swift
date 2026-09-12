@@ -86,7 +86,7 @@ enum MatchEngine {
             if complete { outcome = .halved }
         }
 
-        return MatchPlayDetail(
+        var detail = MatchPlayDetail(
             sides: sides.map(\.ids),
             holesWon: Dictionary(uniqueKeysWithValues: sides.map { ($0.label, won[$0.index]) }),
             halved: halved,
@@ -102,6 +102,22 @@ enum MatchEngine {
             result: result,
             matchOutcome: outcome,
             perHole: perHole)
+        detail.compact = Dictionary(uniqueKeysWithValues: sides.map { ($0.label, compactText(detail, forSide: $0.index)) })
+        return detail
+    }
+
+    /// The standing alone from one side's view: "3 up", "3 dn", "AS", "2&1" won, "L 2&1" lost, "void", "—" to play.
+    static func compactText(_ match: MatchPlayDetail, forSide side: Int) -> String {
+        let mine = match.sides[side].map(\.rawValue).joined(separator: "+")
+        if match.abandonedBy != nil { return "void" }
+        guard match.throughHole > match.firstHole - 1 else { return "—" }
+        guard let leader = match.leader else { return "AS" }
+        let leading = leader == mine
+        if let decided = match.decidedAtHole {
+            let margin = "\(match.up)&\(match.lastHole - decided)"
+            return leading ? margin : "L \(margin)"
+        }
+        return leading ? "\(match.up) up" : "\(match.up) dn"
     }
 
     /// Per-side wording for display lines. `segment` is "front", "back", "18" or nil for a lone match.

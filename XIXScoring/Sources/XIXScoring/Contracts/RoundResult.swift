@@ -112,16 +112,19 @@ public struct GameResult: Codable, Equatable, Sendable {
     public var standings: [Standing]
     public var outcome: Outcome?             // nil until the game is complete
     public var display: GameDisplay          // "Skins 2", "Nassau 1 up front" per player
+    /// The standing alone, for strips and row labels: "2", "30", "3 up", "2&1 · AS · 3 up".
+    public var compact: GameDisplay
     public var detail: GameDetail
 
     public init(gameID: GameID, format: Format, throughHole: Int, standings: [Standing], outcome: Outcome?,
-                display: GameDisplay, detail: GameDetail) {
+                display: GameDisplay, compact: GameDisplay? = nil, detail: GameDetail) {
         self.gameID = gameID
         self.format = format
         self.throughHole = throughHole
         self.standings = standings
         self.outcome = outcome
         self.display = display
+        self.compact = compact ?? Dictionary(uniqueKeysWithValues: standings.map { ($0.player, $0.label) })
         self.detail = detail
     }
 
@@ -133,6 +136,7 @@ public struct GameResult: Codable, Equatable, Sendable {
         standings = try c.decode([Standing].self, forKey: AnyCodingKey("standings"))
         outcome = try c.decodeIfPresent(Outcome.self, forKey: AnyCodingKey("outcome"))
         display = try c.decodeIfPresent(GameDisplay.self, forKey: AnyCodingKey("display")) ?? [:]
+        compact = try c.decodeIfPresent(GameDisplay.self, forKey: AnyCodingKey("compact")) ?? [:]
         let kind = try c.decodeIfPresent(String.self, forKey: AnyCodingKey("detail")) ?? "none"
         detail = try GameDetail(kind: kind, from: c)
     }
@@ -145,6 +149,7 @@ public struct GameResult: Codable, Equatable, Sendable {
         try c.encode(standings, forKey: AnyCodingKey("standings"))
         try c.encodeIfPresent(outcome, forKey: AnyCodingKey("outcome"))
         try c.encode(display, forKey: AnyCodingKey("display"))
+        try c.encode(compact, forKey: AnyCodingKey("compact"))
         try c.encode(detail.kind, forKey: AnyCodingKey("detail"))
         try detail.encode(into: &c)
     }

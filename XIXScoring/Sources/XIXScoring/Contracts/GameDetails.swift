@@ -86,12 +86,14 @@ public struct MatchPlayDetail: Codable, Equatable, Sendable {
     public var complete: Bool
     /// "ray 3 up", "halved", "ray 5&4", "all square".
     public var result: String
+    /// Per side label, from that side's view: "3 up", "3 dn", "AS", "2&1" (won), "L 2&1" (lost), "void", "—" (to play).
+    public var compact: [String: String]
     public var matchOutcome: Outcome?
     public var perHole: [MatchHole]
 
     private enum CodingKeys: String, CodingKey {
         case sides, holesWon, halved, firstHole, lastHole, throughHole, holesRemaining, leader, up,
-             decidedAtHole, abandonedBy, complete, result, matchOutcome, perHole
+             decidedAtHole, abandonedBy, complete, result, compact, matchOutcome, perHole
     }
 
     func encode(into c: inout KeyedEncodingContainer<AnyCodingKey>) throws {
@@ -108,6 +110,7 @@ public struct MatchPlayDetail: Codable, Equatable, Sendable {
         try c.encodeIfPresent(abandonedBy, forKey: AnyCodingKey("abandonedBy"))
         try c.encode(complete, forKey: AnyCodingKey("complete"))
         try c.encode(result, forKey: AnyCodingKey("result"))
+        try c.encode(compact, forKey: AnyCodingKey("compact"))
         try c.encodeIfPresent(matchOutcome, forKey: AnyCodingKey("matchOutcome"))
         try c.encode(perHole, forKey: AnyCodingKey("perHole"))
     }
@@ -126,13 +129,14 @@ public struct MatchPlayDetail: Codable, Equatable, Sendable {
         abandonedBy = try c.decodeIfPresent(PlayerID.self, forKey: AnyCodingKey("abandonedBy"))
         complete = try c.decode(Bool.self, forKey: AnyCodingKey("complete"))
         result = try c.decode(String.self, forKey: AnyCodingKey("result"))
+        compact = try c.decodeIfPresent([String: String].self, forKey: AnyCodingKey("compact")) ?? [:]
         matchOutcome = try c.decodeIfPresent(Outcome.self, forKey: AnyCodingKey("matchOutcome"))
         perHole = try c.decode([MatchHole].self, forKey: AnyCodingKey("perHole"))
     }
 
     public init(sides: [[PlayerID]], holesWon: [String: Int], halved: Int, firstHole: Int, lastHole: Int,
                 throughHole: Int, holesRemaining: Int, leader: String?, up: Int, decidedAtHole: Int?,
-                abandonedBy: PlayerID? = nil, complete: Bool, result: String, matchOutcome: Outcome?, perHole: [MatchHole]) {
+                abandonedBy: PlayerID? = nil, complete: Bool, result: String, compact: [String: String] = [:], matchOutcome: Outcome?, perHole: [MatchHole]) {
         self.sides = sides
         self.holesWon = holesWon
         self.halved = halved
@@ -146,6 +150,7 @@ public struct MatchPlayDetail: Codable, Equatable, Sendable {
         self.abandonedBy = abandonedBy
         self.complete = complete
         self.result = result
+        self.compact = compact
         self.matchOutcome = matchOutcome
         self.perHole = perHole
     }

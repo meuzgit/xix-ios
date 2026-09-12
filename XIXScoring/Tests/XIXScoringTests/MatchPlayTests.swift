@@ -209,3 +209,32 @@ final class MatchDepartureTests: XCTestCase {
         XCTAssertEqual(m.result, "halved")
     }
 }
+
+final class CompactDisplayTests: XCTestCase {
+    func testCompactStandingsForNassauAndMatchPlay() {
+        // Fraserview: front 2&1 to Ray, back halved, 18 5&4 to Ray.
+        let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent("Fixtures/fraserview_2026-09-09.json")
+        struct Envelope: Decodable { let input: RoundInput }
+        let input = try! JSONDecoder().decode(Envelope.self, from: try! Data(contentsOf: url)).input
+        let r = ScoringEngine.score(input)
+        let nassau = r.games.first { $0.format == .nassau }!
+        XCTAssertEqual(nassau.compact["ray"], "2&1 · AS · 5&4")
+        XCTAssertEqual(nassau.compact["dave"], "L 2&1 · AS · L 5&4")
+        XCTAssertEqual(r.games.first { $0.format == .skins }!.compact["ray"], "11")
+        XCTAssertEqual(r.games.first { $0.format == .stableford }!.compact["tess"], "30")
+
+        // Match play in progress: 2 up / 2 dn, then all square, then to play.
+        var a: [HoleScore?] = Array(repeating: nil, count: 18); a[0] = 3; a[1] = 3
+        var b: [HoleScore?] = Array(repeating: nil, count: 18); b[0] = 4; b[1] = 4
+        let players = [PlayerInput(id: "a", level: 5), PlayerInput(id: "b", level: 5)]
+        let live = ScoringEngine.score(RoundInput(holes: 18, par: Array(repeating: 4, count: 18), strokeIndex: [], players: players,
+                                                  scores: [a, b], games: [GameInput(id: "m", format: .matchPlay, players: ["a", "b"])]))
+        XCTAssertEqual(live.games[0].compact, ["a": "2 up", "b": "2 dn"])
+        let square = ScoringEngine.score(RoundInput(holes: 18, par: Array(repeating: 4, count: 18), strokeIndex: [], players: players,
+                                                    scores: [b, b], games: [GameInput(id: "m", format: .matchPlay, players: ["a", "b"])]))
+        XCTAssertEqual(square.games[0].compact["a"], "AS")
+        let unplayed = ScoringEngine.score(RoundInput(holes: 18, par: Array(repeating: 4, count: 18), strokeIndex: [], players: players,
+                                                      scores: [[], []], games: [GameInput(id: "m", format: .matchPlay, players: ["a", "b"])]))
+        XCTAssertEqual(unplayed.games[0].compact["a"], "—")
+    }
+}

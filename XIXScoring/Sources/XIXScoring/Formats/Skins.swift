@@ -85,6 +85,7 @@ enum SkinsScorer: FormatScorer {
             "\(n) skin\(n == 1 ? "" : "s")"
         }
         let display = GameDisplay(uniqueKeysWithValues: values.map { ($0.0, "Skins \($0.1)") })
+        let compact = GameDisplay(uniqueKeysWithValues: values.map { ($0.0, "\($0.1)") })
         var outcome: Outcome? = nil
         if let abandonedBy {
             outcome = .abandoned(by: abandonedBy)
@@ -95,7 +96,7 @@ enum SkinsScorer: FormatScorer {
 
         let result = GameResult(
             gameID: game.id, format: .skins, throughHole: through, standings: standings, outcome: outcome,
-            display: display,
+            display: display, compact: compact,
             detail: .skins(SkinsDetail(perHole: perHole, totals: totals, carry: complete ? 0 : carry, voidCarry: voidCarry)))
         return ScoredGame(result: result, events: events)
     }

@@ -20,10 +20,59 @@ enum LocalSupabase {
     static let mo = UUID(uuidString: "33333333-3333-4333-8333-333333333333")!
     static let tess = UUID(uuidString: "44444444-4444-4444-8444-444444444444")!
 
+    /// Right after `supabase db reset` the containers restart. Wait until Auth, PostgREST and Realtime
+    /// answer, then open a throwaway subscription: Realtime connects its replication slot lazily on the
+    /// first subscriber, and the first real test would otherwise race that. Once per process.
+    private static var primed = false
+    static func awaitReady() async {
+        if primed { return }
+        primed = true
+        let deadline = Date().addingTimeInterval(90)
+        var okAuth = false, okRest = false, okRealtime = false
+        while Date() < deadline && !(okAuth && okRest && okRealtime) {
+            okAuth = okAuth || probe(url.appendingPathComponent("auth/v1/health")) != nil
+            okRest = okRest || probe(url.appendingPathComponent("rest/v1/"), apikey: true) != nil
+            okRealtime = okRealtime || (probe(url.appendingPathComponent("realtime/v1/api/tenants/realtime-dev/health"), apikey: true)?.contains("\"healthy\":true") ?? false)
+            if !(okAuth && okRest && okRealtime) { try? await Task.sleep(for: .milliseconds(500)) }
+        }
+        precondition(okAuth && okRest && okRealtime, "local Supabase not ready: auth \(okAuth) rest \(okRest) realtime \(okRealtime)")
+        // Prime the replication connection.
+        let primer = service.realtimeV2.channel("xix:test-primer")
+        _ = primer.postgresChange(AnyAction.self, schema: "xix", table: "rounds")
+        await primer.subscribe()
+        let slotDeadline = Date().addingTimeInterval(30)
+        while Date() < slotDeadline {
+            if probe(url.appendingPathComponent("realtime/v1/api/tenants/realtime-dev/health"), apikey: true)?.contains("\"replication_connected\":true") == true { break }
+            try? await Task.sleep(for: .milliseconds(300))
+        }
+        await primer.unsubscribe()
+        await service.realtimeV2.removeChannel(primer)
+    }
+
+    /// The response body when the endpoint answers 2xx/3xx, else nil.
+    private static func probe(_ url: URL, apikey: Bool = false) -> String? {
+        var request = URLRequest(url: url, timeoutInterval: 3)
+        if apikey {
+            request.setValue(anonKey, forHTTPHeaderField: "apikey")
+            request.setValue("Bearer \(anonKey)", forHTTPHeaderField: "Authorization")
+        }
+        let semaphore = DispatchSemaphore(value: 0)
+        var result: String? = nil
+        URLSession.shared.dataTask(with: request) { data, response, _ in
+            if let status = (response as? HTTPURLResponse)?.statusCode, (200..<400).contains(status) {
+                result = String(decoding: data ?? Data(), as: UTF8.self)
+            }
+            semaphore.signal()
+        }.resume()
+        semaphore.wait()
+        return result
+    }
+
     /// A real local session: the service role generates a magic link for the user's email and the client
     /// verifies its token hash. Sign in with Apple cannot run in a test; the session that results is the
     /// same kind GoTrue issues after any provider.
     static func signIn(_ client: XIXClient, email: String) async throws {
+        await awaitReady()
         let link = try await service.auth.admin.generateLink(params: .magicLink(email: email))
         _ = try await client.supabase.auth.verifyOTP(tokenHash: link.properties.hashedToken, type: .magiclink)
         _ = try await AuthService(client: client).ensureProfile()

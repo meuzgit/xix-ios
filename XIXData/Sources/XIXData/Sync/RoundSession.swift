@@ -47,6 +47,8 @@ public actor RoundSession {
     private var serverResult: RoundResult?
     public private(set) var notices: [MergeNotice] = []
     public private(set) var myPlayerID: UUID?
+    /// The signed-in user's id (nonisolated: the client holds it).
+    public nonisolated var userID: UUID? { client.userID }
 
     public init(client: XIXClient, roundID: UUID, connectivity: Connectivity) {
         self.client = client

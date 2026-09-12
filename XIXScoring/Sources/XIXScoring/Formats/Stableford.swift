@@ -86,8 +86,9 @@ enum StablefordScorer: FormatScorer {
         let standings = FormatSupport.standings(values, higherIsBetter: true, round: round) { "\($0) pts" }
         let display = GameDisplay(uniqueKeysWithValues: values.map { ($0.0, "\(prefix) \($0.1)") })
         let outcome: Outcome? = complete ? FormatSupport.outcome(values, higherIsBetter: true, round: round) : nil
+        let compact = GameDisplay(uniqueKeysWithValues: values.map { ($0.0, "\($0.1)") })
         let result = GameResult(gameID: game.id, format: format, throughHole: through, standings: standings,
-                                outcome: outcome, display: display,
+                                outcome: outcome, display: display, compact: compact,
                                 detail: .stableford(StablefordDetail(points: points, totals: totals, table: table.name)))
         return ScoredGame(result: result)
     }

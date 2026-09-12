@@ -95,9 +95,8 @@ public struct GridScreenModel: Equatable, Sendable {
             case .stableford(let d):
                 rows = game.standings.compactMap { row($0.player, "\(d.totals[$0.player] ?? 0)", rank: $0.rank) }
             case .matchPlay, .nassau:
-                rows = game.standings.compactMap { st in
-                    row(st.player, stripped(game.display[st.player] ?? st.label, prefix: pillPrefix(game.format)), rank: st.rank)
-                }
+                // Compact per-player form from the engine: "2&1 · AS · 3 up" (front · back · 18), or "3 up" / "AS" / "4&3".
+                rows = game.standings.compactMap { st in row(st.player, game.compact[st.player] ?? st.label, rank: st.rank) }
             default:
                 if case .unavailable(let reason)? = game.outcome {
                     rows = players.compactMap { row(engineID($0.id), reason, rank: nil) }
