@@ -4,6 +4,7 @@
 import Foundation
 import SwiftUI
 import XCTest
+import XIXScoring
 @testable import XIXUI
 
 @MainActor
@@ -74,6 +75,66 @@ final class CalloutComposerTests: XCTestCase {
         draft.partner = nil
         XCTAssertNil(m.problem(with: draft), "on your own is allowed")
         XCTAssertEqual(m.params(for: draft), [:], "and carries no partner")
+    }
+
+    // MARK: The partner is on your side, not the other one (Build Doc 1 B.6)
+
+    func testAPartnerIsNeverAlsoATargetWhicheverWayRound() {
+        let m = model()
+        var draft = CalloutDraft()
+        draft.kind = .partner
+
+        // Aim at Tess, then take her as partner: she stops being a target.
+        draft = m.toggling(target: tess, in: draft)
+        draft = m.toggling(target: dave, in: draft)
+        XCTAssertEqual(draft.targets, [tess, dave])
+        draft = m.choosing(partner: tess, in: draft)
+        XCTAssertEqual(draft.partner, tess)
+        XCTAssertEqual(draft.targets, [dave], "taking her as partner took her off the other side")
+
+        // Take her as partner first, then aim at her: she stops being the partner.
+        draft = m.toggling(target: tess, in: draft)
+        XCTAssertNil(draft.partner, "aiming at her gave up the partnership")
+        XCTAssertEqual(draft.targets, [dave, tess])
+
+        // Everyone means everyone except the caller and the partner.
+        draft = m.choosing(partner: tess, in: draft)
+        draft = m.aimingAtEveryone(in: draft)
+        XCTAssertEqual(draft.targets, [dave, mo], "not the caller, not the partner")
+        XCTAssertNil(m.problem(with: draft))
+    }
+
+    func testTheCallerAndThePartnerAreNotInWhatIsSent() {
+        let m = model()
+        var draft = CalloutDraft()
+        draft.kind = .partner
+        // Even a draft that somehow held both is stripped before it goes anywhere.
+        draft.targets = [ray, dave, mo, tess]
+        draft.partner = tess
+        XCTAssertEqual(m.targetIDs(for: draft).sorted { $0.uuidString < $1.uuidString },
+                       [dave, mo].sorted { $0.uuidString < $1.uuidString },
+                       "create_callout is handed the rest, and only the rest")
+        XCTAssertEqual(m.params(for: draft), ["partner_id": tess.uuidString.lowercased()],
+                       "the partner rides in the params, where the engine puts her on the caller's side")
+    }
+
+    func testThePartnerIsNotAskedToRespond() {
+        // The banner the partner sees on her own card carries no answer to give.
+        let players = [ScorecardModel.Player(id: ray, name: "Ray"), .init(id: dave, name: "Dave"),
+                       .init(id: mo, name: "Mo"), .init(id: tess, name: "Tess")]
+        let callout = HoleCardModel.CalloutInputModel(
+            id: UUID(), hole: 3, kind: "partner", callerID: ray, targetIDs: [dave, mo], goal: nil, responses: [:], closed: false)
+        func card(for viewer: UUID) -> HoleCardModel {
+            HoleCardModel.build(hole: 3, holes: 9, par: Array(repeating: 4, count: 9), strokeIndex: Array(repeating: nil, count: 9),
+                                yards: Array(repeating: nil, count: 9), players: players,
+                                engineID: { PlayerID($0.uuidString.lowercased()) }, scores: [], stickers: [],
+                                callouts: [callout], result: nil, myPlayerID: viewer, isOwner: viewer == ray)
+        }
+        XCTAssertEqual(card(for: dave).callout?.canRespond, true, "a target is asked")
+        XCTAssertEqual(card(for: mo).callout?.canRespond, true)
+        XCTAssertEqual(card(for: tess).callout?.canRespond, false, "the partner is never asked")
+        XCTAssertEqual(card(for: ray).callout?.canRespond, false, "and neither is the caller")
+        XCTAssertEqual(card(for: tess).callout?.targets.map(\.id), [dave, mo], "she is not one of the chips either")
     }
 
     func testAScoredHoleIsClosedToCallouts() {

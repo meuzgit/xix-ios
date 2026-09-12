@@ -108,6 +108,45 @@ public struct CalloutComposerModel: Equatable, Sendable {
 
     public func canSend(_ draft: CalloutDraft) -> Bool { problem(with: draft) == nil }
 
+    // MARK: Choosing, with the sides kept apart
+
+    /// Aim at somebody, or stop aiming at them. A duel holds one target at a time, and a player picked
+    /// as a target stops being the partner: the named partner is on the caller's side and is never a
+    /// target, so is never asked to respond (Build Doc 1 B.6).
+    public func toggling(target id: UUID, in draft: CalloutDraft) -> CalloutDraft {
+        var out = draft
+        guard id != callerID else { return out }
+        if draft.kind == .duel {
+            out.targets = draft.targets.contains(id) ? [] : [id]
+        } else if draft.targets.contains(id) {
+            out.targets.remove(id)
+        } else {
+            out.targets.insert(id)
+        }
+        if out.partner == id { out.partner = nil }
+        return out
+    }
+
+    /// Take somebody as your partner, or nobody. A partner stops being a target for the same reason.
+    public func choosing(partner id: UUID?, in draft: CalloutDraft) -> CalloutDraft {
+        var out = draft
+        out.partner = id == callerID ? nil : id
+        if let id = out.partner { out.targets.remove(id) }
+        return out
+    }
+
+    /// Everyone who is not the caller and not the partner.
+    public func aimingAtEveryone(in draft: CalloutDraft) -> CalloutDraft {
+        var out = draft
+        out.targets = Set(others.map(\.id)).subtracting([draft.partner].compactMap { $0 })
+        return out
+    }
+
+    /// What actually goes to `create_callout`: the caller is never in it, and neither is the partner.
+    public func targetIDs(for draft: CalloutDraft) -> [UUID] {
+        Array(draft.targets.subtracting([callerID, draft.partner].compactMap { $0 })).sorted { $0.uuidString < $1.uuidString }
+    }
+
     /// The params `create_callout` takes. Ids are lowercased because the engine compares them against
     /// the ids Postgres renders, which are lowercase.
     public func params(for draft: CalloutDraft) -> [String: String] {
@@ -248,25 +287,14 @@ public struct CalloutComposer: View {
                 ForEach(model.others) { p in
                     let on = draft.targets.contains(p.id)
                     let isPartner = draft.kind == .partner && draft.partner == p.id
-                    SelectChip(text: p.name, selected: on) {
-                        if draft.kind == .duel {
-                            draft.targets = on ? [] : [p.id]
-                        } else if on {
-                            draft.targets.remove(p.id)
-                        } else {
-                            draft.targets.insert(p.id)
-                            if isPartner { draft.partner = nil }
-                        }
-                    }
+                    SelectChip(text: p.name, selected: on) { draft = model.toggling(target: p.id, in: draft) }
                     .opacity(isPartner ? 0.4 : 1)
                     .accessibilityIdentifier("target-\(p.name)")
                 }
             }
             .padding(.horizontal, 20)
             if draft.kind != .duel && model.others.count > 1 {
-                Button {
-                    draft.targets = Set(model.others.map(\.id)).subtracting([draft.partner].compactMap { $0 })
-                } label: {
+                Button { draft = model.aimingAtEveryone(in: draft) } label: {
                     Text("Everyone").trackedCaps(9, weight: .bold).foregroundStyle(XIXColor.green)
                 }
                 .buttonStyle(.plain)
@@ -307,13 +335,10 @@ public struct CalloutComposer: View {
             VStack(alignment: .leading, spacing: 8) {
                 sectionLabel("Your partner")
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 92), spacing: 6, alignment: .leading)], alignment: .leading, spacing: 6) {
-                    SelectChip(text: "On my own", selected: draft.partner == nil) { draft.partner = nil }
+                    SelectChip(text: "On my own", selected: draft.partner == nil) { draft = model.choosing(partner: nil, in: draft) }
                         .accessibilityIdentifier("partner-none")
                     ForEach(model.others) { p in
-                        SelectChip(text: p.name, selected: draft.partner == p.id) {
-                            draft.partner = p.id
-                            draft.targets.remove(p.id)
-                        }
+                        SelectChip(text: p.name, selected: draft.partner == p.id) { draft = model.choosing(partner: p.id, in: draft) }
                         .accessibilityIdentifier("partner-\(p.name)")
                     }
                 }

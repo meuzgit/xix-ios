@@ -170,6 +170,50 @@ final class CalloutTests: XCTestCase {
         XCTAssertEqual(message?.contains("already scored hole 7"), true, "got: \(message ?? "nothing")")
     }
 
+    /// Build Doc 1 B.6: on a Partner callout the named partner is on the caller's side, is not a target,
+    /// and is never asked to respond. This pins all three — what was stored, what the server allows her
+    /// to do, and what the engine made of her.
+    func testThePartnerIsNotATargetAndCannotRespond() async throws {
+        let tess = try await LocalSupabase.client(as: LocalSupabase.tess, email: "tess@privaterelay.appleid.com", label: "tess-\(name)")
+        try await RoundRepository(client: tess).claimRow(roundID: bundle.round.id, playerID: row("Tess"))
+
+        let callout = try await PlayRepository(client: ray).createCallout(
+            roundID: bundle.round.id, hole: 6, kind: "partner",
+            targets: [row("Dave"), row("Mo")],
+            params: ["partner_id": .string(row("Tess").uuidString.lowercased())])
+
+        // Stored: the rest, and only the rest. Not the caller, not the partner.
+        XCTAssertEqual(Set(callout.targetIds), [row("Dave"), row("Mo")])
+        XCTAssertFalse(callout.targetIds.contains(row("Tess")), "the partner is not a target")
+        XCTAssertFalse(callout.targetIds.contains(row("Ray")), "and neither is the caller")
+
+        // Asked: only the two of them. The partner's own client is refused by the server.
+        do {
+            _ = try await PlayRepository(client: tess).respondCallout(calloutID: callout.id, action: .signed)
+            XCTFail("the partner was never asked and cannot answer")
+        } catch let error as PostgrestError {
+            XCTAssertTrue(error.message.contains("was not sent to you"), "got: \(error.message)")
+        }
+        try await PlayRepository(client: dave).respondCallout(calloutID: callout.id, action: .signed)
+        try await PlayRepository(client: mo).respondCallout(calloutID: callout.id, action: .signed)
+
+        // Resolved: Tess's 3 carries the caller's side, without her ever signing anything.
+        await session.enterScore(playerID: row("Ray"), hole: 6, strokes: 5, pickedUp: false)
+        await session.enterScore(playerID: row("Tess"), hole: 6, strokes: 3, pickedUp: false)
+        await session.enterScore(playerID: row("Dave"), hole: 6, strokes: 4, pickedUp: false)
+        await session.enterScore(playerID: row("Mo"), hole: 6, strokes: 4, pickedUp: false)
+        await LocalSupabase.waitUntil(20, "hole 6 acknowledged") { await self.session.pendingWrites() == 0 }
+        await session.resync()
+        let recomputed = await session.recompute()
+        let result = try XCTUnwrap(recomputed)
+        let resolved = try XCTUnwrap(result.callouts.first { $0.calloutID.rawValue == callout.id.uuidString.lowercased() })
+
+        XCTAssertEqual(Set(resolved.targets), [engineID("Dave"), engineID("Mo")], "the engine sees two targets")
+        XCTAssertFalse(resolved.perTarget.contains { $0.player == engineID("Tess") }, "and no response of any kind from the partner")
+        XCTAssertEqual(resolved.winner, .players([engineID("Ray"), engineID("Tess")]), "she still wins it with him")
+        XCTAssertEqual(resolved.loneWolf, false)
+    }
+
     func testADuelWithTwoTargetsIsRefusedByTheServerToo() async throws {
         do {
             _ = try await PlayRepository(client: ray).createCallout(roundID: bundle.round.id, hole: 9, kind: "duel",

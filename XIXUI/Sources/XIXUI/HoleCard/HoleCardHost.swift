@@ -133,7 +133,7 @@ public struct HoleCardHost: View {
 
     private func send(_ draft: CalloutDraft, state s: RoundSession.State) {
         let model = Self.composerModel(s, hole: hole, callerID: myPlayerID(s))
-        let targets = Array(draft.targets.subtracting([model.callerID]))
+        let targets = model.targetIDs(for: draft)
         let params = model.params(for: draft).mapValues { AnyJSON.string($0) }
         Task { await session.createCallout(hole: hole, kind: draft.kind.rawValue, targets: targets, params: params) }
     }
