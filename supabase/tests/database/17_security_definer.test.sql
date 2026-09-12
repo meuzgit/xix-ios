@@ -66,7 +66,7 @@ select is(xix.is_crew_owner('ffffffff-ffff-4fff-8fff-ffffffffffff'), false, 'is_
 -- 5. Allowed by design: ensure_profile creates only the caller's own row; join_round returns a round
 --    for a code without adding membership (an ended round is refused).
 select throws_ok($$select xix.join_round('FRSRVW')$$, 'P0002', null, 'join_round: ended round is not joinable; membership is never granted here');
-select throws_ok($$select * from xix.joinable_rows('FRSRVW')$$, 'P0002', null, 'joinable_rows: same rule, and only unclaimed rows of an open round are ever returned');
+select throws_ok($$select xix.joinable_rows('FRSRVW')$$, 'P0002', null, 'joinable_rows: same rule; only an open round''s join screen is ever returned');
 
 select * from finish();
 rollback;

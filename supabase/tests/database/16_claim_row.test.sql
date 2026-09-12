@@ -24,12 +24,13 @@ insert into xix.players (id, round_id, display_name, seat) select guest_row, rou
 do $$ begin execute format('grant select on all tables in schema %I to authenticated', (select nspname from pg_namespace where oid = pg_my_temp_schema())); end $$;
 delete from xix.engine_queue;
 
-select plan(11);
+select plan(12);
 
 select pg_temp.as_user((select nobody from fresh));
 select is((select count(*)::int from xix.profiles where id = (select nobody from fresh)), 0, 'no profile before the first XIX action');
 select is((select id from xix.join_round('CLAIM1')), (select round from fresh), 'join by code finds the live round without membership');
-select is((select array_agg(display_name) from xix.joinable_rows('CLAIM1')), array['Guest'], 'joinable_rows lists only the unclaimed rows');
+select is((select jsonb_agg(p ->> 'display_name') from jsonb_array_elements(xix.joinable_rows('CLAIM1') -> 'players') p where (p ->> 'claimable')::boolean), '["Guest"]'::jsonb, 'joinable_rows flags the unclaimed rows');
+select is(xix.joinable_rows('CLAIM1') -> 'round' ->> 'owner', 'Ray', 'and names the owner and course for the join screen');
 select is((select count(*)::int from xix.profiles where id = (select nobody from fresh)), 1, 'the first RPC created their profile');
 select lives_ok($$select xix.claim_row((select round from fresh), (select guest_row from fresh))$$, 'claims the guest row');
 select is((select profile_id from xix.players where id = (select guest_row from fresh)), (select nobody from fresh), 'the row is theirs');

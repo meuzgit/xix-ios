@@ -41,11 +41,29 @@ public struct RoundBundle: Sendable {
     public var result: ResultRow?
 }
 
-public struct JoinableRow: Codable, Sendable, Hashable {
-    public var id: UUID
-    public var displayName: String
-    public var seat: Int
-    enum CodingKeys: String, CodingKey { case id, displayName = "display_name", seat }
+/// Everything the join screen and the no-app landing page show, from one RPC (Build Doc 2 C.4).
+public struct JoinScreen: Codable, Sendable, Hashable {
+    public struct Round: Codable, Sendable, Hashable {
+        public var id: UUID
+        public var joinCode: String
+        public var holes: Int
+        public var status: String
+        public var playedOn: String
+        public var course: String?
+        public var owner: String?
+        enum CodingKeys: String, CodingKey { case id, joinCode = "join_code", holes, status, playedOn = "played_on", course, owner }
+    }
+    public struct Player: Codable, Sendable, Hashable {
+        public var id: UUID
+        public var displayName: String
+        public var seat: Int
+        public var claimable: Bool
+        public var mine: Bool
+        enum CodingKeys: String, CodingKey { case id, displayName = "display_name", seat, claimable, mine }
+    }
+    public var round: Round
+    public var players: [Player]
+    public var claimable: [Player] { players.filter(\.claimable) }
 }
 
 public struct RoundRepository: Sendable {
@@ -118,9 +136,9 @@ public struct RoundRepository: Sendable {
         try await client.supabase.rpc("join_round", params: ["code": code]).single().execute().value
     }
 
-    /// The unclaimed rows of a joinable round.
-    public func joinableRows(code: String) async throws -> [JoinableRow] {
-        try await client.supabase.rpc("joinable_rows", params: ["code": code]).execute().value
+    /// The join screen for a code: round, course, date, players and which rows are claimable.
+    public func joinScreen(code: String) async throws -> JoinScreen {
+        try await client.supabase.rpc("joinable_rows", params: ["code": code]).single().execute().value
     }
 
     @discardableResult

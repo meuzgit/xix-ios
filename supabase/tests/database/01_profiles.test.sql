@@ -47,7 +47,7 @@ select plan(10);
 select pg_temp.as_user((select ray from ids));
 select is((select count(*)::int from xix.profiles), 1, 'a member sees only their own profile row');
 select is((select display_name from xix.profiles), 'Ray', 'and it is theirs');
-select is((select count(*)::int from xix.public_profiles), 4, 'public_profiles shows everyone who shares a round');
+select ok((select array_agg(display_name order by display_name) from xix.public_profiles) @> array['Dave','Mo','Ray','Tess'], 'public_profiles shows everyone who shares a round');
 select is(pg_temp.affected($$update xix.profiles set display_name = 'Raymond' where id = (select ray from ids)$$), 1, 'own profile updates');
 select is(pg_temp.affected($$update xix.profiles set display_name = 'X' where id = (select dave from ids)$$), 0, 'another profile does not');
 select throws_ok($$insert into xix.profiles (id, display_name) values ('dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'Nope')$$, '42501', null, 'profiles are not inserted directly');

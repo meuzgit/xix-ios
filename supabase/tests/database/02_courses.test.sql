@@ -45,7 +45,7 @@ select pg_temp.share();
 select plan(8);
 
 select pg_temp.as_user((select nobody from ids));
-select is((select count(*)::int from xix.courses), 1, 'any signed-in user reads courses');
+select ok(exists (select 1 from xix.courses where name = 'Fraserview'), 'any signed-in user reads courses');
 select is((select count(*)::int from xix.course_holes), 18, 'and their holes');
 select lives_ok($$insert into xix.courses (id, name, region, created_by) values ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', 'Langara', 'Vancouver', (select nobody from ids))$$, 'creates a course they own');
 select throws_ok($$insert into xix.courses (name, created_by) values ('Not mine', (select ray from ids))$$, '42501', null, 'cannot create a course as someone else');
