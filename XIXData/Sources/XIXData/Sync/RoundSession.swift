@@ -11,12 +11,21 @@ public actor RoundSession {
         public var round: LocalRound
         public var players: [LocalPlayer]
         public var scores: [LocalScore]
+        public var courseHoles: [LocalCourseHole]
+        public var stickers: [LocalSticker]
+        public var callouts: [LocalCallout]
+        public var responses: [LocalCalloutResponse]
         public var result: RoundResult?
         public var serverResult: RoundResult?
         public var present: Set<UUID>     // player ids on the card right now
         public var pendingWrites: Int
 
         public func score(player: UUID, hole: Int) -> LocalScore? { scores.first { $0.player_id == player && $0.hole == hole } }
+
+        /// A callout still awaiting signatures or scores on its hole (the ink mark on the column header).
+        public var liveCalloutHoles: [Int] {
+            callouts.filter { $0.closed_at == nil && ($0.status == "open" || $0.status == "live") }.map(\.hole)
+        }
     }
 
     public enum Event: Sendable {
@@ -330,8 +339,13 @@ public actor RoundSession {
             ?? LocalRound(id: roundID, owner_id: UUID(), course_id: nil, played_on: "", holes: 18, status: "setup", join_code: "", ended_at: nil, course_name: nil)
         let players = (try? client.store.dbQueue.read { db in try LocalPlayer.filter(Column("round_id") == roundID).order(Column("seat")).fetchAll(db) }) ?? []
         let scores = (try? client.store.scores(roundID: roundID)) ?? []
+        let courseHoles = (try? client.store.dbQueue.read { db in try LocalCourseHole.filter(Column("round_id") == roundID).order(Column("hole")).fetchAll(db) }) ?? []
+        let stickers = (try? client.store.dbQueue.read { db in try LocalSticker.filter(Column("round_id") == roundID).order(Column("created_at")).fetchAll(db) }) ?? []
+        let callouts = (try? client.store.dbQueue.read { db in try LocalCallout.filter(Column("round_id") == roundID).order(Column("created_at")).fetchAll(db) }) ?? []
+        let responses = (try? client.store.dbQueue.read { db in try LocalCalloutResponse.fetchAll(db) }) ?? []
         let pending = (try? client.store.outbox().filter { $0.round_id == roundID }.count) ?? 0
-        return State(round: round, players: players, scores: scores, result: lastResult, serverResult: serverResult, present: present, pendingWrites: pending)
+        return State(round: round, players: players, scores: scores, courseHoles: courseHoles, stickers: stickers, callouts: callouts, responses: responses,
+                     result: lastResult, serverResult: serverResult, present: present, pendingWrites: pending)
     }
 
     private func publishState() {

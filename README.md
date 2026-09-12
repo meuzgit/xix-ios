@@ -14,7 +14,7 @@ Vocabulary rule for every file, comment and test name: no money, stake, wager or
 | `XIXScoring/Sources/xix-engine-cli` | RoundInput in on stdin, RoundResult out. Built natively for parity and as WebAssembly for the server. |
 | `XIXModels/` | Row types mirroring the `xix` tables, generated from the local database (`scripts/gen-models.sh`) and hand-wrapped. |
 | `XIXData/` | Supabase client, Sign in with Apple, repositories, `RoundSession` (one Realtime channel per round, last-write-wins per cell, merge notices), GRDB local store and offline queue. No UI. |
-| `XIXUI/` | Design tokens from Pass 5, the base sticker pack, and `ScorecardRenderer`: one view tree for the screen and for export, with pixel snapshots at screen and chat widths. |
+| `XIXUI/` | Design tokens from Pass 5, the base sticker pack, `ScorecardRenderer` (one view tree for the screen and for export) and the grid screen bound to `RoundSession`, with pixel snapshots. |
 | `supabase/` | Migrations, seed, pgTAP tests, the `xix-engine` edge function. |
 | `scripts/` | Engine build and parity checks. |
 | `fraserview_2026-09-09.json` | The reference round every design pass uses; source of the seed. |

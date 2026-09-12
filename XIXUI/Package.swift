@@ -7,10 +7,12 @@ let package = Package(
     products: [.library(name: "XIXUI", targets: ["XIXUI"])],
     dependencies: [
         .package(path: "../XIXScoring"),
+        .package(path: "../XIXData"),
     ],
     targets: [
         .target(
             name: "XIXUI",
+            dependencies: ["XIXScoring", "XIXData"],
             resources: [.copy("Resources/Stickers")]),
         .testTarget(
             name: "XIXUITests",

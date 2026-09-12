@@ -12,17 +12,23 @@ import UniformTypeIdentifiers
 public struct ScorecardView: View {
     public let model: ScorecardModel
     public let width: CGFloat
+    /// The grid screen draws its own green header and strip above the sheet.
+    public let showsHeader: Bool
+    /// Tap on a cell or a hole number opens that hole's card. Nil for exports.
+    public let onTapHole: ((Int) -> Void)?
 
-    public init(model: ScorecardModel, width: CGFloat = XIXMetric.screenWidth) {
+    public init(model: ScorecardModel, width: CGFloat = XIXMetric.screenWidth, showsHeader: Bool = true, onTapHole: ((Int) -> Void)? = nil) {
         self.model = model
         self.width = width
+        self.showsHeader = showsHeader
+        self.onTapHole = onTapHole
     }
 
     private var metrics: GridMetrics { GridMetrics(width: width, nameStyle: model.nameStyle) }
 
     public var body: some View {
         VStack(spacing: 0) {
-            header
+            if showsHeader { header }
             if model.holes > 9 {
                 block(range: 0..<9, label: "OUT", showTotal: false)
                 Rectangle().fill(XIXColor.hairline).frame(height: XIXMetric.hairline)
@@ -75,7 +81,7 @@ public struct ScorecardView: View {
                             Circle().strokeBorder(XIXColor.green, lineWidth: 1).frame(width: m.cell - 4, height: m.cell - 4)
                         }
                         Text("\(h + 1)").font(XIXType.number(m.capsSize, weight: .semibold)).foregroundStyle(XIXColor.muted)
-                    })
+                    }.contentShape(Rectangle()).onTapGesture { onTapHole?(h + 1) })
                 },
                 trailing: [Text(label).trackedCaps(m.capsSize).foregroundStyle(XIXColor.muted)] + (showTotal ? [Text("TOT").trackedCaps(m.capsSize).foregroundStyle(XIXColor.muted)] : []),
                 height: m.headerRow, background: XIXColor.sheet)
@@ -90,7 +96,7 @@ public struct ScorecardView: View {
             // Player rows.
             ForEach(Array(model.players.enumerated()), id: \.element.id) { index, player in
                 row(leading: nameCell(player),
-                    cells: columns.map { h in AnyView(scoreCell(model.cells[safe: index]?[safe: h] ?? .empty)) },
+                    cells: columns.map { h in AnyView(scoreCell(model.cells[safe: index]?[safe: h] ?? .empty).contentShape(Rectangle()).onTapGesture { onTapHole?(h + 1) }) },
                     trailing: [totalText(model.blockTotal(player: index, holes: range))]
                         + (showTotal ? [totalText(model.totals[safe: index].flatMap { $0 }, strong: true)] : []),
                     height: m.playerRow, background: XIXColor.sheet)
