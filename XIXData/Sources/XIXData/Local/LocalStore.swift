@@ -12,7 +12,7 @@ public struct LocalRound: Codable, FetchableRecord, PersistableRecord, Sendable 
 
 public struct LocalCourseHole: Codable, FetchableRecord, PersistableRecord, Sendable {
     public static let databaseTableName = "course_holes"
-    public var round_id: UUID; public var hole: Int; public var par: Int?; public var stroke_index: Int?
+    public var round_id: UUID; public var hole: Int; public var par: Int?; public var stroke_index: Int?; public var yards: Int?
 }
 
 public struct LocalPlayer: Codable, FetchableRecord, PersistableRecord, Sendable {
@@ -35,6 +35,7 @@ public struct LocalScore: Codable, FetchableRecord, PersistableRecord, Sendable,
 public struct LocalGame: Codable, FetchableRecord, PersistableRecord, Sendable {
     public static let databaseTableName = "games"
     public var id: UUID; public var round_id: UUID; public var format: String; public var options: String; public var created_at: Double
+    public var position: Int
 }
 
 public struct LocalGamePlayer: Codable, FetchableRecord, PersistableRecord, Sendable {
@@ -150,6 +151,12 @@ public final class LocalStore: @unchecked Sendable {
             try db.create(table: "clock") { t in
                 t.primaryKey("id", .integer); t.column("last_ts", .double).notNull()
             }
+        }
+        m.registerMigration("v2-yards") { db in
+            try db.alter(table: "course_holes") { t in t.add(column: "yards", .integer) }
+        }
+        m.registerMigration("v3-game-position") { db in
+            try db.alter(table: "games") { t in t.add(column: "position", .integer).notNull().defaults(to: 0) }
         }
         return m
     }

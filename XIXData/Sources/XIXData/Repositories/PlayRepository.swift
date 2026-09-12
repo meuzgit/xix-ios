@@ -12,6 +12,13 @@ public struct PlayRepository: Sendable {
     public func enterScore(roundID: UUID, playerID: UUID, hole: Int, strokes: Int?, pickedUp: Bool, clientTs: Date) async throws -> ScoreRow {
         struct P: Encodable {
             let round_id: UUID; let player_id: UUID; let hole: Int; let strokes: Int?; let picked_up: Bool; let client_ts: String
+            enum CodingKeys: String, CodingKey { case round_id, player_id, hole, strokes, picked_up, client_ts }
+            // PostgREST matches an RPC by its named parameters, so a nil `strokes` must be sent as null, not omitted.
+            func encode(to encoder: Encoder) throws {
+                var c = encoder.container(keyedBy: CodingKeys.self)
+                try c.encode(round_id, forKey: .round_id); try c.encode(player_id, forKey: .player_id); try c.encode(hole, forKey: .hole)
+                try c.encode(strokes, forKey: .strokes); try c.encode(picked_up, forKey: .picked_up); try c.encode(client_ts, forKey: .client_ts)
+            }
         }
         return try await client.supabase.rpc("enter_score", params: P(
             round_id: roundID, player_id: playerID, hole: hole, strokes: pickedUp ? nil : strokes, picked_up: pickedUp,

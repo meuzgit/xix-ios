@@ -134,6 +134,27 @@ public struct MatchPlayDetail: Codable, Equatable, Sendable {
         perHole = try c.decode([MatchHole].self, forKey: AnyCodingKey("perHole"))
     }
 
+    /// Nested form (Nassau segments, Sixes): `compact` and `abandonedBy` may be absent in older payloads.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        sides = try c.decode([[PlayerID]].self, forKey: .sides)
+        holesWon = try c.decode([String: Int].self, forKey: .holesWon)
+        halved = try c.decode(Int.self, forKey: .halved)
+        firstHole = try c.decode(Int.self, forKey: .firstHole)
+        lastHole = try c.decode(Int.self, forKey: .lastHole)
+        throughHole = try c.decode(Int.self, forKey: .throughHole)
+        holesRemaining = try c.decode(Int.self, forKey: .holesRemaining)
+        leader = try c.decodeIfPresent(String.self, forKey: .leader)
+        up = try c.decode(Int.self, forKey: .up)
+        decidedAtHole = try c.decodeIfPresent(Int.self, forKey: .decidedAtHole)
+        abandonedBy = try c.decodeIfPresent(PlayerID.self, forKey: .abandonedBy)
+        complete = try c.decode(Bool.self, forKey: .complete)
+        result = try c.decode(String.self, forKey: .result)
+        compact = try c.decodeIfPresent([String: String].self, forKey: .compact) ?? [:]
+        matchOutcome = try c.decodeIfPresent(Outcome.self, forKey: .matchOutcome)
+        perHole = try c.decode([MatchHole].self, forKey: .perHole)
+    }
+
     public init(sides: [[PlayerID]], holesWon: [String: Int], halved: Int, firstHole: Int, lastHole: Int,
                 throughHole: Int, holesRemaining: Int, leader: String?, up: Int, decidedAtHole: Int?,
                 abandonedBy: PlayerID? = nil, complete: Bool, result: String, compact: [String: String] = [:], matchOutcome: Outcome?, perHole: [MatchHole]) {

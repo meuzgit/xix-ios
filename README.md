@@ -47,9 +47,9 @@ The seed is generated: edit `supabase/scripts/gen_seed.py`, not `supabase/seed.s
 make data-tests                              # db reset, then the XIXData integration tests against the local stack
 ```
 
-Testing note: the integration tests sign the seeded users in through an admin-generated magic link that the client verifies (`LocalSupabase.signIn`). Sign in with Apple cannot run in a test, minted JWTs are refused by GoTrue for lacking a session row, and the session a magic link yields is the same kind any provider yields. After a migration, regenerate the row types with `make models`.
+Testing note: the integration tests sign the seeded users in with a password the service role sets on the user just before (`LocalSupabase.signIn`). Sign in with Apple cannot run in a test; minted JWTs are refused by GoTrue for lacking a session row; magic links set `recovery_sent_at`, which supabase-swift's session storage migrations mishandle. The session a password yields is the same kind any provider yields. After a migration, regenerate the row types with `make models`.
 
-`make` lists every target: `engine-tests`, `pgtap`, `data-tests`, `wasm`, `parity`, `models`.
+`make` lists every target: `engine-tests`, `pgtap`, `data-tests`, `ui-tests`, `acceptance`, `wasm`, `parity`, `models`. The acceptance record for each tag lives in `docs/`.
 
 ## UI
 

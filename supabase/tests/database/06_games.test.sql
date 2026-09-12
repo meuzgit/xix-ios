@@ -42,7 +42,7 @@ create temp table ids as select
   '55555555-5555-4555-8555-555555555555'::uuid as course;
 select pg_temp.share();
 
-select plan(8);
+select plan(9);
 -- A fresh live round: Ray owns seat 0, Dave has claimed seat 1, seat 2 is an unclaimed guest.
 create temp table fresh as select
   'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'::uuid as round,
@@ -65,6 +65,7 @@ select pg_temp.as_user((select ray from ids));
 select throws_ok($$insert into xix.games (round_id, format) values ((select round from fresh), 'skins')$$, '42501', null, 'the owner cannot insert games directly');
 select lives_ok($$select xix.set_games((select round from fresh), jsonb_build_array(jsonb_build_object('format', 'skins', 'options', '{"carryover": true}'::jsonb, 'players', jsonb_build_array((select ray_row from fresh), (select dave_row from fresh)))))$$, 'set_games as owner');
 select is((select count(*)::int from xix.game_players where round_id = (select round from fresh)), 2, 'game_players follow');
+select is((select array_agg(position order by position) from xix.games where round_id = (select round from ids)), array[0,1,2]::smallint[], 'games keep their setup order');
 select pg_temp.as_postgres();
 insert into xix.scores (round_id, player_id, hole, strokes) values ((select round from fresh), (select ray_row from fresh), 1, 4);
 select pg_temp.as_user((select ray from ids));

@@ -16,7 +16,7 @@ final class AuthTests: XCTestCase {
         let auth = AuthService(client: client)
         XCTAssertFalse(auth.isSignedIn, "first launch needs no sign-in")
 
-        try await LocalSupabase.signIn(client, email: email)
+        try await LocalSupabase.signIn(client, userID: user.id, email: email)
         let profile = try await auth.ensureProfile()
         XCTAssertEqual(profile.id, user.id, "the XIX profile is the shared auth user, no linking step")
         XCTAssertEqual(profile.displayName, "Meuz Regular")

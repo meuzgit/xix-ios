@@ -38,7 +38,9 @@ final class SyncTests: XCTestCase {
         await LocalSupabase.waitUntil(5, "Dave's session to receive Ray's hole 1") {
             await self.sessionB.currentState().score(player: self.rayRow, hole: 1)?.strokes == 4
         }
-        XCTAssertLessThan(Date().timeIntervalSince(t0), 1.0 + 0.5, "within a second on the local stack")
+        let latency = Date().timeIntervalSince(t0)
+        print("[acceptance] Ray → Dave score visible after \(String(format: "%.3f", latency))s")
+        XCTAssertLessThan(latency, 1.0 + 0.5, "within a second on the local stack")
 
         await sessionB.enterScore(playerID: daveRow, hole: 1, strokes: 5, pickedUp: false)
         await LocalSupabase.waitUntil(5, "Ray's session to receive Dave's hole 1") {

@@ -365,7 +365,7 @@ public actor RoundSession {
         try client.store.dbQueue.write { db in
             try LocalRound(row: b.round, courseName: b.course?.name).save(db)
             for h in b.courseHoles {
-                try LocalCourseHole(round_id: b.round.id, hole: Int(h.hole), par: h.par.map(Int.init), stroke_index: h.strokeIndex.map(Int.init)).save(db)
+                try LocalCourseHole(round_id: b.round.id, hole: Int(h.hole), par: h.par.map(Int.init), stroke_index: h.strokeIndex.map(Int.init), yards: h.yards.map(Int.init)).save(db)
             }
             for p in b.players { try LocalPlayer(row: p).save(db) }
             for s in b.stickers { try LocalSticker(row: s).save(db) }
@@ -383,7 +383,7 @@ public actor RoundSession {
             for g in b.games {
                 let options = String(decoding: (try? JSONEncoder().encode(g.options)) ?? Data("{}".utf8), as: UTF8.self)
                 try LocalGame(id: g.id, round_id: g.roundId, format: g.format, options: options,
-                              created_at: (ISO8601.date(g.createdAt) ?? Date()).timeIntervalSince1970).save(db)
+                              created_at: (ISO8601.date(g.createdAt) ?? Date()).timeIntervalSince1970, position: Int(g.position)).save(db)
             }
             for gp in b.gamePlayers {
                 try LocalGamePlayer(game_id: gp.gameId, round_id: gp.roundId, player_id: gp.playerId, side: gp.side.map(Int.init)).save(db)

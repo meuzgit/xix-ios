@@ -9,8 +9,9 @@ public struct CourseDraft: Sendable {
     public var region: String?
     public var par: [Int?]?           // one per hole; nil for no par
     public var strokeIndex: [Int?]?
-    public init(name: String, region: String? = nil, par: [Int?]? = nil, strokeIndex: [Int?]? = nil) {
-        self.name = name; self.region = region; self.par = par; self.strokeIndex = strokeIndex
+    public var yards: [Int?]?
+    public init(name: String, region: String? = nil, par: [Int?]? = nil, strokeIndex: [Int?]? = nil, yards: [Int?]? = nil) {
+        self.name = name; self.region = region; self.par = par; self.strokeIndex = strokeIndex; self.yards = yards
     }
 }
 
@@ -88,10 +89,11 @@ public struct RoundRepository: Sendable {
                 .insert(CourseInsert(name: course.name, region: course.region, created_by: me))
                 .select().single().execute().value
         }
-        if existing.isEmpty, course.par != nil || course.strokeIndex != nil {
-            struct HoleInsert: Encodable { let course_id: UUID; let hole: Int; let par: Int?; let stroke_index: Int? }
+        if existing.isEmpty, course.par != nil || course.strokeIndex != nil || course.yards != nil {
+            struct HoleInsert: Encodable { let course_id: UUID; let hole: Int; let par: Int?; let stroke_index: Int?; let yards: Int? }
             let rows = (0..<holes).map { i in
-                HoleInsert(course_id: courseRow.id, hole: i + 1, par: course.par?[safe: i] ?? nil, stroke_index: course.strokeIndex?[safe: i] ?? nil)
+                HoleInsert(course_id: courseRow.id, hole: i + 1, par: course.par?[safe: i] ?? nil, stroke_index: course.strokeIndex?[safe: i] ?? nil,
+                           yards: course.yards?[safe: i] ?? nil)
             }
             try await db.from("course_holes").insert(rows).execute()
         }
@@ -117,7 +119,7 @@ public struct RoundRepository: Sendable {
         }
         let players: [PlayerRow] = try await db.from("players").select().eq("round_id", value: roundID).order("seat").execute().value
         let scores: [ScoreRow] = try await db.from("scores").select().eq("round_id", value: roundID).execute().value
-        let games: [GameRow] = try await db.from("games").select().eq("round_id", value: roundID).order("created_at").execute().value
+        let games: [GameRow] = try await db.from("games").select().eq("round_id", value: roundID).order("position").order("created_at").execute().value
         let gamePlayers: [GamePlayerRow] = try await db.from("game_players").select().eq("round_id", value: roundID).execute().value
         let callouts: [CalloutRow] = try await db.from("callouts").select().eq("round_id", value: roundID).order("created_at").execute().value
         var responses: [CalloutResponseRow] = []

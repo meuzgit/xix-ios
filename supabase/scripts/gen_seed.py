@@ -71,9 +71,9 @@ def main():
           f"{p.get('level', 'null')}, '{PLAYED_ON} 12:05:00-07');")
     w("")
     w("-- Games and their players")
-    for g in inp["games"]:
-        w(f"insert into xix.games (id, round_id, format, options) values ({q(IDS['game'][g['id']])}, {q(IDS['round'])}, "
-          f"{q(g['format'])}, {jsonlit(g.get('options', {}))});")
+    for pos, g in enumerate(inp["games"]):
+        w(f"insert into xix.games (id, round_id, format, options, position) values ({q(IDS['game'][g['id']])}, {q(IDS['round'])}, "
+          f"{q(g['format'])}, {jsonlit(g.get('options', {}))}, {pos});")
         for pid in g["players"]:
             side = (g.get("sides") or {}).get(pid)
             w(f"insert into xix.game_players (game_id, round_id, player_id, side) values ({q(IDS['game'][g['id']])}, "

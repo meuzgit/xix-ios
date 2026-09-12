@@ -416,12 +416,14 @@ public enum XixSchema {
     public let format: String
     public let id: UUID
     public let options: AnyJSON
+    public let position: Int16
     public let roundId: UUID
     public enum CodingKeys: String, CodingKey {
       case createdAt = "created_at"
       case format = "format"
       case id = "id"
       case options = "options"
+      case position = "position"
       case roundId = "round_id"
     }
   }
@@ -430,12 +432,14 @@ public enum XixSchema {
     public let format: String
     public let id: UUID?
     public let options: AnyJSON?
+    public let position: Int16?
     public let roundId: UUID
     public enum CodingKeys: String, CodingKey {
       case createdAt = "created_at"
       case format = "format"
       case id = "id"
       case options = "options"
+      case position = "position"
       case roundId = "round_id"
     }
   }
@@ -444,12 +448,14 @@ public enum XixSchema {
     public let format: String?
     public let id: UUID?
     public let options: AnyJSON?
+    public let position: Int16?
     public let roundId: UUID?
     public enum CodingKeys: String, CodingKey {
       case createdAt = "created_at"
       case format = "format"
       case id = "id"
       case options = "options"
+      case position = "position"
       case roundId = "round_id"
     }
   }

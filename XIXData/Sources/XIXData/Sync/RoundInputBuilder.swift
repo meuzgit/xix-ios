@@ -30,7 +30,7 @@ enum RoundInputBuilder {
                 inputs.append(PlayerInput(id: PlayerID(p.id.uuidString.lowercased()), level: p.level_snapshot, name: p.display_name, extras: extras))
             }
 
-            let games = try LocalGame.filter(Column("round_id") == roundID).order(Column("created_at"), Column("id")).fetchAll(db)
+            let games = try LocalGame.filter(Column("round_id") == roundID).order(Column("position"), Column("created_at"), Column("id")).fetchAll(db)
             let gamePlayers = try LocalGamePlayer.filter(Column("round_id") == roundID).fetchAll(db)
             let seatOf = Dictionary(uniqueKeysWithValues: players.map { ($0.id, $0.seat) })
             let gameInputs: [GameInput] = try games.map { g in

@@ -123,8 +123,8 @@ public struct HoleCardHost: View {
 
     public static func model(_ s: RoundSession.State, hole: Int, myPlayerID: UUID?, isOwner: Bool, panel: HoleCardModel.Panel, nudge: String?) -> HoleCardModel {
         let holes = s.round.holes
-        var par = [Int?](repeating: nil, count: holes), si = [Int?](repeating: nil, count: holes)
-        for h in s.courseHoles where h.hole >= 1 && h.hole <= holes { par[h.hole - 1] = h.par; si[h.hole - 1] = h.stroke_index }
+        var par = [Int?](repeating: nil, count: holes), si = [Int?](repeating: nil, count: holes), yards = [Int?](repeating: nil, count: holes)
+        for h in s.courseHoles where h.hole >= 1 && h.hole <= holes { par[h.hole - 1] = h.par; si[h.hole - 1] = h.stroke_index; yards[h.hole - 1] = h.yards }
         let players = s.players.map { ScorecardModel.Player(id: $0.id, name: $0.display_name) }
         let callouts = s.callouts.map { c -> HoleCardModel.CalloutInputModel in
             let targets = (try? JSONDecoder().decode([UUID].self, from: Data(c.target_ids.utf8))) ?? []
@@ -134,7 +134,7 @@ public struct HoleCardHost: View {
                          closed: c.closed_at != nil || c.status == "expired" || c.status == "resolved")
         }
         return HoleCardModel.build(
-            hole: hole, holes: holes, par: par, strokeIndex: si, yards: [Int?](repeating: nil, count: holes),
+            hole: hole, holes: holes, par: par, strokeIndex: si, yards: yards,
             players: players, engineID: { PlayerID($0.uuidString.lowercased()) },
             scores: s.scores.map { .init(playerID: $0.player_id, hole: $0.hole, strokes: $0.strokes, pickedUp: $0.picked_up) },
             stickers: s.stickers.map { .init(id: $0.id, targetPlayerID: $0.target_player_id, senderPlayerID: $0.sender_player_id, hole: $0.hole, key: $0.sticker_key, createdAt: $0.created_at) },

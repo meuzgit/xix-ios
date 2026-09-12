@@ -55,15 +55,15 @@ insert into xix.players (id, round_id, profile_id, display_name, seat, level_sna
 values ('77777777-7777-4777-8777-777777777774', '66666666-6666-4666-8666-666666666666', '44444444-4444-4444-8444-444444444444', 'Tess', 3, 5, '2026-09-09 12:05:00-07');
 
 -- Games and their players
-insert into xix.games (id, round_id, format, options) values ('88888888-8888-4888-8888-888888888881', '66666666-6666-4666-8666-666666666666', 'nassau', '{"net":false,"presses":false}'::jsonb);
+insert into xix.games (id, round_id, format, options, position) values ('88888888-8888-4888-8888-888888888881', '66666666-6666-4666-8666-666666666666', 'nassau', '{"net":false,"presses":false}'::jsonb, 0);
 insert into xix.game_players (game_id, round_id, player_id, side) values ('88888888-8888-4888-8888-888888888881', '66666666-6666-4666-8666-666666666666', '77777777-7777-4777-8777-777777777771', null);
 insert into xix.game_players (game_id, round_id, player_id, side) values ('88888888-8888-4888-8888-888888888881', '66666666-6666-4666-8666-666666666666', '77777777-7777-4777-8777-777777777772', null);
-insert into xix.games (id, round_id, format, options) values ('88888888-8888-4888-8888-888888888882', '66666666-6666-4666-8666-666666666666', 'skins', '{"net":false,"carryover":true,"validation":false}'::jsonb);
+insert into xix.games (id, round_id, format, options, position) values ('88888888-8888-4888-8888-888888888882', '66666666-6666-4666-8666-666666666666', 'skins', '{"net":false,"carryover":true,"validation":false}'::jsonb, 1);
 insert into xix.game_players (game_id, round_id, player_id, side) values ('88888888-8888-4888-8888-888888888882', '66666666-6666-4666-8666-666666666666', '77777777-7777-4777-8777-777777777771', null);
 insert into xix.game_players (game_id, round_id, player_id, side) values ('88888888-8888-4888-8888-888888888882', '66666666-6666-4666-8666-666666666666', '77777777-7777-4777-8777-777777777772', null);
 insert into xix.game_players (game_id, round_id, player_id, side) values ('88888888-8888-4888-8888-888888888882', '66666666-6666-4666-8666-666666666666', '77777777-7777-4777-8777-777777777773', null);
 insert into xix.game_players (game_id, round_id, player_id, side) values ('88888888-8888-4888-8888-888888888882', '66666666-6666-4666-8666-666666666666', '77777777-7777-4777-8777-777777777774', null);
-insert into xix.games (id, round_id, format, options) values ('88888888-8888-4888-8888-888888888883', '66666666-6666-4666-8666-666666666666', 'stableford', '{"net":false}'::jsonb);
+insert into xix.games (id, round_id, format, options, position) values ('88888888-8888-4888-8888-888888888883', '66666666-6666-4666-8666-666666666666', 'stableford', '{"net":false}'::jsonb, 2);
 insert into xix.game_players (game_id, round_id, player_id, side) values ('88888888-8888-4888-8888-888888888883', '66666666-6666-4666-8666-666666666666', '77777777-7777-4777-8777-777777777773', null);
 insert into xix.game_players (game_id, round_id, player_id, side) values ('88888888-8888-4888-8888-888888888883', '66666666-6666-4666-8666-666666666666', '77777777-7777-4777-8777-777777777774', null);
 

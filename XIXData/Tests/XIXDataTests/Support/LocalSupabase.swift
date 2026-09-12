@@ -68,20 +68,21 @@ enum LocalSupabase {
         return result
     }
 
-    /// A real local session: the service role generates a magic link for the user's email and the client
-    /// verifies its token hash. Sign in with Apple cannot run in a test; the session that results is the
-    /// same kind GoTrue issues after any provider.
-    static func signIn(_ client: XIXClient, email: String) async throws {
+    /// A real local session: the service role sets a password on the user and the client signs in with
+    /// it. Sign in with Apple cannot run in a test; minted JWTs are refused for lacking a session row;
+    /// magic links set `recovery_sent_at`, which trips supabase-swift's session storage migrations.
+    static func signIn(_ client: XIXClient, userID: UUID, email: String) async throws {
         await awaitReady()
-        let link = try await service.auth.admin.generateLink(params: .magicLink(email: email))
-        _ = try await client.supabase.auth.verifyOTP(tokenHash: link.properties.hashedToken, type: .magiclink)
+        let password = "xix-local-test-\(userID.uuidString.prefix(8))"
+        _ = try await service.auth.admin.updateUserById(userID, attributes: AdminUserAttributes(password: password))
+        _ = try await client.supabase.auth.signIn(email: email, password: password)
         _ = try await AuthService(client: client).ensureProfile()
     }
 
     /// A client signed in as the seeded user with its own in-memory store and session storage.
     static func client(as user: UUID, email: String, label: String) async throws -> XIXClient {
         let client = XIXClient(url: url, anonKey: anonKey, store: try LocalStore.inMemory(), authStorage: MemoryAuthStorage(), storageKey: "xix.test.\(label)")
-        try await signIn(client, email: email)
+        try await signIn(client, userID: user, email: email)
         precondition(client.userID == user, "seeded user id mismatch for \(email)")
         return client
     }
