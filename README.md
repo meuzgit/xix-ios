@@ -14,6 +14,7 @@ Vocabulary rule for every file, comment and test name: no money, stake, wager or
 | `XIXScoring/Sources/xix-engine-cli` | RoundInput in on stdin, RoundResult out. Built natively for parity and as WebAssembly for the server. |
 | `XIXModels/` | Row types mirroring the `xix` tables, generated from the local database (`scripts/gen-models.sh`) and hand-wrapped. |
 | `XIXData/` | Supabase client, Sign in with Apple, repositories, `RoundSession` (one Realtime channel per round, last-write-wins per cell, merge notices), GRDB local store and offline queue. No UI. |
+| `XIXUI/` | Design tokens from Pass 5, the base sticker pack, and `ScorecardRenderer`: one view tree for the screen and for export, with pixel snapshots at screen and chat widths. |
 | `supabase/` | Migrations, seed, pgTAP tests, the `xix-engine` edge function. |
 | `scripts/` | Engine build and parity checks. |
 | `fraserview_2026-09-09.json` | The reference round every design pass uses; source of the seed. |
@@ -49,6 +50,15 @@ make data-tests                              # db reset, then the XIXData integr
 Testing note: the integration tests sign the seeded users in through an admin-generated magic link that the client verifies (`LocalSupabase.signIn`). Sign in with Apple cannot run in a test, minted JWTs are refused by GoTrue for lacking a session row, and the session a magic link yields is the same kind any provider yields. After a migration, regenerate the row types with `make models`.
 
 `make` lists every target: `engine-tests`, `pgtap`, `data-tests`, `wasm`, `parity`, `models`.
+
+## UI
+
+```bash
+make ui-tests                                # tokens, sticker pack, scorecard snapshots (macOS)
+RECORD_SNAPSHOTS=1 make ui-tests             # re-record after an intended visual change, then run again to compare
+```
+
+Snapshots live in `XIXUI/Tests/XIXUITests/__Snapshots__` and are compared pixel-wise with a small tolerance; a failing comparison writes `<name>.failed.png` beside the reference. They are recorded on macOS and expect the same text rendering.
 
 ## Engine toolchain (WebAssembly)
 
