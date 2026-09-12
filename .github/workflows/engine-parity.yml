@@ -5,9 +5,9 @@ name: engine parity
 on:
   workflow_dispatch:
   push:
-    paths: ["XIXScoring/**", "scripts/**", ".github/workflows/engine-parity.yml"]
+    paths: ["XIXScoring/**", "scripts/**", "supabase/functions/xix-engine/**", ".github/workflows/engine-parity.yml"]
   pull_request:
-    paths: ["XIXScoring/**", "scripts/**", ".github/workflows/engine-parity.yml"]
+    paths: ["XIXScoring/**", "scripts/**", "supabase/functions/xix-engine/**", ".github/workflows/engine-parity.yml"]
 
 jobs:
   parity:
@@ -41,3 +41,24 @@ jobs:
         run: swift test --package-path XIXScoring
       - name: Native vs Wasm parity on every fixture
         run: ./scripts/engine-parity.sh
+      # The edge function carries the sha256 of the module it ships with, which is what stops a
+      # rebuilt engine deploying as "no change found". If a commit changes the engine without
+      # restamping, the two are already out of step in the repository, and a deploy from it would put
+      # a stale module on the project. So: build the module here and check the stamp against it.
+      - name: The stamped module hash matches a fresh build
+        run: |
+          ./scripts/build-engine-wasm.sh >/dev/null
+          FRESH="$(shasum -a 256 supabase/functions/xix-engine/xix-engine-cli.wasm | cut -d" " -f1)"
+          STAMPED="$(grep -oE 'ENGINE_MODULE_SHA = "[0-9a-f]{64}"' supabase/functions/xix-engine/index.ts | grep -oE '[0-9a-f]{64}')"
+          echo "fresh   $FRESH"
+          echo "stamped $STAMPED"
+          if [ "$FRESH" != "$STAMPED" ]; then
+            echo "::error file=supabase/functions/xix-engine/index.ts::index.ts is stamped with $STAMPED but this engine builds $FRESH. Run 'make wasm' and commit index.ts."
+            exit 1
+          fi
+          # And the build must leave nothing else uncommitted.
+          if ! git diff --quiet -- supabase/functions/xix-engine/index.ts; then
+            echo "::error::building the module changed index.ts; commit the restamped file"
+            git --no-pager diff -- supabase/functions/xix-engine/index.ts
+            exit 1
+          fi
