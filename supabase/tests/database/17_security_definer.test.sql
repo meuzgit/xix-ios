@@ -18,7 +18,7 @@ create temp table ids as select
   '99999999-9999-4999-8999-999999999991'::uuid as callout, '88888888-8888-4888-8888-888888888882'::uuid as skins;
 do $$ begin execute format('grant select on all tables in schema %I to authenticated', (select nspname from pg_namespace where oid = pg_my_temp_schema())); end $$;
 
-select plan(26);
+select plan(27);
 
 -- 1. The census. Trigger functions are excluded (they cannot be called directly).
 select is(
@@ -28,7 +28,7 @@ select is(
     'add_guest', 'apply_engine_result', 'auto_confirm', 'claim_row', 'confirm_round', 'create_callout', 'end_round',
     'engine_run_failed', 'enqueue_engine_run', 'ensure_profile', 'enter_score', 'is_crew_member', 'is_crew_owner',
     'is_own_player_row', 'is_round_member', 'is_round_owner', 'join_round', 'joinable_rows', 'leave_round', 'my_player_id',
-    'respond_callout', 'round_input', 'send_sticker', 'set_games', 'shares_round_or_crew', 'update_level_auto'
+    'respond_callout', 'round_input', 'round_preview', 'send_sticker', 'set_games', 'shares_round_or_crew', 'update_level_auto'
   ]::text[],
   'every security-definer function is accounted for below');
 
@@ -46,6 +46,15 @@ select throws_ok($$select xix.leave_round((select round from ids))$$, '42501', n
 select throws_ok($$select xix.confirm_round((select round from ids), 'confirm')$$, '42501', null, 'confirm_round');
 select throws_ok($$select xix.round_input((select round from ids))$$, '42501', null, 'round_input');
 select throws_ok($$select xix.claim_row((select round from ids), (select ray_row from ids))$$, 'P0002', null, 'claim_row refuses a row that is not free');
+
+-- 2b. The one anonymous exception: round_preview (0020) is readable without a session, by design, and
+--     answers only the landing page's fields; test 20 pins the field list.
+select is(
+  (select array_agg(p.proname::text order by p.proname) from pg_proc p
+    where p.pronamespace = 'xix'::regnamespace and p.prosecdef and p.prorettype <> 'trigger'::regtype
+      and has_function_privilege('anon', p.oid, 'execute')),
+  array['round_preview']::text[],
+  'round_preview is the only security-definer function anon may execute (allowed: the no-app landing page)');
 
 -- 3. Engine and internal functions are not callable by authenticated users at all.
 select throws_ok($$select xix.apply_engine_result((select round from ids), 1, '{}'::jsonb)$$, '42501', null, 'apply_engine_result');

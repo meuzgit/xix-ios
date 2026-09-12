@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>XIX · You're asked to play</title>
-<!-- The no-app landing page for xix.golf/r/{code} (Build Doc 3 step 1, Pass 6 6c). Static: any host
-     that rewrites /r/* to this file (see _redirects). It shows the invite and the two buttons; the round
-     itself is read by the app after sign-in, since the join screen RPC needs an identity. -->
+<!-- The no-app landing page for xix.golf/r/{code} (Build Doc 3 step 1, Pass 6 §2). Static: any host
+     that rewrites /r/* to this file (see _redirects). It reads the round through xix.round_preview,
+     the one anonymous RPC (course, date, players' names, nothing else), and offers the two buttons. -->
 <style>
   :root { --green: #0A3A2A; --green-soft: #1C4F2E; --cream: #F4EBD6; --faint: rgba(255,255,255,.42); }
   html, body { margin: 0; background: var(--green); color: #fff; font: 15px/1.5 "SF Pro Text", -apple-system, system-ui, sans-serif; }
@@ -15,7 +15,9 @@
   .bar span:last-child { color: var(--faint); font-weight: 600; }
   h1 { font: 900 40px/1.02 "SF Pro Text", -apple-system, system-ui, sans-serif; margin: 64px 0 0; letter-spacing: -.01em; }
   .sub { color: rgba(255,255,255,.65); margin-top: 14px; }
-  .code { display: inline-block; margin-top: 22px; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,.1); font: 700 15px/1 "SF Mono", ui-monospace, monospace; letter-spacing: .12em; }
+  .avatars { display: flex; gap: 6px; margin-top: 22px; }
+  .avatars span { width: 34px; height: 34px; border-radius: 999px; background: var(--cream); color: var(--green); display: inline-flex; align-items: center; justify-content: center; font: 700 12px/1 "SF Pro Text", system-ui; }
+  .avatars span.open { background: transparent; color: var(--faint); box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
   .btn { display: block; width: 100%; height: 54px; line-height: 54px; margin-top: 34px; border: 0; border-radius: 999px; text-align: center; text-decoration: none; font: 700 16px/54px "SF Pro Text", system-ui; }
   .btn.open { background: var(--cream); color: var(--green); }
   .btn.get { background: rgba(255,255,255,.12); color: #fff; margin-top: 3px; font-weight: 600; }
@@ -25,28 +27,71 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="bar"><span>XIX</span><span>Scoring is free</span></div>
-  <h1>You're asked<br>to play</h1>
-  <div class="sub">A round on XIX, today.<br>Open it in the app and your row is ready to claim.</div>
-  <div class="code" id="code">····</div>
+  <div class="bar"><span>XIX</span><span id="kicker">Scoring is free</span></div>
+  <h1 id="title">You're asked<br>to play</h1>
+  <div class="sub" id="sub">Finding the round…</div>
+  <div class="avatars" id="avatars"></div>
   <a class="btn open" id="open" href="#">Open in XIX</a>
   <a class="btn get" id="get" href="https://apps.apple.com/app/xix">Get XIX</a>
-  <div class="foot">Scoring is free. No account needed to be scored by the person who set the round up.</div>
+  <div class="foot" id="foot">Scoring is free. No account needed to be scored by the person who set the round up.</div>
   <div class="spacer"></div>
   <div class="foot">xix.golf</div>
 </div>
+<script src="config.js"></script>
 <script>
-  // /r/8K2M → 8K2M. The app opens on the universal link when installed; the button is the custom scheme fallback.
+  // /r/8K2M → 8K2M. The app opens on the universal link when installed; the button is the custom-scheme fallback.
   var parts = location.pathname.split('/').filter(Boolean);
   var i = parts.indexOf('r');
-  var code = (i >= 0 && parts[i + 1]) ? parts[i + 1].toUpperCase() : (new URLSearchParams(location.search).get('code') || '').toUpperCase();
-  if (code) {
-    document.getElementById('code').textContent = code;
-    document.getElementById('open').href = 'xix://r/' + code;
-    document.title = 'XIX · Join round ' + code;
+  var code = ((i >= 0 && parts[i + 1]) ? parts[i + 1] : (new URLSearchParams(location.search).get('code') || '')).split('.')[0].toUpperCase();
+  var $ = function (id) { return document.getElementById(id); };
+  if (!code) {
+    $('sub').textContent = 'There is no round in this link.';
+    $('open').style.display = 'none';
   } else {
-    document.getElementById('code').textContent = 'No round in this link';
-    document.getElementById('open').style.display = 'none';
+    $('open').href = 'xix://r/' + code;
+    document.title = 'XIX · Join round ' + code;
+    render(null);
+    if (window.XIX && XIX.url && XIX.anonKey) {
+      fetch(XIX.url + '/rest/v1/rpc/round_preview', {
+        method: 'POST',
+        headers: { 'apikey': XIX.anonKey, 'Authorization': 'Bearer ' + XIX.anonKey, 'Content-Type': 'application/json',
+                   'Content-Profile': 'xix', 'Accept-Profile': 'xix' },
+        body: JSON.stringify({ code: code })
+      }).then(function (r) { return r.ok ? r.json() : null; }).then(render).catch(function () { render(null); });
+    } else {
+      $('sub').textContent = 'Round ' + code;
+    }
+  }
+
+  function dateLabel(iso) {
+    var d = new Date(iso + 'T12:00:00');
+    var today = new Date(); today.setHours(12, 0, 0, 0);
+    var diff = Math.round((d - today) / 86400000);
+    if (diff === 0) return 'today';
+    if (diff === -1) return 'yesterday';
+    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  }
+
+  function names(list, owner) {
+    var others = list.filter(function (n) { return n !== owner; });
+    var all = owner ? [owner].concat(others) : list;
+    if (all.length <= 1) return all.join('');
+    return all.slice(0, -1).join(', ') + ' and ' + all[all.length - 1];
+  }
+
+  function render(p) {
+    if (!p) { $('sub').textContent = 'Round ' + code + '. Open it in the app to see who is playing.'; return; }
+    var owner = p.owner || 'Someone';
+    $('title').innerHTML = owner + ' asked you<br>to play';
+    var line = (p.course || 'A round') + ' · ' + dateLabel(p.played_on);
+    if (p.status === 'ended') line += ' · ended';
+    $('sub').innerHTML = line + '<br>' + names(p.players || [], p.owner);
+    $('avatars').innerHTML = (p.players || []).map(function (n) {
+      var ini = n.split(' ').filter(Boolean).slice(0, 2).map(function (w) { return w[0].toUpperCase(); }).join('');
+      return '<span>' + ini + '</span>';
+    }).join('');
+    $('foot').textContent = 'Scoring is free. No account needed to be scored by ' + owner + '.';
+    $('kicker').textContent = p.status === 'ended' ? 'Results are in' : 'Scoring is free';
   }
 </script>
 </body>

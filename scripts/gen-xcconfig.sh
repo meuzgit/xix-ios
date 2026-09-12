@@ -11,4 +11,5 @@ KEY=$(supabase projects api-keys --project-ref "$REF" -o json 2>/dev/null | pyth
   echo "XIX_SHARED_URL = https:/\$()/$REF.supabase.co"
   echo "XIX_SHARED_ANON_KEY = $KEY"
 } > XIX/Config/Shared.xcconfig
-echo "wrote XIX/Config/Shared.xcconfig"
+printf 'window.XIX = { url: "https://%s.supabase.co", anonKey: "%s" };\n' "$REF" "$KEY" > web/config.js
+echo "wrote XIX/Config/Shared.xcconfig and web/config.js"
