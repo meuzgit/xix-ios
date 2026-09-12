@@ -141,35 +141,8 @@ final class PlayableLoopTests: XCTestCase {
         app.buttons["pad-save"].tap(); pause(0.6)
     }
 
-    /// A fresh start for the video: the debug menu's Sign out, when a session was restored.
-    private func signOutIfSignedIn(_ app: XCUIApplication) {
-        let settings = app.buttons["Settings"]
-        guard settings.waitForExistence(timeout: 5) else { return }
-        settings.tap()
-        let out = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Sign out")).firstMatch
-        if out.waitForExistence(timeout: 3) { out.tap(); pause(1) } else { app.buttons["Back"].tap() }
-        pause(1)
-    }
-
-    /// The simulator's own Apple Account prompt, if it appears over the sheet.
-    private func dismissSystemAlerts() {
-        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        for label in ["Not Now", "Cancel", "OK"] {
-            let b = springboard.buttons[label]
-            if b.exists { b.tap(); pause(0.5) }
-        }
-    }
-
-    private func signInLocallyIfAsked(_ app: XCUIApplication, name: String) {
-        dismissSystemAlerts()
-        let field = app.textFields["localName"]
-        guard field.waitForExistence(timeout: 8) else { return }
-        dismissSystemAlerts()
-        pause(1)
-        field.tap(); field.typeText(name)
-        app.buttons["Sign in"].tap()
-        pause(1)
-    }
+    private func signOutIfSignedIn(_ app: XCUIApplication) { UITestFlow.signOutIfSignedIn(app) }
+    private func signInLocallyIfAsked(_ app: XCUIApplication, name: String) { UITestFlow.signInLocallyIfAsked(app, name: name) }
 
     private func waitForFile(_ url: URL, timeout: TimeInterval) {
         let deadline = Date().addingTimeInterval(timeout)

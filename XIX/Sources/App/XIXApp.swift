@@ -23,6 +23,9 @@ struct XIXApp: App {
                 .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
                     if let url = activity.webpageURL { env.router.open(url) }
                 }
+                // Stickers animate through their Rive state machines wherever a `.riv` is bundled; the
+                // package's still PNGs stand in for any key that has none (Build Doc 3 step 2).
+                .environment(\.stickerRenderer, RiveStickerRenderer())
                 .tint(XIXColor.green)
         }
     }

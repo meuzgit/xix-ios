@@ -32,6 +32,18 @@ public actor RoundSession {
         case state(State)
         case notice(MergeNotice)
         case rejected(Mutation, message: String)
+        /// Someone opened a sticker you sent them (Build Doc 3 step 2). The in-app hook; the push
+        /// notification for the same moment arrives in step 6.
+        case stickerPlayed(StickerPlayed)
+    }
+
+    /// "Dave opened your YIKES" — the sticker, who opened it, and the hole it was thrown on.
+    public struct StickerPlayed: Sendable, Equatable {
+        public var stickerID: UUID
+        public var stickerKey: String
+        public var hole: Int
+        public var openedBy: String
+        public var text: String
     }
 
     public let roundID: UUID
@@ -158,6 +170,18 @@ public actor RoundSession {
         try? await queue.enqueue(.respondCallout(roundID: roundID, calloutID: calloutID, action: action), clientTs: ts)
     }
 
+    /// The target opened a sticker thrown at them: stamp it locally, then tell the server. Only the
+    /// player the sticker was aimed at may do this (the server's guard enforces it).
+    public func markPlayed(stickerID: UUID) async {
+        guard let sticker = client.store.sticker(id: stickerID), sticker.played_at == nil else { return }
+        let ts = await client.clock.now()
+        var played = sticker
+        played.played_at = ts.timeIntervalSince1970
+        try? await client.store.dbQueue.write { [played] db in try played.save(db) }
+        publishState()
+        try? await queue.enqueue(.markStickerPlayed(roundID: roundID, stickerID: stickerID), clientTs: ts)
+    }
+
     /// Tests and previews: go offline or online explicitly.
     public func setOnline(_ online: Bool?) async { await connectivity.setOverride(online) }
     public func pendingWrites() async -> Int { await queue.pendingCount() }
@@ -271,7 +295,16 @@ public actor RoundSession {
         case .delete: record = nil
         }
         guard let record, let row = try? decodeRow(StickerRow.self, record) else { return }
-        try? client.store.dbQueue.write { db in try LocalSticker(row: row).save(db) }
+        let before = client.store.sticker(id: row.id)
+        let incoming = LocalSticker(row: row)
+        try? client.store.dbQueue.write { db in try incoming.save(db) }
+        // A sticker I sent has just been opened by the player I aimed it at.
+        if incoming.played_at != nil, before?.played_at == nil, let me = myPlayerID, incoming.sender_player_id == me {
+            let players = (try? client.store.dbQueue.read { db in try LocalPlayer.filter(Column("round_id") == roundID).fetchAll(db) }) ?? []
+            let who = players.first { $0.id == incoming.target_player_id }?.display_name ?? "Someone"
+            emit(.stickerPlayed(StickerPlayed(stickerID: incoming.id, stickerKey: incoming.sticker_key, hole: incoming.hole,
+                                              openedBy: who, text: "\(who) opened your \(incoming.sticker_key.replacingOccurrences(of: "_", with: " "))")))
+        }
         publishState()
     }
 

@@ -88,7 +88,15 @@ public struct HoleCardView: View {
         VStack(spacing: 0) {
             ForEach(model.rows) { row in
                 HStack(spacing: 12) {
-                    avatar(row.initials, me: row.isMe)
+                    // Somebody else's chip is the way to throw them a sticker (PRD 8.7: the tray opens
+                    // on a tap, never on its own). Your own chip does nothing: stickers are speech.
+                    Button { if !row.isMe { actions.openTray(row.id, context(for: row)) } } label: {
+                        avatar(row.initials, me: row.isMe)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(row.isMe)
+                    .accessibilityIdentifier("tray-for-\(row.name)")
+                    .accessibilityLabel(row.isMe ? row.name : "Sticker for \(row.name)")
                     VStack(alignment: .leading, spacing: 3) {
                         Text(row.name).font(XIXType.body(17, weight: .semibold)).foregroundStyle(XIXColor.ink).lineLimit(1)
                         // The standing line is the sacrificial element under stickers.
@@ -103,6 +111,14 @@ public struct HoleCardView: View {
                 .overlay(alignment: .bottom) { Rectangle().fill(XIXColor.hairline).frame(height: XIXMetric.hairline).padding(.leading, 60) }
             }
         }
+    }
+
+    /// What the tray offers first for this row: their hole decides it (PRD 8.7 is ordering, not placement).
+    private func context(for row: HoleCardModel.Row) -> StickerContext {
+        guard let par = model.par, let strokes = Int(row.score) else { return row.score == "X" ? .blowUp : .none }
+        if strokes >= par + 2 { return .blowUp }
+        if strokes <= par - 1 { return .birdieOrBetter }
+        return .none
     }
 
     private func avatar(_ initials: String, me: Bool) -> some View {
@@ -127,7 +143,12 @@ public struct HoleCardView: View {
                 .scaleEffect(lifted == s.id ? 1.3 : 1)
                 .zIndex(lifted == s.id ? 10 : Double(i))
                 .offset(x: -CGFloat(row.stickers.count - 1 - i) * 22)
+                // A sticker thrown at you plays full screen on a tap (Build Doc 3 step 2); anyone's
+                // sticker still lifts on a long press to read the one underneath.
+                .onTapGesture { if s.canPlay { actions.playSticker(s.id) } }
                 .onLongPressGesture(minimumDuration: 0.3) { withAnimation(.spring(duration: 0.25)) { lifted = lifted == s.id ? nil : s.id } }
+                .accessibilityIdentifier("sticker-\(s.key)")
+                .accessibilityAddTraits(s.canPlay ? .isButton : [])
             }
         }
         .frame(width: row.stickers.isEmpty ? 0 : size + CGFloat(max(0, row.stickers.count - 1)) * 22, height: size)
@@ -237,15 +258,18 @@ public struct HoleCardActions {
     public var respond: (UUID, HoleCardResponse) -> Void
     public var composeCallout: () -> Void
     public var go: (Int) -> Void
+    /// A sticker thrown at this viewer was tapped: play it full screen and mark it played.
+    public var playSticker: (UUID) -> Void
     /// The round menu ("···" in the header); nil hides the control.
     public var menu: (() -> Void)?
 
     public init(openPad: @escaping (UUID) -> Void, padTap: @escaping (Int) -> Void, padPickUp: @escaping () -> Void, padClear: @escaping () -> Void,
                 padSave: @escaping () -> Void, openTray: @escaping (UUID, StickerContext) -> Void, sendSticker: @escaping (UUID, StickerKey) -> Void,
                 closePanel: @escaping () -> Void, respond: @escaping (UUID, HoleCardResponse) -> Void, composeCallout: @escaping () -> Void, go: @escaping (Int) -> Void,
-                menu: (() -> Void)? = nil) {
+                playSticker: @escaping (UUID) -> Void = { _ in }, menu: (() -> Void)? = nil) {
         self.openPad = openPad; self.padTap = padTap; self.padPickUp = padPickUp; self.padClear = padClear; self.padSave = padSave
         self.openTray = openTray; self.sendSticker = sendSticker; self.closePanel = closePanel; self.respond = respond; self.composeCallout = composeCallout; self.go = go
+        self.playSticker = playSticker
         self.menu = menu
     }
 

@@ -1,6 +1,6 @@
 # One command per check. Everything runs against the local Supabase stack (never the shared project).
 
-.PHONY: engine-tests pgtap data-tests ui-tests parity wasm models reset acceptance app xcconfig app-build
+.PHONY: engine-tests pgtap data-tests ui-tests parity wasm models reset acceptance app xcconfig app-build stickers sticker-check
 
 engine-tests:            ## XIXScoring unit tests and fixtures
 	swift test --package-path XIXScoring
@@ -38,3 +38,9 @@ xcconfig:                ## write XIX/Config/Shared.xcconfig from the linked pro
 
 app-build: app           ## build the app for the simulator (Debug → local stack)
 	xcodebuild -project XIX/XIX.xcodeproj -scheme XIX -configuration Debug -destination 'generic/platform=iOS Simulator' build | grep -E "error:|BUILD"
+
+stickers:                ## rebuild the 512px sticker bundle from masters/
+	python3 scripts/build-sticker-bundle.py
+
+sticker-check:           ## fail when the bundle is stale (CI)
+	python3 scripts/build-sticker-bundle.py --check

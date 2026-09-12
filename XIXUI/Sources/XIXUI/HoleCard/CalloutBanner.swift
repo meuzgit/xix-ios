@@ -1,7 +1,8 @@
 // The callout banner (PRD 8.6): the CALLED OUT die-cut on the white sheet, no container. Its two drawn
 // bubbles are the controls: SIGN IT and DUCK IT, ≥44pt hit areas, pressed = bubble darkens and the
-// sticker squashes to 0.96. One tracked-caps detail line; per-target chips on the banner's edge; the
-// caller's chip welded to the corner.
+// sticker squashes to 0.96. With the Rive renderer installed the pressed state lives in the CALLED_OUT
+// state machine (the same darken and 0.96) and the drawn overlay steps aside; the hit areas never move.
+// One tracked-caps detail line; per-target chips on the banner's edge; the caller's chip welded to the corner.
 import SwiftUI
 
 public struct CalloutBanner: View {
@@ -10,8 +11,9 @@ public struct CalloutBanner: View {
     public let onSign: () -> Void
     public let onDuck: () -> Void
     @State private var pressed: Bubble? = nil
+    @Environment(\.stickerRenderer) private var renderer
 
-    enum Bubble { case sign, duck }
+    public enum Bubble: String { case sign, duck }
 
     public init(callout: HoleCardModel.Callout, width: CGFloat = 260, onSign: @escaping () -> Void, onDuck: @escaping () -> Void) {
         self.callout = callout; self.width = width; self.onSign = onSign; self.onDuck = onDuck
@@ -25,10 +27,10 @@ public struct CalloutBanner: View {
     public var body: some View {
         VStack(spacing: 6) {
             ZStack(alignment: .topLeading) {
-                StickerImage(key: StickerKey.calledOut.rawValue, size: width, tilt: .degrees(-1.5))
-                    .scaleEffect(pressed == nil ? 1 : 0.96)
-                    .overlay(bubbleShade(signCenter, visible: pressed == .sign))
-                    .overlay(bubbleShade(duckCenter, visible: pressed == .duck))
+                StickerImage(key: StickerKey.calledOut.rawValue, size: width, tilt: .degrees(-1.5), pressed: pressed?.rawValue)
+                    .scaleEffect(drawsPressedState && pressed != nil ? 0.96 : 1)
+                    .overlay(bubbleShade(signCenter, visible: drawsPressedState && pressed == .sign))
+                    .overlay(bubbleShade(duckCenter, visible: drawsPressedState && pressed == .duck))
                     .overlay(hitArea(signCenter, bubble: .sign, action: onSign))
                     .overlay(hitArea(duckCenter, bubble: .duck, action: onDuck))
                     .animation(.easeOut(duration: 0.08), value: pressed)
@@ -46,6 +48,10 @@ public struct CalloutBanner: View {
         }
         .opacity(callout.canRespond ? 1 : 0.92)
     }
+
+    /// True while the still is on screen: the pressed look is drawn here. With a Rive asset for
+    /// CALLED_OUT the state machine draws it instead and this stays out of the way.
+    private var drawsPressedState: Bool { !renderer.hasAnimation(for: StickerKey.calledOut.rawValue) }
 
     private func bubbleShade(_ center: CGPoint, visible: Bool) -> some View {
         Ellipse().fill(XIXColor.green.opacity(visible ? 0.28 : 0))

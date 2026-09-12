@@ -29,7 +29,8 @@ struct RoundScreen: View {
                     GridScreenHost(session: session, onOpenHole: { h in holeToOpen = h; layer = .card }, onMenu: { menu = true },
                                    headerAccessory: AnyView(layerSwitch))
                 case .card:
-                    HoleCardHost(session: session, isOwner: isOwner, startHole: holeToOpen, onMenu: { menu = true }, headerAccessory: AnyView(layerSwitch))
+                    HoleCardHost(session: session, isOwner: isOwner, startHole: holeToOpen, onMenu: { menu = true }, headerAccessory: AnyView(layerSwitch),
+                                 quiet: env.isQuiet(roundID))
                         .id(holeToOpen ?? -1)
                 }
             } else if let error {

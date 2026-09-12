@@ -9,6 +9,9 @@ struct SettingsScreen: View {
     @Environment(AppEnvironment.self) private var env
     @State private var providers: [String] = []
     @State private var linking = false
+    #if DEBUG
+    @State private var lab = false
+    #endif
     @State private var quietDefault = UserDefaults.standard.bool(forKey: "xix.quietDefault")
     @State private var initials = UserDefaults.standard.bool(forKey: "xix.initialsOnExport")
     @State private var sound = UserDefaults.standard.object(forKey: "xix.sound") as? Bool ?? true
@@ -47,6 +50,7 @@ struct SettingsScreen: View {
                         }
                     }
                     ListRow("User id", sub: env.userID?.uuidString ?? "—")
+                    ListRow("Sticker lab", sub: "Play all twelve and measure the frame rate", action: { lab = true }) { chevron }
                     #endif
                 }
             }
@@ -57,6 +61,9 @@ struct SettingsScreen: View {
         .task { await reload() }
         .onChange(of: env.isSignedIn) { Task { await reload() } }
         .sheet(isPresented: $linking, onDismiss: { Task { await reload() } }) { LinkIdentitySheet() }
+        #if DEBUG
+        .sheet(isPresented: $lab) { StickerLab() }
+        #endif
     }
 
     private var chevron: some View { Text("›").font(XIXType.body(20)).foregroundStyle(XIXColor.faint) }

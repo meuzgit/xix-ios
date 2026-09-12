@@ -72,8 +72,10 @@ public actor OfflineQueue {
                     let row = try await play.enterScore(roundID: roundID, playerID: playerID, hole: hole, strokes: strokes, pickedUp: pickedUp, clientTs: clientTs)
                     // The server keeps the newest client_ts; if ours lost, the row it returns is the truth.
                     _ = try? client.store.applyRemoteScore(LocalScore(row: row, pending: false))
-                case .sendSticker(_, let roundID, let hole, let target, let key, let pack):
-                    try await play.sendSticker(roundID: roundID, hole: hole, targetPlayerID: target, stickerKey: key, packKey: pack)
+                case .sendSticker(let localID, let roundID, let hole, let target, let key, let pack):
+                    let row = try await play.sendSticker(roundID: roundID, hole: hole, targetPlayerID: target, stickerKey: key, packKey: pack)
+                    // The server minted the sticker's id; swap the optimistic row for the real one.
+                    try? client.store.replaceSticker(localID: localID, with: LocalSticker(row: row))
                 case .createCallout(_, let roundID, let hole, let kind, let targets, let params):
                     try await play.createCallout(roundID: roundID, hole: hole, kind: kind, targets: targets, params: params)
                 case .respondCallout(_, let calloutID, let action):

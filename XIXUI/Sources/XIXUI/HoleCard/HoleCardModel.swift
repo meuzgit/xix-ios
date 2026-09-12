@@ -24,7 +24,15 @@ public struct HoleCardModel: Equatable, Sendable {
         public var id: UUID
         public var key: String
         public var senderInitials: String
-        public init(id: UUID, key: String, senderInitials: String) { self.id = id; self.key = key; self.senderInitials = senderInitials }
+        public var senderName: String
+        /// The target has opened it: it has had its slap.
+        public var played: Bool
+        /// This viewer is the target and has not opened it yet — a tap plays it full screen.
+        public var canPlay: Bool
+        public init(id: UUID, key: String, senderInitials: String, senderName: String = "", played: Bool = false, canPlay: Bool = false) {
+            self.id = id; self.key = key; self.senderInitials = senderInitials; self.senderName = senderName
+            self.played = played; self.canPlay = canPlay
+        }
     }
 
     public enum TargetState: String, Equatable, Sendable { case pending, signed, ducked }
@@ -101,8 +109,11 @@ public struct HoleCardModel: Equatable, Sendable {
 
     public struct StickerInputModel: Equatable, Sendable {
         public var id: UUID; public var targetPlayerID: UUID; public var senderPlayerID: UUID; public var hole: Int; public var key: String; public var createdAt: Double
-        public init(id: UUID, targetPlayerID: UUID, senderPlayerID: UUID, hole: Int, key: String, createdAt: Double) {
-            self.id = id; self.targetPlayerID = targetPlayerID; self.senderPlayerID = senderPlayerID; self.hole = hole; self.key = key; self.createdAt = createdAt
+        /// When the target opened it, if they have.
+        public var playedAt: Double?
+        public init(id: UUID, targetPlayerID: UUID, senderPlayerID: UUID, hole: Int, key: String, createdAt: Double, playedAt: Double? = nil) {
+            self.id = id; self.targetPlayerID = targetPlayerID; self.senderPlayerID = senderPlayerID; self.hole = hole; self.key = key
+            self.createdAt = createdAt; self.playedAt = playedAt
         }
     }
 
@@ -125,7 +136,11 @@ public struct HoleCardModel: Equatable, Sendable {
                 return "\(gameName(g.format)) \(c)"
             }.joined(separator: " · ")
             let pins = stickers.filter { $0.targetPlayerID == p.id && $0.hole == hole }.sorted { $0.createdAt < $1.createdAt }
-                .map { Sticker(id: $0.id, key: $0.key, senderInitials: initialsOf[$0.senderPlayerID] ?? "?") }
+                .map { s in
+                    Sticker(id: s.id, key: s.key, senderInitials: initialsOf[s.senderPlayerID] ?? "?",
+                            senderName: nameOf[s.senderPlayerID] ?? "Someone", played: s.playedAt != nil,
+                            canPlay: s.playedAt == nil && myPlayerID == s.targetPlayerID)
+                }
             return Row(id: p.id, name: p.name, initials: p.initials, standing: standing, score: score, mark: mark,
                        canEdit: isOwner || p.id == myPlayerID, isMe: p.id == myPlayerID, stickers: pins)
         }

@@ -10,7 +10,10 @@ public struct HoleCardHost: View {
     let isOwner: Bool
     let onMenu: (() -> Void)?
     let headerAccessory: AnyView?
+    /// Quiet mode for this round: the slap plays, the cue does not.
+    let quiet: Bool
     @State private var hole: Int
+    @State private var playing: HoleCardModel.Sticker?
     @State private var state: RoundSession.State?
     @State private var panel: HoleCardModel.Panel = .none
     @State private var nudge: (hole: Int, text: String)?
@@ -18,11 +21,13 @@ public struct HoleCardHost: View {
     @State private var awaitingHoleComplete: Int?
 
     /// - Parameter startHole: the hole to open on; nil opens on the current hole (first with an empty score).
-    public init(session: RoundSession, isOwner: Bool, startHole: Int? = nil, onMenu: (() -> Void)? = nil, headerAccessory: AnyView? = nil) {
+    public init(session: RoundSession, isOwner: Bool, startHole: Int? = nil, onMenu: (() -> Void)? = nil, headerAccessory: AnyView? = nil,
+                quiet: Bool = false) {
         self.session = session
         self.isOwner = isOwner
         self.onMenu = onMenu
         self.headerAccessory = headerAccessory
+        self.quiet = quiet
         _hole = State(initialValue: startHole ?? 0)
     }
 
@@ -36,6 +41,13 @@ public struct HoleCardHost: View {
                 }
             }
         }
+        .overlay {
+            if let playing {
+                PlayedStickerView(key: playing.key, senderName: playing.senderName, quiet: quiet) { self.playing = nil }
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeOut(duration: 0.18), value: playing?.id)
         .task {
             var s = await session.currentState()
             if s.result == nil { _ = await session.recompute(); s = await session.currentState() }
@@ -52,6 +64,7 @@ public struct HoleCardHost: View {
                     }
                 case .notice(let n): show(n.text)
                 case .rejected(_, let message): show(message)
+                case .stickerPlayed(let played): show(played.text)
                 }
             }
         }
@@ -108,6 +121,13 @@ public struct HoleCardHost: View {
             },
             composeCallout: { show("Callouts arrive with the composer in Build Doc 3") },
             go: { hole = $0 },
+            playSticker: { id in
+                guard let sticker = s.stickers.first(where: { $0.id == id }) else { return }
+                let sender = s.players.first { $0.id == sticker.sender_player_id }?.display_name ?? "Someone"
+                playing = HoleCardModel.Sticker(id: id, key: sticker.sticker_key, senderInitials: ScorecardModel.initials(for: sender),
+                                                senderName: sender, played: sticker.played_at != nil, canPlay: true)
+                Task { await session.markPlayed(stickerID: id) }
+            },
             menu: onMenu)
     }
 
@@ -143,7 +163,7 @@ public struct HoleCardHost: View {
             hole: hole, holes: holes, par: par, strokeIndex: si, yards: yards,
             players: players, engineID: { PlayerID($0.uuidString.lowercased()) },
             scores: s.scores.map { .init(playerID: $0.player_id, hole: $0.hole, strokes: $0.strokes, pickedUp: $0.picked_up) },
-            stickers: s.stickers.map { .init(id: $0.id, targetPlayerID: $0.target_player_id, senderPlayerID: $0.sender_player_id, hole: $0.hole, key: $0.sticker_key, createdAt: $0.created_at) },
+            stickers: s.stickers.map { .init(id: $0.id, targetPlayerID: $0.target_player_id, senderPlayerID: $0.sender_player_id, hole: $0.hole, key: $0.sticker_key, createdAt: $0.created_at, playedAt: $0.played_at) },
             callouts: callouts, result: s.result, myPlayerID: myPlayerID, isOwner: isOwner, panel: panel, nudge: nudge)
     }
 }

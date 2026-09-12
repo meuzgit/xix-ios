@@ -17,6 +17,7 @@ Vocabulary rule for every file, comment and test name: no money, stake, wager or
 | `XIXUI/` | Design tokens from Pass 5, the base sticker pack, `ScorecardRenderer` (one view tree for the screen and for export), the grid screen and the hole card bound to `RoundSession`, with pixel snapshots. |
 | `XIX/` | The app target (Build Doc 3): `project.yml` for xcodegen, the screens that compose the packages (Home, setup, round, results, join, sign-in), and the two-device UI tests. |
 | `web/` | The static no-app landing page for join links and the universal-link association file. |
+| `masters/` | The 1024² sticker masters and the `.riv` authoring contract. Never shipped: the app bundles 512² versions built by `scripts/build-sticker-bundle.py`. |
 | `supabase/` | Migrations, seed, pgTAP tests, the `xix-engine` edge function. |
 | `scripts/` | Engine build and parity checks. |
 | `fraserview_2026-09-09.json` | The reference round every design pass uses; source of the seed. |
@@ -78,6 +79,19 @@ The step 1 acceptance (two phones, one round, a guest joining by link mid-round)
 ```bash
 XIX_SIM_A=<udid> XIX_SIM_B=<udid> ./scripts/acceptance-video.sh   # writes docs/acceptance-step1.mp4
 ```
+
+## Stickers
+
+The twelve die-cuts are bundled at 512² (3.5 MB) and generated from the 1024 masters:
+
+```bash
+python3 scripts/build-sticker-bundle.py          # masters/stickers → XIXUI's bundle
+python3 scripts/build-sticker-bundle.py --check  # fail when the bundle is stale
+```
+
+A sticker draws through `\.stickerRenderer`. XIXUI itself only ever draws the still PNG, which is what the snapshots and the exported card use; the app installs `RiveStickerRenderer`, so any key with a `<KEY>.riv` in the bundle plays its Rive state machine instead — pinned on the card, the slap when it is opened, and the pressed bubbles on CALLED\_OUT. Until those files are authored, the same slap plays from `StickerSlap`, which holds Pass 5's timing (peel in 1.4× / −34°, contact on frame 3 with the cue, squash 0.82 × 1.18, rebound 1.08 × 0.92, settled at 620 ms). `masters/README.md` is the contract for the editor work.
+
+Tapping a sticker somebody threw at you plays it full screen and marks it played; the sender's phone says so in ink ("Dave opened your YIKES"). The sound is one cue on the contact frame, muted by the Settings toggle, by quiet mode for the round, and by the phone's silent switch.
 
 ## Engine toolchain (WebAssembly)
 

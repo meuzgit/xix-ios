@@ -90,6 +90,19 @@ extension LocalStore {
     public func games(roundID: UUID) -> [LocalGame] {
         (try? dbQueue.read { db in try LocalGame.filter(Column("round_id") == roundID).order(Column("position"), Column("created_at")).fetchAll(db) }) ?? []
     }
+    /// The optimistic row a send wrote locally is replaced by the row the server created: `send_sticker`
+    /// mints its own id, so without this the card would carry the same sticker twice — once under the
+    /// client's id and once under the server's.
+    public func replaceSticker(localID: UUID, with row: LocalSticker) throws {
+        try dbQueue.write { db in
+            if localID != row.id { _ = try LocalSticker.deleteOne(db, key: localID) }
+            try row.save(db)
+        }
+    }
+
+    public func sticker(id: UUID) -> LocalSticker? {
+        (try? dbQueue.read { db in try LocalSticker.fetchOne(db, key: id) }) ?? nil
+    }
     public func gamePlayers(roundID: UUID) -> [LocalGamePlayer] {
         (try? dbQueue.read { db in try LocalGamePlayer.filter(Column("round_id") == roundID).fetchAll(db) }) ?? []
     }

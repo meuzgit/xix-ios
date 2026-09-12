@@ -46,6 +46,8 @@ public struct GridScreenHost: View {
                     show(notice: n.text)
                 case .rejected(_, let message):
                     show(notice: message)
+                case .stickerPlayed(let played):
+                    show(notice: played.text)
                 }
             }
         }

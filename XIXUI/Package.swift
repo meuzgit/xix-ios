@@ -13,7 +13,7 @@ let package = Package(
         .target(
             name: "XIXUI",
             dependencies: ["XIXScoring", "XIXData"],
-            resources: [.copy("Resources/Stickers")]),
+            resources: [.copy("Resources/Stickers"), .copy("Resources/Audio")]),
         .testTarget(
             name: "XIXUITests",
             dependencies: ["XIXUI", "XIXScoring"],
