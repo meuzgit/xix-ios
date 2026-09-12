@@ -7,6 +7,9 @@ import XCTest
 @testable import XIXData
 
 enum LocalSupabase {
+    /// XIX_REMOTE=1 points the tests at a hosted project via SUPABASE_URL and the two keys. No local
+    /// health probes then, and no seeded users: tests that need people create throwaway ones.
+    static let isRemote = ProcessInfo.processInfo.environment["XIX_REMOTE"] != nil
     static let url = URL(string: ProcessInfo.processInfo.environment["SUPABASE_URL"] ?? "http://127.0.0.1:54321")!
     static let anonKey = ProcessInfo.processInfo.environment["SUPABASE_ANON_KEY"]
         ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
@@ -25,7 +28,7 @@ enum LocalSupabase {
     /// first subscriber, and the first real test would otherwise race that. Once per process.
     private static var primed = false
     static func awaitReady() async {
-        if primed { return }
+        if primed || isRemote { return }
         primed = true
         let deadline = Date().addingTimeInterval(90)
         var okAuth = false, okRest = false, okRealtime = false

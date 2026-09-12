@@ -23,12 +23,45 @@ final class AcceptanceTests: XCTestCase {
         let names = ["ray": "Ray", "dave": "Dave", "mo": "Mo", "tess": "Tess"]
 
         // Ray sets the round up: Fraserview with par and stroke index, three guests, the three games.
-        let ray = try await LocalSupabase.client(as: LocalSupabase.ray, email: "ray@privaterelay.appleid.com", label: "acc-ray")
-        let dave = try await LocalSupabase.client(as: LocalSupabase.dave, email: "dave@privaterelay.appleid.com", label: "acc-dave")
+        // Against a hosted project the two people are throwaway users, removed with the round at the end.
+        var rayID = LocalSupabase.ray, daveID = LocalSupabase.dave
+        var rayEmail = "ray@privaterelay.appleid.com", daveEmail = "dave@privaterelay.appleid.com"
+        if LocalSupabase.isRemote {
+            let tag = UUID().uuidString.prefix(8).lowercased()
+            rayEmail = "xix-acceptance-ray-\(tag)@privaterelay.appleid.com"
+            daveEmail = "xix-acceptance-dave-\(tag)@privaterelay.appleid.com"
+            rayID = try await LocalSupabase.service.auth.admin.createUser(attributes: AdminUserAttributes(email: rayEmail, emailConfirm: true, userMetadata: ["display_name": .string("Ray")])).id
+            daveID = try await LocalSupabase.service.auth.admin.createUser(attributes: AdminUserAttributes(email: daveEmail, emailConfirm: true, userMetadata: ["display_name": .string("Dave")])).id
+            print("[acceptance] throwaway users \(rayID) \(daveID)")
+        }
+        let throwawayUsers: [UUID] = LocalSupabase.isRemote ? [rayID, daveID] : []
+        let ray = try await LocalSupabase.client(as: rayID, email: rayEmail, label: "acc-ray")
+        let dave = try await LocalSupabase.client(as: daveID, email: daveEmail, label: "acc-dave")
         let repo = RoundRepository(client: ray)
         var bundle = try await repo.createRound(
             course: CourseDraft(name: "Fraserview", region: "Vancouver", par: input.par, strokeIndex: input.strokeIndex),
             holes: input.holes, ownerName: "Ray", guestNames: ["Dave", "Mo", "Tess"])
+        let roundID = bundle.round.id, courseID = bundle.round.courseId
+        print("[acceptance] throwaway round \(roundID) course \(courseID?.uuidString ?? "-")")
+        addTeardownBlock {
+            // Remove everything this run created: the round (cascades to players, scores, games, callouts,
+            // stickers, results, queue rows, medals), its course, and on a hosted project the two users.
+            let db = LocalSupabase.service.schema("xix")
+            try? await db.from("rounds").delete().eq("id", value: roundID).execute()
+            if let courseID { try? await db.from("courses").delete().eq("id", value: courseID).execute() }
+            for id in throwawayUsers { try? await LocalSupabase.service.auth.admin.deleteUser(id: id) }
+            struct Count: Decodable { let count: Int }
+            for (table, column, value) in [("rounds", "id", roundID.uuidString), ("players", "round_id", roundID.uuidString),
+                                           ("scores", "round_id", roundID.uuidString), ("results", "round_id", roundID.uuidString),
+                                           ("medals", "round_id", roundID.uuidString), ("engine_queue", "round_id", roundID.uuidString)] {
+                let raw = try? await db.from(table).select("*", head: false, count: .exact).eq(column, value: value).execute()
+                print("[acceptance] cleanup \(table): \(raw?.count ?? -1) rows left")
+            }
+            if let courseID {
+                let raw = try? await db.from("courses").select("*", head: false, count: .exact).eq("id", value: courseID).execute()
+                print("[acceptance] cleanup courses: \(raw?.count ?? -1) rows left")
+            }
+        }
         let rowOf = Dictionary(uniqueKeysWithValues: bundle.players.map { ($0.displayName, $0.id) })
         let daveRow = try XCTUnwrap(rowOf["Dave"])
         try await RoundRepository(client: dave).claimRow(roundID: bundle.round.id, playerID: daveRow)
@@ -71,14 +104,24 @@ final class AcceptanceTests: XCTestCase {
         XCTAssertEqual(local.status, .complete)
         print("[acceptance] 72 scores entered and acknowledged in \(String(format: "%.1f", Date().timeIntervalSince(entered)))s")
 
-        // End the round and run the authoritative engine (the queue row is consumed by the function).
+        // End the round and run the authoritative engine. Locally the test calls the function; on a hosted
+        // project the Database Webhook on engine_queue does, and the test waits for the result to appear.
+        let ended = Date()
         try await repo.endRound(roundID: bundle.round.id)
-        var request = URLRequest(url: LocalSupabase.url.appendingPathComponent("functions/v1/xix-engine"))
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONSerialization.data(withJSONObject: ["round_id": bundle.round.id.uuidString.lowercased()])
-        let (body, response) = try await URLSession.shared.data(for: request)
-        XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200, String(decoding: body, as: UTF8.self))
+        if LocalSupabase.isRemote {
+            await LocalSupabase.waitUntil(120, "the webhook to produce results.payload") {
+                let raw = try? await LocalSupabase.service.schema("xix").from("results").select("round_id").eq("round_id", value: bundle.round.id).execute()
+                return raw.map { $0.data.count > 4 } ?? false
+            }
+            print("[acceptance] webhook produced the result \(String(format: "%.1f", Date().timeIntervalSince(ended)))s after end_round")
+        } else {
+            var request = URLRequest(url: LocalSupabase.url.appendingPathComponent("functions/v1/xix-engine"))
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = try JSONSerialization.data(withJSONObject: ["round_id": bundle.round.id.uuidString.lowercased()])
+            let (body, response) = try await URLSession.shared.data(for: request)
+            XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200, String(decoding: body, as: UTF8.self))
+        }
 
         // The server's payload equals the device's local result, field for field.
         struct PayloadOnly: Decodable { let payload: JSONValue }
