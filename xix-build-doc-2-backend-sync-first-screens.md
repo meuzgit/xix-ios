@@ -11,7 +11,7 @@
 ### A.1 Project decisions
 
 - **Topology:** XIX, MMM and OM share one Supabase project (decided). XIX tables live in schema `xix`; MMM's remain where they are. Cross-app reads (Where to now) are views in Doc 3.
-- **Auth:** shared Supabase Auth, **Sign in with Apple only, no anonymous tier.** An MMM user signing into XIX is the same `auth.users.id` with no linking step; Insider status is visible to XIX automatically. Sign-in is requested at the first action that needs an identity (create a round, claim a row, confirm results). No project-wide auth settings change for XIX.
+- **Auth:** shared Supabase Auth, **three providers — Sign in with Apple, Google, email one-time code (no passwords, no magic links) — no anonymous tier.** Sign-in is requested at the first action that needs an identity (create a round, claim a row, confirm results). An MMM user is the same `auth.users.id` when the provider or verified email matches; Settings offers "Add another sign-in method" (linkIdentity / OTP) for Apple relay-email users. Provider and identity-linking settings are project-wide and owned by the project owner, not by XIX migrations.
 - **Migrations:** `supabase/migrations/` in the repo, applied with the Supabase CLI; never edited in the dashboard. One migration per concern below. **All development runs against a local Supabase; migrations are applied to the shared project only after each reviewed step, never with `db reset`.**
 - **Naming:** snake_case, singular schema `xix`, plural tables. All timestamps `timestamptz`. All ids `uuid default gen_random_uuid()`.
 
@@ -129,8 +129,8 @@ The iOS app runs the same package locally on every score change for instant UI. 
 
 ### C.4 Auth
 
-- First launch needs no sign-in. Sign in with Apple is requested at the first action that needs an identity: creating a round, claiming a row from a join link, confirming results from a result link. `ensure_profile()` runs after the first successful sign-in. Display name from the Apple credential, editable.
-- No linking flow: the account is the shared Meuz auth user. MMM Insider status is read directly.
+- First launch needs no sign-in. The sign-in sheet (Apple first, Google, email code) is requested at the first action that needs an identity: creating a round, claiming a row from a join link, confirming results from a result link. `ensure_profile()` runs after the first successful sign-in. Display name from the credential, editable.
+- Linking: Settings → "Add another sign-in method" (linkIdentity for Apple/Google, OTP for email). MMM Insider status is read directly from the shared auth user.
 - Guests without an account can be scored by the owner all round; claiming a row and keeping medals requires the one-tap sign-in.
 - Join by link: universal link `xix.golf/r/{code}` → app calls `join_round(code)` → shows the claimable rows → `claim_row`. Web fallback page for no-app is a static page (Doc 3).
 - Result-link confirm: results screen from a link → `confirm_round(round_id, 'confirm')` also performs `claim_row` if the user's row is still unclaimed.

@@ -8,7 +8,7 @@
 **Related products:** Standalone app. Conduits to My Main Man (MMM) for "Where to now?" and to On My Money (OM) for scorecard recognition.  
 **Design reference:** Claude Design files *XIX Pass 5 — Stickers Are Speech* and *XIX Pass 6 — The Rest of the App* (locked). Sticker assets: 12 die-cut PNGs.
 
-**Changes from v0.2:** Pass 6 flows locked and specified (§8.16–8.22); Level displays as a number (1–10); auth is Sign in with Apple only on the shared Meuz auth (no anonymous tier); MMM gate copy must mirror MMM's actual allowance rule; Picked-up rule, MMM feed source and standalone XIX Full subscription confirmed.
+**Changes from v0.2:** Pass 6 flows locked and specified (§8.16–8.22); Level displays as a number (1–10); auth is Apple, Google, and email one-time code on the shared Meuz auth (no anonymous tier); MMM gate copy must mirror MMM's actual allowance rule; Picked-up rule, MMM feed source and standalone XIX Full subscription confirmed.
 
 **Changes from v0.1:** Where to now moved out of XIX Full and onto MMM's own gating; visual system locked (broadcast base, riso sticker family, riso medal patches); two-layer card (grid + hole card) replaces the single grid; stickers defined as player speech only; callout banner is the CALLED OUT die-cut; "Where to now?" is the MMM feed reproduced as built; tiers simplified to Free / Full; stake labels removed entirely; score pad gains 1, 10+ and Picked up; Apple Watch and Supabase confirmed.
 
@@ -212,7 +212,7 @@ A player-initiated, single-hole mini-game inside the round. All resolve from str
 ### 8.14 Onboarding and growth
 
 - **Owner-scores-everyone:** one phone runs the group.
-- **Result-link onboarding:** guests receive the results screen by link; tapping "Confirm my scores" presents Sign in with Apple (one tap, nothing to fill in) and keeps the round and medals. **Auth model:** Sign in with Apple only, on the shared Meuz auth, so an MMM user is the same account in XIX with no linking step; no anonymous tier. Guests can be scored by the owner all round without signing in.
+- **Result-link onboarding:** guests receive the results screen by link; tapping "Confirm my scores" presents sign-in (Apple, Google, or email one-time code; no passwords) and keeps the round and medals. **Auth model:** three providers on the shared Meuz auth, no anonymous tier. An MMM user is the same account in XIX when the provider or verified email matches; Settings offers "Add another sign-in method" for the relay-email case. Guests can be scored by the owner all round without signing in.
 - Every exported card and results image carries an invite link.
 - Notifications: round invite, callout received, sticker played, results ready. No marketing pushes in V1.
 
