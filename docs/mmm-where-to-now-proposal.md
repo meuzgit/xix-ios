@@ -102,6 +102,13 @@ Ray, who is not an Insider and has spent one of his three this week, asking from
 
 Two rows, because two is what MMM's allowance leaves him, and the two his circle liked come first. Dave, an Insider, gets all five with `entitled` true and no allowance. Filtering to `drink` returns the two drink places. Asking for `stay` is refused: "where to now covers eat and drink".
 
+Applying it by hand like that puts a security-definer function in `xix` that no migration created, which the census test in `17_security_definer.test.sql` will fail on. `make pgtap` resets first so it never sees it, but drop it when you are done poking at it:
+
+```bash
+docker exec -i supabase_db_XIX psql -U postgres -d postgres \
+  -c "drop function if exists xix.where_to_now(double precision, double precision, text); drop type if exists xix.where_to_now_row;"
+```
+
 That proves the shape of the thing — the entitlement cut, the ordering, the eat/drink filter, the caller-scoped likes — against assumptions. It proves nothing about MMM's real tables, which is what the questions above are for.
 
 ## 5. What is safe to build meanwhile
